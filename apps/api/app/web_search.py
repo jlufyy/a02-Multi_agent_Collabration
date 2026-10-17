@@ -33,6 +33,23 @@ def compact(text):
     return re.sub(r"[\W_]+", "", text).casefold()
 
 
+def food_reference_matches(place, city, text):
+    """Do not attach a brand's other branch or another city's reviews to this POI."""
+    text = compact(text)
+    name = place["name"]
+    full = compact(name)
+    branch = re.search(r"[（(]([^（）()]+)[）)]", name)
+    base = compact(re.split(r"[（(]", name)[0])
+    address = re.split(r"[号,，]", place.get("address", ""))[0]
+    local = bool(city and compact(city) in text) or bool(len(compact(address)) >= 5 and compact(address) in text)
+    if not local:
+        return False
+    if branch:
+        token = compact(branch.group(1)).removesuffix("店")
+        return len(base) >= 3 and base in text and len(token) >= 3 and token in text
+    return len(full) >= 3 and full in text
+
+
 class WebSearchProvider:
     def __init__(self, provider="", api_key="", base_url="", client=None, timeout_seconds=8):
         self.provider, self.api_key = provider, api_key
@@ -55,6 +72,8 @@ class WebSearchProvider:
         # Send only public POI search terms; no conversation, precise GPS or companion data.
         query = (f"{city} {place['name']} 历史沿革 建筑特点 文化故事 景区介绍" if purpose == "KNOWLEDGE" else
                  f"{city} {place['name']} {visit_date} 开放时间 门票 预约 官方").strip()[:300]
+        if purpose == "FOOD":
+            query = f"{city} {place['name']} {place.get('address', '')} 大众点评 顾客评价 口味 招牌菜 人均"[:300]
         from .place_facts import TICKET_SOURCES
         ticket_source = TICKET_SOURCES.get(place["name"])
         if purpose == "TICKET" and ticket_source:
@@ -145,13 +164,15 @@ class WebSearchProvider:
                 if purpose == "TICKET" and ticket_source and url.rstrip('/') == ticket_source[0].rstrip('/'):
                     matched = True
                 matched = matched or (len(short_name) >= 3 and city and compact(city) in text and short_name in text)
+                if purpose == "FOOD":
+                    matched = food_reference_matches(place, city, title + " " + snippet)
                 if not matched or url in seen:
                     continue
                 seen.add(url)
                 refs.append({"title": title[:200], "url": url, "snippet": snippet[:700],
                              "evidence": {"provider": self.provider, "status": "ESTIMATED", "sourceUrl": url,
                                           "fetchedAt": result["checkedAt"],
-                                          "note": "搜索摘要，仅作参考；开放时间、票价和预约要求仍需向景区核实。"}})
+                                          "note": "匹配本店的公开搜索摘要，不是完整用户评论；请打开原文核对发布时间与分店。" if purpose == "FOOD" else "搜索摘要，仅作参考；开放时间、票价和预约要求仍需向景区核实。"}})
                 if len(refs) == 3:
                     break
             result.update(status="AVAILABLE" if refs else "EMPTY", references=refs,

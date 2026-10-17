@@ -13,6 +13,9 @@ import { Timeline, PROGRESS_LABEL } from '../components/Timeline';
 import { PreviewPanel } from '../components/PreviewPanel';
 import { ActivityDetail } from '../components/ActivityDetail';
 import { AIPanel } from '../components/AIPanel';
+import { FoodPanel } from '../components/FoodPanel';
+import { uid } from '../lib/id';
+import { planTime, planDate } from '../lib/time';
 import { ProactiveCard } from '../components/ProactiveCard';
 import { ContentModal } from '../components/ContentViewer';
 import { DemoConsole } from '../components/DemoConsole';
@@ -50,6 +53,8 @@ export function TripPage() {
   const [snap, setSnap] = useState<number>(SNAPS[1]);
   const [detailId, setDetailId] = useState<string>();
   const [aiOpen, setAiOpen] = useState(false);
+  const [foodOpen, setFoodOpen] = useState(false);
+  const [foodRequest, setFoodRequest] = useState<string>();
   const [aiSeed, setAiSeed] = useState<{ text?: string; action?: 'EXPLAIN' | 'NEARBY_FOOD' }>();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [tempOrder, setTempOrder] = useState<string[]>();
@@ -75,7 +80,7 @@ export function TripPage() {
   const plan = travel.projected;
   const pending = ws?.pending;
 
-  const uiBusy = dragging || previewOpen || !!pending || aiOpen || !!detailId;
+  const uiBusy = dragging || previewOpen || !!pending || aiOpen || foodOpen || !!detailId;
   useEffect(() => { travel.setUiBusy(uiBusy); }, [uiBusy]); // eslint-disable-line react-hooks/exhaustive-deps
   // 任务/风险卡出现时把抽屉收起，避免遮挡卡片
   const cardLevel = travel.activeCard?.decision.card.level;
@@ -147,7 +152,7 @@ export function TripPage() {
     } else if (a === 'VIEW_REVISION') {
       setAiSeed({ text: `针对风险「${c.title}」帮我调整行程，锁定的任务不要动` }); setAiOpen(true);
     } else if (a === 'VIEW_NEARBY' || a === 'ADD_TO_PLAN') {
-      setSelectedId(c.activityId); setAiSeed({ action: 'NEARBY_FOOD' }); setAiOpen(true);
+      setSelectedId(c.activityId); setFoodOpen(true);
     }
   }
 
@@ -156,6 +161,23 @@ export function TripPage() {
   const nextSeg = current && next ? daySegs.find((x) => x.fromActivityId === current.id && x.toActivityId === next.id) : undefined;
   const distNext = travel.me && next ? distanceMeters(next.place.location, travel.me.location) : undefined;
   const dayLabel = fmtShortDate(plan.startDate, activeDay);
+
+  async function chooseFood(candidate: import('@tripflow/contracts').NearbyCandidate, anchorId?: string): Promise<boolean> {
+    const anchor = dayActs.find((a) => a.id === anchorId) ?? current ?? dayActs[dayActs.length - 1];
+    let timestamp = anchor ? Date.parse(anchor.endAt) : Date.parse(`${plan!.startDate}T12:00:00+08:00`) + activeDay * 86400000;
+    if (traveling && today === planDate(plan!.startDate, activeDay)) timestamp = Math.max(timestamp, Date.now());
+    const startAt = planTime(timestamp), endAt = planTime(timestamp + 60 * 60_000);
+    const perform = async () => {
+      const result = await flow.propose({ operations: [{ type: 'ADD', activity: { id: uid('food'), place: candidate.place,
+        dayIndex: activeDay, orderIndex: anchor ? anchor.orderIndex + 1 : 0, startAt, endAt,
+        estimatedCostCny: candidate.estimatedCostCny, costStatus: candidate.costStatus,
+        locked: false, mandatory: false, progress: 'NOT_STARTED', intentIds: [] } }], origin: 'NEARBY', selectedContext: ctx });
+      if (result?.kind === 'REVISION') { setFoodOpen(false); setPreviewOpen(true); return true; }
+      return false;
+    };
+    if (pending || flow.proposeJob.running) { guarded(() => { void perform(); }); return false; }
+    return perform();
+  }
 
   return (
     <div className="relative h-full overflow-hidden">
@@ -251,9 +273,13 @@ export function TripPage() {
               </button>
             </div>
           )}
+          {traveling && current && <button className="w-full rounded-[14px] bg-brand-mist px-4 py-3 text-left text-[13px] text-brand" onClick={() => { setSelectedId(current.id); setFoodRequest(undefined); setFoodOpen(true); }}>
+            已到「{current.place.name}」 · 看看附近合口味的餐馆
+          </button>}
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="min-w-0 flex-1 truncate text-[19px] font-bold">第{activeDay + 1}天 · {dayLabel}</h1>
+              <button className="shrink-0 rounded-full bg-brand-mist px-3 py-1.5 text-[12px] text-brand" onClick={() => { setFoodRequest(undefined); setFoodOpen(true); }}>找美食</button>
               <button className="round-btn !h-8 !w-8" aria-label="撤销" disabled={!ws?.undo.length || flow.proposeJob.running} onClick={() => undo(tripId).then(() => toast('已撤销'))}><Icon name="undo" size={16} /></button>
               <button className="round-btn !h-8 !w-8" aria-label="重做" disabled={!ws?.redo.length || flow.proposeJob.running} onClick={() => redo(tripId).then(() => toast('已重做'))}><Icon name="redo" size={16} /></button>
               <button className="round-btn !h-8 !w-8" aria-label={snap >= SNAPS[2] ? '收起面板' : '展开面板'} onClick={() => setSnap(snap >= SNAPS[2] ? SNAPS[1] : SNAPS[2])}><Icon name="expand" size={14} /></button>
@@ -310,7 +336,11 @@ export function TripPage() {
           onShowOnMap={() => { const a = plan.activities.find((x) => x.id === detailId)!; setSelectedId(a.id); setDetailId(undefined); setSnap(SNAPS[0]); setFocus({ point: a.place.location, key: Date.now() }); }} />
       )}
       <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} tripId={tripId} plan={plan} ctx={ctx} flow={flow} seed={aiSeed}
+        onFood={(request) => { setFoodRequest(request); setAiOpen(false); setFoodOpen(true); }}
         me={traveling ? travel.me?.location : undefined} onPreview={() => { setAiOpen(false); setPreviewOpen(true); }} />
+      {foodOpen && <FoodPanel tripId={tripId} plan={plan} ctx={ctx} initialRequest={foodRequest}
+        me={traveling && ['active', 'simulated'].includes(travel.status) ? travel.me?.location : undefined} simulated={!!trip.demo}
+        chooseError={flow.proposeJob.error} onClose={() => setFoodOpen(false)} onChoose={chooseFood} />}
       {contentView && (
         <ContentModal tripId={tripId} plan={plan} title={contentView.title} intentId={contentView.intentId}
           ctx={{ ...ctx, selectedActivityId: contentView.activityId ?? ctx.selectedActivityId, selectedPoiId: plan.activities.find((a) => a.id === contentView.activityId)?.place.poiId ?? ctx.selectedPoiId }}

@@ -5,7 +5,7 @@ import { useTrips } from '../store/tripStore';
 import { Icon } from '../components/Icon';
 import { PlacePicker } from '../components/PlacePicker';
 import { Toggle } from '../components/ui';
-import { INTENT_LABEL, MODE_LABEL, dayCount, emptyRequirements, requirementProblems } from '../lib/requirements';
+import { INTENT_LABEL, MODE_LABEL, dayCount, emptyRequirements, requirementProblems, normalizeDiningRequirements } from '../lib/requirements';
 import { uid } from '../lib/id';
 import { planTime } from '../lib/time';
 
@@ -17,7 +17,7 @@ export function ConfirmPage() {
   const nav = useNavigate();
   const trip = useTrips((s) => s.trips[tripId]);
   const saveDraft = useTrips((s) => s.saveDraft);
-  const [r, setR] = useState<TripRequirements>(() => trip?.draft.requirements ?? emptyRequirements());
+  const [r, setR] = useState<TripRequirements>(() => normalizeDiningRequirements(trip?.draft.requirements ?? emptyRequirements()));
   const [picker, setPicker] = useState<{ query?: string; candidates?: Place[]; onPick: (p: Place) => void }>();
   const [showErr, setShowErr] = useState(false);
   const [more, setMore] = useState(false);

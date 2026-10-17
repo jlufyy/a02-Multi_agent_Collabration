@@ -175,6 +175,6 @@ export const jobs = {
     startJob('/content/prepare', b, S.ContentsResult, h),
   refineContent: (b: RequestContext & { tripState: TripState; intentId?: string; preparedContent?: PreparedContent; userRequest: string; context: SelectedContext }, h?: H) =>
     startJob('/content/refine', b, S.ContentResult, h),
-  nearby: (b: RequestContext & { tripState: TripState; location: GeoPoint; category: 'FOOD' | 'REST' | 'PHOTO'; preferences: string[]; selectedContext?: SelectedContext }, h?: H) =>
+  nearby: (b: RequestContext & { tripState: TripState; location: GeoPoint; category: 'FOOD' | 'REST' | 'PHOTO'; preferences: string[]; selectedContext?: SelectedContext; radiusMeters?: number; maxWalkMinutes?: number; includeReviews?: boolean; maxAverageCostCny?: number }, h?: H) =>
     startJob('/nearby/search', b, S.NearbyResult, h),
 };

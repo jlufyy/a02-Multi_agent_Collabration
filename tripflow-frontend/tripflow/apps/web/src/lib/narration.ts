@@ -1,3 +1,5 @@
+import { nativeSpeech, makeUtterance as createUtterance } from './nativeSpeech';
+
 export type NarrationState = {
   status: 'idle' | 'loading' | 'playing' | 'paused' | 'error'; contentId?: string; error?: string;
 };
@@ -22,7 +24,7 @@ export class Narrator {
   private epoch = 0;
   private utterance?: SpeechSynthesisUtterance;
   private timer?: ReturnType<typeof setTimeout>;
-  constructor(private engine?: SpeechSynthesis, private makeUtterance = (text: string) => new SpeechSynthesisUtterance(text)) {}
+  constructor(private engine?: SpeechSynthesis, private makeUtterance = createUtterance) {}
   getSnapshot = () => this.state;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   private update(state: NarrationState) { this.state = state; this.listeners.forEach((f) => f()); }
@@ -84,7 +86,7 @@ export class Narrator {
 let instance: Narrator | undefined;
 export function narrator(): Narrator {
   if (!instance) {
-    instance = new Narrator(typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : undefined);
+    instance = new Narrator(typeof window !== 'undefined' ? nativeSpeech(window) ?? window.speechSynthesis : undefined);
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => { if (document.hidden) instance?.stop(); });
       window.addEventListener('pagehide', () => instance?.stop());

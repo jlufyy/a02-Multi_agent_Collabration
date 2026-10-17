@@ -3,7 +3,7 @@ import { Icon } from './Icon';
 import { Spinner } from './ui';
 
 export const AGENT_NAME: Record<AgentId, string> = {
-  A1: '需求理解', A2: '景点研究', A3: '交通研究', A4: '行程规划', A5: '审核优化', A6: '主动服务', A7: '个性化内容',
+  A1: '需求理解', A2: '地点与资料研究', A3: '交通研究', A4: '行程规划', A5: '审核优化', A6: '主动服务', A7: '个性化内容',
 };
 
 type Row = { key: string; agentId: AgentId; message: string; state: 'running' | 'done' | 'failed'; tool?: string };

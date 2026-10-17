@@ -216,9 +216,13 @@ def test_sync_routes_failure_and_nearby(env):
     result = post(client, "/routes/segments", body)
     assert result.json()["status"] == "PARTIAL", result.text
     assert all("durationMin" not in seg and seg["evidence"]["status"] == "FAILED" for seg in result.json()["data"]["segments"])
+    # Food recommendations require a provider-classified restaurant, not an unlabeled scenic fixture.
+    for place in maps.places:
+        place["category"] = "RESTAURANT"
     nearby = wait(client, post(client, "/nearby/search", context(plan, location=plan["activities"][0]["place"]["location"], category="FOOD", preferences=[])))
     assert nearby["data"]["result"]["candidates"]
     assert all(c["distanceEvidence"]["status"] == "ESTIMATED" for c in nearby["data"]["result"]["candidates"])
+    assert all(c["route"]["evidence"]["status"] == "UNKNOWN" and "durationMin" not in c["route"] for c in nearby["data"]["result"]["candidates"])
 
 
 def test_idempotency_missing_header_stale_and_cancel(env):

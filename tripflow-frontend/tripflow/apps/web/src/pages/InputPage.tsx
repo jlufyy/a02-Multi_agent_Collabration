@@ -7,7 +7,7 @@ import { useJob } from '../lib/useJob';
 import { AgentProgress } from '../components/AgentProgress';
 import { ErrorBox } from '../components/ui';
 import { Icon } from '../components/Icon';
-import { emptyRequirements, requirementProblems } from '../lib/requirements';
+import { emptyRequirements, requirementProblems, normalizeDiningRequirements } from '../lib/requirements';
 import { Logo } from '../components/Illustrations';
 import { RequirementSummary } from '../components/RequirementSummary';
 import { PlacePicker } from '../components/PlacePicker';
@@ -23,7 +23,8 @@ export function InputPage() {
   const [picker, setPicker] = useState<{ path: string; query: string; candidates?: Place[] }>();
   const [saveError, setSaveError] = useState<unknown>();
   const job = useJob<ParseResult>(tripId);
-  const r = trip?.draft.requirements;
+  const rawRequirements = trip?.draft.requirements;
+  const r = rawRequirements ? normalizeDiningRequirements(rawRequirements) : undefined;
   const conversation = trip?.draft.conversation ?? [];
   useEffect(() => {
     if (!trip) return;

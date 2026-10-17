@@ -22,9 +22,10 @@ type Msg =
   | { id: string; role: 'nearby'; category: string; candidates: NearbyCandidate[]; partialNote?: string };
 
 /** P10 全局 AI：自动携带当前上下文；修改类结果一律进入预览，内容类直接展示，澄清让用户选择。 */
-export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPreview }: {
+export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPreview, onFood }: {
   open: boolean; onClose: () => void; tripId: string; plan: TripState; ctx: SelectedContext;
   flow: ReturnType<typeof useEditFlow>; seed?: { text?: string; action?: 'EXPLAIN' | 'NEARBY_FOOD' }; me?: GeoPoint; onPreview: () => void;
+  onFood?: (request?: string) => void;
 }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState('');
@@ -81,6 +82,10 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
     const q = (raw ?? text).trim();
     if (!q || running) return;
     setText('');
+    if (/美食|餐馆|餐厅|饭店|小吃|火锅|烤鸭|烧烤|吃什么|好吃|湘菜|川菜|湖南菜|哪里吃/.test(q) && !/加入|添加|删除|移到|换成|替换|调整|改成/.test(q)) {
+      await nearby('FOOD', q);
+      return;
+    }
     voice.stop();
     const scope = guideScope.current;
     push({ id: uid('m'), role: 'user', text: q });
@@ -116,14 +121,15 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
   }
   const explain = () => askGuide('讲解这里');
 
-  async function nearby(category: 'FOOD' | 'REST' | 'PHOTO') {
+  async function nearby(category: 'FOOD' | 'REST' | 'PHOTO', request?: string) {
+    if (category === 'FOOD' && onFood) { onFood(request); return; }
     const anchor = selected ?? plan.activities.find((a) => a.dayIndex === ctx.activeDay);
     const location = me ?? anchor?.place.location;
     const label = { FOOD: '美食', REST: '休息', PHOTO: '拍照' }[category];
     if (!location) { push({ id: uid('m'), role: 'assistant', text: '没有可用的位置：请开启旅行定位或先选中一个地点。' }); return; }
-    push({ id: uid('m'), role: 'user', text: `附近${label}${me ? '（当前位置）' : anchor ? `（${anchor.place.name} 周边）` : ''}` });
+    push({ id: uid('m'), role: 'user', text: request ?? `附近${label}${me ? '（当前位置）' : anchor ? `（${anchor.place.name} 周边）` : ''}` });
     const t = useTrips.getState().trips[tripId];
-    const out = await nearbyJob.run((h) => jobs.nearby({ ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, location, category, preferences: plan.preferences, selectedContext: ctx }, h));
+    const out = await nearbyJob.run((h) => jobs.nearby({ ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, location, category, preferences: request ? [request] : plan.preferences, selectedContext: ctx }, h));
     if (!out?.result) return;
     push({ id: uid('m'), role: 'nearby', category: label, candidates: out.result.candidates,
       partialNote: out.status === 'PARTIAL' ? (out.errors.map((e) => e.message).join('；') || '结果不完整') : undefined });
@@ -235,13 +241,16 @@ function Bubble({ m, onPick, onAdd, busy }: { m: Msg; onPick: (p: Place) => void
       <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
         {m.candidates.map((c) => (
           <div key={c.place.poiId} className="w-[150px] shrink-0">
-            <PlaceThumb name={c.place.name} size={150} rounded={14} />
+            <PlaceThumb name={c.place.name} place={c.place} size={150} rounded={14} />
             <p className="mt-1.5 truncate text-[14px] font-medium">{c.place.name}</p>
             <p className="truncate text-[12px] text-ink-faint">
               {c.place.rating?.value !== undefined ? `★ ${c.place.rating.value}${c.place.rating.evidence.status !== 'VERIFIED' ? '(未核验)' : ''} · ` : ''}
               {c.distanceMeters !== undefined ? `${c.distanceMeters >= 1000 ? (c.distanceMeters / 1000).toFixed(1) + 'km' : Math.round(c.distanceMeters) + 'm'}${c.distanceEvidence.status !== 'VERIFIED' ? '(估)' : ''}` : '距离未知'}
             </p>
             <p className="line-clamp-2 text-[11.5px] text-ink-faint">{c.relevanceReason}</p>
+            {c.place.averageCostCny?.value !== undefined && <p className="mt-1 text-[12px] text-brand">人均约 ¥{c.place.averageCostCny.value} · 参考消费</p>}
+            {c.place.openingHours?.value && <p className="line-clamp-2 text-[11.5px] text-ink-soft">{c.place.openingHours.value}</p>}
+            {c.place.address && <p className="line-clamp-2 text-[11.5px] text-ink-faint">{c.place.address}</p>}
             <button disabled={busy} className="mt-1.5 h-8 w-full rounded-full bg-brand-mist text-[13px] text-brand" onClick={() => onAdd(c)}>加入行程</button>
           </div>
         ))}

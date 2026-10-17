@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import copy
 import math
+import re
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Iterable
@@ -60,6 +61,11 @@ def _reindex(p: dict) -> None:
 
 
 def _known_price(place: dict, count: int) -> tuple[float | None, str]:
+    if place.get("category") == "RESTAURANT":
+        average = place.get("averageCostCny") or {}
+        if average.get("value") is not None and average.get("evidence", {}).get("status") in {"VERIFIED", "ESTIMATED"}:
+            return average["value"] * count, "ESTIMATED"
+        return None, "UNKNOWN"
     fact = place.get("ticketPriceCny") or {}
     if fact.get("value") is not None and fact.get("evidence", {}).get("status") in {"VERIFIED", "ESTIMATED"}:
         return fact["value"] * count, fact["evidence"]["status"]
@@ -86,9 +92,11 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
     fixed_places = {c["place"]["place"]["poiId"] for c in r["fixedConstraints"] if c.get("place", {}).get("place")}
     intent_places = {i["placeId"] for i in r["intents"] if i.get("placeId") and i["status"] != "CANCELLED" and (i.get("confirmed") or i.get("locked"))}
     required_places = must | fixed_places | intent_places
+    restaurants = [p for p in candidates.values() if p.get("category") == "RESTAURANT" and p["poiId"] not in avoids]
     interests = list(r["preferences"]) + [interest for companion in r["companions"] for interest in companion["interests"]]
     coverage = {c["id"]: 0 for c in r["companions"]}
-    remaining = [p for p in candidates.values() if p["poiId"] not in avoids or p["poiId"] in required_places]
+    remaining = [p for p in candidates.values() if (p["poiId"] not in avoids or p["poiId"] in required_places)
+                 and (p.get("category") != "RESTAURANT" or p["poiId"] in required_places)]
     selected = []
     # Fairness: boost still-unserved companion interests, with deterministic ties.
     while remaining:
@@ -186,7 +194,7 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
         elif start.date() != calendar:
             # Keep a schema-valid draft for A5 to explain, never wrap into tomorrow.
             start = _clock(calendar, r.get("dailyStartTime") or "09:00")
-        end = moment(fixed["endAt"]) if fixed and fixed.get("endAt") else start + timedelta(minutes=slot_minutes)
+        end = moment(fixed["endAt"]) if fixed and fixed.get("endAt") else start + timedelta(minutes=60 if place.get("category") == "RESTAURANT" else slot_minutes)
         cursor_by_day[day_index] = end
         cost, status = _known_price(place, r["travelerCount"])
         activity = {"id": fixed.get("activityId") if fixed and fixed.get("activityId") else _stable_id(trip_id, place["poiId"]), "place": place, "dayIndex": day_index, "orderIndex": day_counts.get(day_index, 0), "startAt": _iso(start), "endAt": _iso(end), "costStatus": status, "locked": bool(fixed and fixed.get("locked")), "mandatory": place["poiId"] in must, "progress": "NOT_STARTED", "intentIds": [], "bookingStatus": "UNSPECIFIED"}
@@ -208,6 +216,42 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
             activity.update(id=fixed.get("activityId") or _stable_id(trip_id, place_id, occurrence), dayIndex=day_index, orderIndex=day_counts.get(day_index, 0), startAt=_iso(start), endAt=_iso(end), locked=bool(fixed.get("locked")))
             activities.append(activity)
             day_counts[day_index] = day_counts.get(day_index, 0) + 1
+    # At most one optional nearby lunch per day, preserving required/fixed visits.
+    used = {a["place"]["poiId"] for a in activities}
+    for day in range(days):
+        daily = sorted([a for a in activities if a["dayIndex"] == day], key=lambda a: a["startAt"])
+        if not daily or any(a["place"].get("category") == "RESTAURANT" for a in daily):
+            continue
+        dinner = any(re.search(r"晚饭|晚餐|晚上.{0,8}吃", pref) for pref in r["preferences"])
+        anchor = daily[-1] if dinner else daily[min(1, len(daily)-1)]
+        choices = [p for p in restaurants if p["poiId"] not in used and distance(anchor["place"]["location"], p["location"]) <= 3000]
+        if not choices:
+            continue
+        place = min(choices, key=lambda p: (distance(anchor["place"]["location"], p["location"]), -(p.get("rating") or {}).get("value", 0), p["poiId"]))
+        calendar = first + timedelta(days=day)
+        start = max(moment(anchor["endAt"]), _clock(calendar, "17:30" if dinner else "11:30"))
+        end = start + timedelta(minutes=60)
+        after = daily[daily.index(anchor)+1:]
+        shift = end - moment(anchor["endAt"])
+        upper = _clock(calendar, r.get("dailyEndTime") or "18:30")
+        if r.get("departureAt"):
+            upper = min(upper, moment(r["departureAt"]))
+        if start.hour >= (21 if dinner else 15) or end > upper or any(_anchor(a, r, set()) for a in after) or (after and moment(after[-1]["endAt"]) + shift > upper):
+            continue
+        cost, status = _known_price(place, r["travelerCount"])
+        total = r.get("budgetCny")
+        total = total * (r["travelerCount"] if r.get("budgetScope") == "PER_PERSON" else 1) if total is not None else None
+        if cost is not None and total is not None and r.get("budgetIsHardLimit") and sum(a.get("estimatedCostCny", 0) for a in activities) + cost > total:
+            continue
+        for a in after:
+            a["startAt"], a["endAt"] = _iso(moment(a["startAt"])+shift), _iso(moment(a["endAt"])+shift)
+        meal = {"id": _stable_id(trip_id, place["poiId"]), "place": place, "dayIndex": day, "orderIndex": 0,
+                "startAt": _iso(start), "endAt": _iso(end), "costStatus": status, "locked": False,
+                "mandatory": False, "progress": "NOT_STARTED", "intentIds": [], "bookingStatus": "UNSPECIFIED"}
+        if cost is not None:
+            meal["estimatedCostCny"] = cost
+        activities.append(meal)
+        used.add(place["poiId"])
     activities.sort(key=lambda a: (a["dayIndex"], a["startAt"], a["id"]))
     counts = {}
     for activity in activities:
@@ -266,6 +310,8 @@ def reschedule(plan: Any, preserve_activity_ids: Iterable[str] = ()) -> TripStat
                     earliest = max(earliest, moment(req["arrivalAt"]) + timedelta(minutes=segment["durationMin"]))
         if not _anchor(activity, req, pinned):
             start = earliest
+            if activity["place"].get("category") == "RESTAURANT":
+                start = max(start, old_start)
             opening = activity["place"].get("openingHours") or {}
             from .place_facts import opening_windows
             windows = opening_windows(opening.get("value", ""), calendar) if verified(opening.get("evidence")) else None
@@ -277,7 +323,7 @@ def reschedule(plan: Any, preserve_activity_ids: Iterable[str] = ()) -> TripStat
                         start = available
                         break
             noon, lunch_end = _clock(calendar, "12:00"), _clock(calendar, "13:00")
-            if previous and previous["dayIndex"] == activity["dayIndex"] and noon - timedelta(minutes=30) <= moment(previous["endAt"]) < lunch_end and start < lunch_end:
+            if activity["place"].get("category") != "RESTAURANT" and previous and previous["place"].get("category") != "RESTAURANT" and previous["dayIndex"] == activity["dayIndex"] and noon - timedelta(minutes=30) <= moment(previous["endAt"]) < lunch_end and start < lunch_end:
                 start = lunch_end
             upper = _clock(calendar, req.get("dailyEndTime") or "18:30")
             if req.get("departureAt"):

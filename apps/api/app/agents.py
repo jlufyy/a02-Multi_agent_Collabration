@@ -17,9 +17,9 @@ AGENTS = {
     "A2": ("检索核验地点", {"poi_search", "poi_detail", "nearby_search", "knowledge_search"}),
     "A3": ("研究交通方案", {"route_query"}),
     "A4": ("编排行程候选", {"schedule", "edit", "proposal"}),
-    "A5": ("独立审核约束", {"validate"}),
+    "A5": ("独立审核约束", {"validate", "dining_audit"}),
     "A6": ("评估主动服务", {"notification_policy"}),
-    "A7": ("准备个性化内容", {"model_structured", "model_text"}),
+    "A7": ("准备个性化内容", {"model_structured", "model_text", "format_dining_sources"}),
 }
 
 

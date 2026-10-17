@@ -150,11 +150,13 @@ export type ModelRouteCapability = { "agentId": "A1" | "A2" | "A3" | "A4" | "A5"
 
 export type MoveOperation = { "type": "MOVE"; "activityId": string; "dayIndex": number; "orderIndex": number; };
 
-export type NearbyCandidate = { "place": Place; "distanceMeters"?: (number | null); "distanceEvidence": Evidence; "relevanceReason": string; "estimatedCostCny"?: (number | null); "costStatus": "VERIFIED" | "ESTIMATED" | "UNKNOWN" | "FAILED"; };
+export type NearbyCandidate = { "place": Place; "distanceMeters"?: (number | null); "distanceEvidence": Evidence; "relevanceReason": string; "estimatedCostCny"?: (number | null); "costStatus": "VERIFIED" | "ESTIMATED" | "UNKNOWN" | "FAILED"; "route"?: (NearbyRoute | null); "reviewResearch"?: (WebResearch | null); "preferenceMatches"?: Array<string>; };
 
-export type NearbySearchRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; "tripState": TripState; "location": GeoPoint; "category": "FOOD" | "REST" | "PHOTO"; "preferences": Array<string>; "selectedContext"?: (SelectedContext | null); };
+export type NearbyRoute = { "mode": "WALK" | "TRANSIT" | "DRIVE"; "durationMin"?: (number | null); "distanceMeters"?: (number | null); "routeGeometry"?: (Array<GeoPoint> | null); "evidence": Evidence; };
 
-export type NearbySearchResult = { "candidates": Array<NearbyCandidate>; };
+export type NearbySearchRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; "tripState": TripState; "location": GeoPoint; "category": "FOOD" | "REST" | "PHOTO"; "preferences": Array<string>; "selectedContext"?: (SelectedContext | null); "radiusMeters"?: number; "maxWalkMinutes"?: number; "includeReviews"?: boolean; "maxAverageCostCny"?: (number | null); };
+
+export type NearbySearchResult = { "candidates": Array<NearbyCandidate>; "anchorLocation"?: (GeoPoint | null); "searchedRadiusMeters"?: (number | null); "notes"?: Array<string>; };
 
 export type NormalizedLocationEvent = { "sampleId": string; "tripId": string; "source": "REAL" | "SIMULATED"; "demoRunId"?: (string | null); "location": GeoPoint; "accuracyMeters": number; "timestamp": string; "pageVisible": boolean; "speedMetersPerSecond"?: (number | null); };
 
@@ -170,7 +172,7 @@ export type ParseRequirementsRequest = { "executionMode": "REAL" | "DEMO"; "demo
 
 export type ParseRequirementsResult = { "requirements": TripRequirements; "intents": Array<TravelIntent>; "missingFields": Array<string>; "uncertainFields": Array<UncertainField>; "questions"?: Array<string>; "fieldSources"?: { [key: string]: "USER" | "INFERRED" | "SUGGESTED"; }; "changedFields"?: Array<string>; };
 
-export type Place = { "poiId": string; "name": string; "address"?: (string | null); "location": GeoPoint; "evidence": Array<Evidence>; "openingHours"?: (Fact_str_ | null); "ticketPriceCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "queueMinutes"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "rating"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "bookingNote"?: (Fact_str_ | null); "parentPoiId"?: (Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____ | null); "webResearch"?: (WebResearch | null); "photoUrls"?: (Array<string> | null); };
+export type Place = { "poiId": string; "name": string; "address"?: (string | null); "location": GeoPoint; "evidence": Array<Evidence>; "openingHours"?: (Fact_str_ | null); "ticketPriceCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "queueMinutes"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "rating"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "bookingNote"?: (Fact_str_ | null); "parentPoiId"?: (Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____ | null); "webResearch"?: (WebResearch | null); "photoUrls"?: (Array<string> | null); "category"?: ("ATTRACTION" | "RESTAURANT" | "OTHER" | null); "averageCostCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); };
 
 export type PlaceReference = { "query": string; "place"?: (Place | null); };
 

@@ -22,6 +22,23 @@ from .providers import ProviderError, to_gcj02
 logger = logging.getLogger("tripflow")
 
 
+def dining_keyword(preferences):
+    """Generic food intent selects the restaurant category; only cuisine refines it."""
+    cuisines = r"火锅|烤鸭|烧烤|川菜|湘菜|粤菜|东北菜|西北菜|清真|素食|面馆|海鲜|日料|寿司|咖啡|早茶|小吃|烤肉"
+    return " ".join(dict.fromkeys(re.findall(cuisines, " ".join(preferences))))
+
+
+def normalize_dining(requirements):
+    req = copy.deepcopy(requirements)
+    generic = [i for i in req.get("intents", []) if i["type"] == "FOOD" and i["status"] != "CANCELLED"
+               and not i.get("placeId") and (not i.get("placeQuery") or re.fullmatch(
+                   r".{0,40}(?:附近|周边|当地|特色)(?:的)?(?:餐厅|餐馆|饭店|美食|小吃|午餐|晚餐|用餐){1,3}(?:推荐)?", i["placeQuery"]))
+               and not i.get("locked")]
+    req["preferences"] = list(dict.fromkeys(req.get("preferences", []) + [i["userRequest"] for i in generic]))
+    req["intents"] = [i for i in req.get("intents", []) if i not in generic]
+    return req
+
+
 class QueryPlaceEdit(s.ContractModel):
     type: Literal["ADD_PLACE", "REPLACE_PLACE"]
     placeQuery: str = Field(min_length=1)
@@ -97,7 +114,7 @@ class Workflows:
                 data["uncertainFields"] = [u for u in data["uncertainFields"] if u["fieldPath"].split('.')[0] in changed]
             extracted["confirmed"] = False
             extracted["timezone"] = "Asia/Shanghai"
-            extracted = copy.deepcopy(extracted)
+            extracted = normalize_dining(extracted)
             data["requirements"] = extracted
             for intent in extracted["intents"]:
                 old = next((i for i in (previous or {}).get("intents", []) if i["id"] == intent["id"] and i.get("placeQuery") == intent.get("placeQuery")), {})
@@ -166,7 +183,7 @@ class Workflows:
 
     async def research(self, requirements, runner):
         async def investigate(ctx):
-            req = dump(requirements)
+            req = normalize_dining(dump(requirements))
             city = req["destinationCity"]
             places = {}
             for key in ("mustVisit", "avoidPlaces"):
@@ -182,8 +199,10 @@ class Workflows:
                     fixed["place"]["place"] = await self.resolve_reference(ctx, fixed["place"], city)
                     place = fixed["place"]["place"]
                     places[place["poiId"]] = place
+            resolved_intents = []
             for intent in req["intents"]:
                 if intent["status"] == "CANCELLED":
+                    resolved_intents.append(intent)
                     continue
                 if intent.get("placeId"):
                     place = await ctx.tool("poi_detail", self.maps.poi_detail, intent["placeId"])
@@ -193,16 +212,38 @@ class Workflows:
                     raise AppError("INTENT_PLACE_MISSING", "确认的地点任务需要明确地点。")
                 intent["placeId"] = place["poiId"]
                 places[place["poiId"]] = place
+                # A scenic area chosen for "eat around here" is an anchor for restaurant search.
+                if intent["type"] == "FOOD" and place.get("category") == "ATTRACTION" and not intent.get("locked"):
+                    req["preferences"] = list(dict.fromkeys(req["preferences"] + [intent["userRequest"]]))
+                    continue
+                resolved_intents.append(intent)
+            req["intents"] = resolved_intents
             forbidden = {ref["place"]["poiId"] for ref in req["avoidPlaces"]}
             preferences = list(req["preferences"])
             for companion in req["companions"]:
                 preferences.extend(companion["interests"])
             days = (date.fromisoformat(req["endDate"])-date.fromisoformat(req["startDate"])).days + 1
             # Several preference queries provide a real candidate pool; deterministic A4 ranks it.
-            for keyword in list(dict.fromkeys(preferences))[:5] or ["景点"]:
+            food_words = r"美食|餐|小吃|火锅|烤鸭|烧烤|咖啡|面馆|菜馆|好吃|food|restaurant"
+            scenic = [p for p in preferences if not re.search(food_words, p, re.I)]
+            dining = [p for p in preferences if re.search(food_words, p, re.I)]
+            for keyword in list(dict.fromkeys(scenic))[:5] or ["景点"]:
                 found = await ctx.tool("poi_search", self.maps.search_pois, keyword, city=city, limit=20, types="110000")
                 for place in found:
                     if place["poiId"] not in forbidden:
+                        places.setdefault(place["poiId"], place)
+            # Real restaurants close to sightseeing anchors; food never uses the scenic category.
+            if len(places) < days * 4:
+                found = await ctx.tool("poi_search", self.maps.search_pois, "景点", city=city, limit=20, types="110000")
+                for place in found:
+                    if place["poiId"] not in forbidden:
+                        places.setdefault(place["poiId"], place)
+            anchors = list(places.values())[:min(days + 1, 3)]
+            for anchor in anchors:
+                found = await ctx.tool("nearby_search", self.maps.nearby_pois, anchor["location"],
+                    query=dining_keyword(dining), city=city, types="050000", radius_m=3000, limit=10)
+                for place in found:
+                    if place.get("category") == "RESTAURANT" and place["poiId"] not in forbidden:
                         places.setdefault(place["poiId"], place)
             return {"requirements": req, "places": list(places.values())}
         # A2 has its own typed output; unlike free-form retrieval it cannot mutate scheduling rules.
@@ -321,6 +362,7 @@ class Workflows:
             used = {a.place.poiId for a in plan.activities}
             used.update(a.place.parentPoiId.value for a in plan.activities if a.place.parentPoiId and a.place.parentPoiId.value)
             alternatives = [p for p in research.places if p.poiId not in used and not (p.parentPoiId and p.parentPoiId.value in used)
+                            and (p.category == "RESTAURANT") == (target.place.category == "RESTAURANT")
                             and distance(dump(anchor.place.location), dump(p.location)) < 8000]
             if not alternatives:
                 continue
@@ -742,10 +784,14 @@ class Workflows:
         return s.EvaluateProactiveResult(decision=decision, contents=contents), partial
 
     async def nearby(self, req, job):
+        if req.category == "FOOD":
+            from .dining import recommend_food
+            return await recommend_food(self.maps, getattr(self.knowledge, "search", None), req, job)
         runner = AgentRunner(job)
         async def search(ctx):
             places = await ctx.tool("nearby_search", self.maps.nearby_pois, dump(req.location),
-                                    query={"FOOD": "餐饮", "REST": "公园", "PHOTO": "景点"}[req.category], limit=20)
+                                    query=dining_keyword(req.preferences) if req.category == "FOOD" else {"REST": "公园", "PHOTO": "景点"}[req.category],
+                                    types="050000" if req.category == "FOOD" else None, limit=20)
             plan = req.tripState
             now = datetime.now().astimezone()
             next_stops = [a for a in plan.activities if instant(a.startAt) > now]
@@ -759,7 +805,7 @@ class Workflows:
                 # Explicit estimate used only as a coarse filter, never sold as road travel time.
                 if remaining is not None and meters/60*2 + 20 > remaining:
                     continue
-                price = place.get("ticketPriceCny", {})
+                price = place.get("averageCostCny", {}) if req.category == "FOOD" else place.get("ticketPriceCny", {})
                 amount = price.get("value")
                 if amount is not None and total_budget is not None and amount*plan.travelerCount > total_budget-spent:
                     continue
@@ -769,7 +815,8 @@ class Workflows:
                     reason += " 匹配偏好：" + "、".join(matches)
                 candidates.append({"place": place, "distanceMeters": round(meters),
                                    "distanceEvidence": {"provider": "local-haversine", "status": "ESTIMATED", "fetchedAt": now_iso(), "note": "几何距离，不是道路距离"},
-                                   "relevanceReason": reason, "costStatus": "UNKNOWN"})
+                                   "relevanceReason": reason,
+                                   **({"estimatedCostCny": amount*plan.travelerCount, "costStatus": "ESTIMATED"} if amount is not None else {"costStatus": "UNKNOWN"})})
             candidates.sort(key=lambda c: ("匹配偏好" not in c["relevanceReason"], c["distanceMeters"]))
             return {"candidates": candidates[:5]}
         result = await runner.run("A2", req, s.NearbySearchResult, search)

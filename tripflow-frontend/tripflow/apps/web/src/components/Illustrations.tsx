@@ -45,7 +45,7 @@ function PlacePhoto({ place, size, rounded = 12, hero = false }: { place: Place;
     return () => { active = false; observer.disconnect(); };
   }, [place.poiId, place.photoUrls]);
   return <span ref={ref} className={`relative block shrink-0 overflow-hidden bg-[#E7EEF5] ${hero ? 'h-[210px] w-full' : ''}`} style={hero ? undefined : { width: size, height: size, borderRadius: rounded }}>
-    {src ? <img src={src} alt={`${place.name} 景点照片`} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setFailed((old) => [...old, src])} />
+    {src ? <img src={src} alt={`${place.name} ${place.category === 'RESTAURANT' ? '餐馆照片' : '景点照片'}`} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setFailed((old) => [...old, src])} />
       : <><PavilionScene className="h-full w-full opacity-75" />{hero && <span className="absolute bottom-3 left-4 rounded-full bg-white/85 px-2.5 py-1 text-[11px] text-ink-soft">暂未取得照片 · 景观示意</span>}</>}
     {hero && src && <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2.5 py-1 text-[11px] text-white">高德地点照片 · {place.name}</span>}
   </span>;
@@ -101,7 +101,7 @@ export function PavilionScene({ className = '' }: { className?: string }) {
 }
 
 const THUMB_HUES = [['#DCE9FE', '#2F7CF6'], ['#E3F6EC', '#22A06B'], ['#FFF1E2', '#F08A24'], ['#EEE8FD', '#6D5BD0'], ['#FEE9E9', '#E05A5A']];
-/** 地点缩略图：契约中没有图片字段，因此用名称首字的色块，不伪造照片。 */
+/** Display a real provider photo when available; otherwise use an explicitly illustrative fallback. */
 export function PlaceThumb({ name, place, size = 56, rounded = 12 }: { name: string; place?: Place; size?: number; rounded?: number }) {
   if (place) return <PlacePhoto key={place.poiId} place={place} size={size} rounded={rounded} />;
   let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;

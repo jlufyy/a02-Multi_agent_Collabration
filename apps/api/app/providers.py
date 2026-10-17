@@ -5,6 +5,7 @@ import asyncio
 import copy
 import logging
 import math
+import re
 import time
 from collections import OrderedDict
 from datetime import datetime, timezone
@@ -194,6 +195,11 @@ class AmapProvider:
         pid = str(raw["id"])
         evidence = self._evidence(pid, fetched, "Fields: poiId/name/location/address and provider photo URLs; " + cache_note)
         place = {"poiId": pid, "name": raw["name"], "location": point, "evidence": [evidence]}
+        typecode = str(raw.get("typecode") or "")
+        if typecode.startswith("05"):
+            place["category"] = "RESTAURANT"
+        elif typecode.startswith("11"):
+            place["category"] = "ATTRACTION"
         if isinstance(raw.get("address"), str) and raw["address"]:
             place["address"] = raw["address"]
         if isinstance(raw.get("parent"), str) and raw["parent"] and raw["parent"] != pid:
@@ -202,6 +208,10 @@ class AmapProvider:
         for field in ("openingHours", "ticketPriceCny", "queueMinutes", "bookingNote"):
             place[field] = {"evidence": self._evidence(pid, fetched, f"Field: {field}; {unknown}; {cache_note}", "UNKNOWN")}
         business = _mapping(raw.get("biz_ext")) or _mapping(raw.get("business"))
+        average = _number(business.get("cost"))
+        if place.get("category") == "RESTAURANT" and average is not None and average > 0:
+            place["averageCostCny"] = {"value": average, "evidence": self._evidence(pid, fetched,
+                "Field: business.cost; listed average spending per person, not a menu quote or admission ticket; " + cache_note, "ESTIMATED")}
         # Preserve the full policy: weekly closures/seasonal qualifiers must not
         # be lost by taking just the first time range.
         hours = business.get("opentime2") or business.get("opentime_week") or business.get("open_time")
@@ -244,7 +254,7 @@ class AmapProvider:
         if not query.strip():
             raise ProviderError("VALIDATION_ERROR", "搜索词不能为空", http_status=422)
         if location is not None:
-            return await self.nearby_pois(location, radius_m=radius_m, query=query, city=city, limit=limit)
+            return await self.nearby_pois(location, radius_m=radius_m, query=query, city=city, limit=limit, types=types)
         params = {"keywords": query, "offset": max(1, min(limit, 25)), "page": 1, "extensions": "all"}
         if types:
             params["types"] = types
@@ -268,7 +278,7 @@ class AmapProvider:
         raise ProviderError("PLACE_UNVERIFIED", "未能按 ID 核验该地点，不能绑定其他候选", http_status=422)
 
     async def nearby_pois(self, location: Any, radius_m: int = 3000, query: str = "",
-                          city: str | None = None, limit: int = 5) -> list[dict]:
+                          city: str | None = None, limit: int = 5, types: str | None = None) -> list[dict]:
         point = to_gcj02(location)
         if not 0 <= radius_m <= 50000:
             raise ProviderError("VALIDATION_ERROR", "周边半径需在 0–50000 米", http_status=422)
@@ -276,9 +286,20 @@ class AmapProvider:
                   "offset": max(1, min(limit, 25)), "page": 1, "extensions": "all", "sortrule": "distance"}
         if query:
             params["keywords"] = query
+        if types:
+            params["types"] = types
         if city:
             params["city"] = city
-        return self._places(*(await self._get("/v3/place/around", params)))
+        if types == "050000" and not re.search(r"咖啡|茶|饮|甜品|糕饼|小吃", query):
+            # A generic meal recommendation uses restaurant subcategories, not tea/gift shops.
+            params["types"] = "050100|050200|050300"
+        data, fetched, note = await self._get("/v3/place/around", params)
+        if types == "050000":
+            data["pois"] = [p for p in _items(data.get("pois")) if isinstance(p, dict)
+                            and str(p.get("typecode", "")).startswith("05")
+                            and (re.search(r"咖啡|茶|饮|甜品|糕饼", query)
+                                 or not str(p.get("typecode", "")).startswith(("0505", "0506", "0507", "0508", "0509")))]
+        return self._places(data, fetched, note)
 
     async def routes(self, origin: Any, destination: Any, mode: str, city: str | None = None,
                      destination_city: str | None = None, departure_at: str | None = None) -> dict:

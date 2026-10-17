@@ -15,6 +15,13 @@ export function dayCount(r: Pick<TripRequirements, 'startDate' | 'endDate'>): nu
 }
 
 /** 进入 generate 前的硬校验（附录 A.2）。返回字段路径 → 问题。 */
+export function normalizeDiningRequirements(r: TripRequirements): TripRequirements {
+  const generic = r.intents.filter((i) => i.type === 'FOOD' && i.status !== 'CANCELLED' && !i.placeId && !i.locked
+    && (!i.placeQuery || /^.{0,40}(?:附近|周边|当地|特色)(?:的)?(?:餐厅|餐馆|饭店|美食|小吃|午餐|晚餐|用餐){1,3}(?:推荐)?$/.test(i.placeQuery)));
+  if (!generic.length) return r;
+  return { ...r, preferences: [...new Set([...r.preferences, ...generic.map((i) => i.userRequest)])], intents: r.intents.filter((i) => !generic.includes(i)) };
+}
+
 export function requirementProblems(r: TripRequirements): Record<string, string> {
   const p: Record<string, string> = {};
   if (!r.destinationCity?.trim()) p.destinationCity = '请填写目的地城市';

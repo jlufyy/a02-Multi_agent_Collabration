@@ -1,5 +1,7 @@
 # TripFlow 完整应用
 
+Android 私人安装包的构建与真机验证见 [android/README.md](android/README.md)。React 页面和 Python 后端均可在手机内运行；本地 ENV、签名和个人 APK 不提交到 GitHub。已增加真实餐馆检索、参考人均消费、自动午餐/晚餐安排及行程页“找美食”。
+
 React/TypeScript 前端 + FastAPI 后端。前端源码保留在 `tripflow-frontend/tripflow/apps/web`，后端在 `apps/api`。构建后由 FastAPI 同时提供页面与 `/api/v1`，通过一个地址使用，无需运行契约测试桩。
 
 **2026-10-17 修复更新：已修复保存/编辑、跨日排程、北京时间、定位去重和驻留、提醒过期等问题，并加入多轮需求对话、摘要确认、局部路线复用和内容持久化。** 修复及验收范围见 [修复记录](docs/TripFlow_修复与验证_2026-10-17.md)。[原整合报告](docs/TripFlow_整合测试与问题建议_2026-10-17.md)保留为历史基线；真机 GPS、HTTPS 和容器部署仍需单独验收。

@@ -38,3 +38,13 @@ output/integration/*
 *.key
 *.p12
 *.pfx
+
+# Private Android builds contain personal runtime configuration.
+android/.local/
+android/local.properties
+**/.gradle/
+**/build/
+*.apk
+*.aab
+*.jks
+*.keystore

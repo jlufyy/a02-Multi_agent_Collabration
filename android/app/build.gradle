@@ -1,0 +1,65 @@
+plugins {
+    id 'com.android.application'
+    id 'com.chaquo.python'
+}
+
+def signingFile = rootProject.file('.local/signing.properties')
+def signing = new Properties()
+if (signingFile.exists()) signingFile.withInputStream { signing.load(it) }
+android {
+    namespace 'cn.tripflow.app'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'cn.tripflow.app'
+        minSdk 26
+        targetSdk 35
+        versionCode 2
+        versionName '1.0.1'
+        ndk { abiFilters 'arm64-v8a' }
+    }
+    signingConfigs {
+        personal {
+            if (signingFile.exists()) {
+                storeFile rootProject.file(signing['storeFile'])
+                storePassword signing['storePassword']
+                keyAlias signing['keyAlias']
+                keyPassword signing['keyPassword']
+            }
+        }
+    }
+    buildTypes {
+        debug { if (signingFile.exists()) signingConfig signingConfigs.personal }
+        release {
+            signingConfig signingConfigs.personal
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+    buildFeatures { buildConfig true }
+    sourceSets { main { assets.srcDir layout.buildDirectory.dir('generated/tripflow-assets') } }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint { abortOnError true }
+}
+
+chaquopy {
+    defaultConfig {
+        version '3.12'
+        if (project.hasProperty('tripflowPython')) buildPython project.property('tripflowPython')
+        pip {
+            options '--find-links', rootProject.file('vendor').absolutePath
+            install '-r', rootProject.file('requirements-android.txt').absolutePath
+        }
+    }
+}
+tasks.register('verifyPersonalAssets') {
+    doLast {
+        if (!file("$buildDir/generated/tripflow-assets/payload.zip").exists())
+            throw new GradleException('Run python android/scripts/prepare.py before building.')
+        if (!signingFile.exists())
+            throw new GradleException('Run python android/scripts/prepare.py to create personal signing.')
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'verifyPersonalAssets' }

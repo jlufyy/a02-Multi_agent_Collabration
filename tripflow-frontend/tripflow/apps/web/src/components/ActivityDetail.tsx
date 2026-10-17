@@ -24,7 +24,9 @@ export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExpl
   const rows: { icon: string; label: string; value?: string; status?: DataStatus }[] = [
     { icon: 'clock', label: '开放时间', value: p.openingHours?.value, status: p.openingHours?.evidence.status },
     { icon: 'calendar', label: '计划时间', value: `${fmtTime(a.startAt)}–${fmtTime(a.endAt)}（${fmtMin(minutesBetween(a.startAt, a.endAt))}）`, status: 'VERIFIED' },
-    { icon: 'wallet', label: '门票', value: p.ticketPriceCny?.value !== undefined ? fmtCny(p.ticketPriceCny.value) : undefined, status: p.ticketPriceCny?.evidence.status },
+    p.category === 'RESTAURANT'
+      ? { icon: 'wallet', label: '人均消费', value: p.averageCostCny?.value !== undefined ? `约 ${fmtCny(p.averageCostCny.value)}` : undefined, status: p.averageCostCny?.evidence.status }
+      : { icon: 'wallet', label: '门票', value: p.ticketPriceCny?.value !== undefined ? fmtCny(p.ticketPriceCny.value) : undefined, status: p.ticketPriceCny?.evidence.status },
     { icon: 'users', label: '排队', value: p.queueMinutes?.value !== undefined ? `约${fmtMin(p.queueMinutes.value)}` : undefined, status: p.queueMinutes?.evidence.status },
     { icon: 'pin', label: '地址', value: p.address, status: p.evidence[0]?.status },
   ];
@@ -87,7 +89,7 @@ export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExpl
           <WebResearchPanel key={p.poiId} initial={p.webResearch} poiId={p.poiId} city={plan.destinationCity} visitDate={a.startAt.slice(0, 10)} />
           <button className="mt-4 text-[13px] text-brand" onClick={() => setShowSrc(!showSrc)}>{showSrc ? '收起数据来源' : '查看数据来源'}</button>
           {showSrc && <div className="mt-2 pb-2"><EvidenceList items={[...p.evidence, ...[p.openingHours, p.ticketPriceCny, p.bookingNote].flatMap((f) => f ? [f.evidence] : [])]} /></div>}
-          <p className="mb-6 mt-2 text-[12px] text-ink-faint">门票按成人普通大门票核算，优惠票、园中园及索道另计。开放政策以到访日景区公告为准。</p>
+          <p className="mb-6 mt-2 text-[12px] text-ink-faint">{p.category === 'RESTAURANT' ? '人均消费为商家公开参考值，实际价格、排队和营业状态以到店为准。' : '门票按成人普通大门票核算，优惠票、园中园及索道另计。开放政策以到访日景区公告为准。'}</p>
         </div>
       </div>
       <div className="flex gap-2.5 border-t border-sand/70 px-5 pb-[calc(12px+var(--safe-b))] pt-3">

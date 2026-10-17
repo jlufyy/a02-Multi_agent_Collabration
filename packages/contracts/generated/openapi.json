@@ -2591,6 +2591,33 @@
               "FAILED"
             ],
             "title": "Coststatus"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NearbyRoute"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewResearch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebResearch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preferenceMatches": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferencematches"
           }
         },
         "additionalProperties": false,
@@ -2602,6 +2629,67 @@
           "costStatus"
         ],
         "title": "NearbyCandidate"
+      },
+      "NearbyRoute": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "title": "Mode"
+          },
+          "durationMin": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationmin"
+          },
+          "distanceMeters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancemeters"
+          },
+          "routeGeometry": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GeoPoint"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Routegeometry"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "evidence"
+        ],
+        "title": "NearbyRoute"
       },
       "NearbySearchRequest": {
         "properties": {
@@ -2666,6 +2754,37 @@
                 "type": "null"
               }
             ]
+          },
+          "radiusMeters": {
+            "type": "integer",
+            "maximum": 5000.0,
+            "minimum": 500.0,
+            "title": "Radiusmeters",
+            "default": 2000
+          },
+          "maxWalkMinutes": {
+            "type": "integer",
+            "maximum": 60.0,
+            "minimum": 5.0,
+            "title": "Maxwalkminutes",
+            "default": 30
+          },
+          "includeReviews": {
+            "type": "boolean",
+            "title": "Includereviews",
+            "default": true
+          },
+          "maxAverageCostCny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maxaveragecostcny"
           }
         },
         "additionalProperties": false,
@@ -2689,6 +2808,35 @@
             },
             "type": "array",
             "title": "Candidates"
+          },
+          "anchorLocation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "searchedRadiusMeters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Searchedradiusmeters"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
           }
         },
         "additionalProperties": false,
@@ -3282,6 +3430,32 @@
               }
             ],
             "title": "Photourls"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ATTRACTION",
+                  "RESTAURANT",
+                  "OTHER"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "averageCostCny": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

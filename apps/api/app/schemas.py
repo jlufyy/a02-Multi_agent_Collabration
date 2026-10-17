@@ -138,6 +138,8 @@ class Place(ContractModel):
     parentPoiId: Fact[Id] | None = None
     webResearch: WebResearch | None = None
     photoUrls: list[str] | None = None
+    category: Literal['ATTRACTION', 'RESTAURANT', 'OTHER'] | None = None
+    averageCostCny: Fact[NonNegative] | None = None
 
 
 class CompanionPreference(ContractModel):
@@ -819,6 +821,14 @@ class HealthResult(ContractModel):
     capabilities: CapabilitySet
 
 
+class NearbyRoute(ContractModel):
+    mode: TravelMode
+    durationMin: NonNegative | None = None
+    distanceMeters: NonNegative | None = None
+    routeGeometry: list[GeoPoint] | None = None
+    evidence: Evidence
+
+
 class NearbyCandidate(ContractModel):
     place: Place
     distanceMeters: NonNegative | None = None
@@ -826,6 +836,9 @@ class NearbyCandidate(ContractModel):
     relevanceReason: Id
     estimatedCostCny: NonNegative | None = None
     costStatus: DataStatus
+    route: NearbyRoute | None = None
+    reviewResearch: WebResearch | None = None
+    preferenceMatches: list[str] = Field(default_factory=list)
 
 
 class ParseRequirementsRequest(RequestContext):
@@ -1023,10 +1036,17 @@ class NearbySearchRequest(TripRequest):
     category: Literal['FOOD', 'REST', 'PHOTO']
     preferences: list[str]
     selectedContext: SelectedContext | None = None
+    radiusMeters: Annotated[int, Field(ge=500, le=5000)] = 2000
+    maxWalkMinutes: Annotated[int, Field(ge=5, le=60)] = 30
+    includeReviews: bool = True
+    maxAverageCostCny: NonNegative | None = None
 
 
 class NearbySearchResult(ContractModel):
     candidates: list[NearbyCandidate]
+    anchorLocation: GeoPoint | None = None
+    searchedRadiusMeters: NonNegative | None = None
+    notes: list[str] = Field(default_factory=list)
 
 
 class CancelJobResult(ContractModel):

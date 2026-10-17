@@ -57,6 +57,8 @@ export const Place = z.object({
   parentPoiId: fact(z.string()).optional(),
   webResearch: WebResearch.optional(),
   photoUrls: z.array(z.string().url()).optional(),
+  category: z.enum(['ATTRACTION', 'RESTAURANT', 'OTHER']).optional(),
+  averageCostCny: fact(z.number().nonnegative()).optional(),
 });
 export const CompanionPreference = z.object({
   id: z.string(), label: z.string(), interests: z.array(z.string()),
@@ -260,6 +262,8 @@ export const HealthData = z.object({ serviceStatus: z.enum(['OK', 'DEGRADED']), 
 export const NearbyCandidate = z.object({
   place: Place, distanceMeters: z.number().optional(), distanceEvidence: Evidence,
   relevanceReason: z.string(), estimatedCostCny: z.number().optional(), costStatus: DataStatus,
+  route: z.object({ mode: TravelMode, durationMin: z.number().optional(), distanceMeters: z.number().optional(), routeGeometry: z.array(GeoPoint).optional(), evidence: Evidence }).optional(),
+  reviewResearch: WebResearch.optional(), preferenceMatches: z.array(z.string()).default([]),
 });
 export const ParseResult = z.object({
   requirements: TripRequirements, intents: z.array(TravelIntent), missingFields: z.array(z.string()),
@@ -272,7 +276,7 @@ export const ValidateResult = z.object({ proposalId: z.string(), baseRevision: z
 export const EvaluateResult = z.object({ decision: ProactiveDecision, contents: z.array(PreparedContent) });
 export const ContentsResult = z.object({ contents: z.array(PreparedContent) });
 export const ContentResult = z.object({ content: PreparedContent });
-export const NearbyResult = z.object({ candidates: z.array(NearbyCandidate) });
+export const NearbyResult = z.object({ candidates: z.array(NearbyCandidate), anchorLocation: GeoPoint.optional(), searchedRadiusMeters: z.number().optional(), notes: z.array(z.string()).default([]) });
 export const PlacesResult = z.object({ places: z.array(Place) });
 export const RoutesResult = z.object({ segments: z.array(TravelSegment), boundarySegments: z.array(BoundarySegment), warnings: z.array(z.string()) });
 export const CancelResult = z.object({ jobId: z.string(), status: JobStatus });
