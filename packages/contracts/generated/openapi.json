@@ -1,0 +1,5911 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TripFlow Backend",
+    "description": "TripFlow-Split-v1. Browser owns confirmed plans; this API returns ephemeral proposals only.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_HealthResult_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "summary": "Capability Endpoint",
+        "operationId": "capability_endpoint_api_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CapabilitySet_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/requirements/parse": {
+      "post": {
+        "summary": "Parse",
+        "operationId": "parse_api_v1_requirements_parse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseRequirementsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/generate": {
+      "post": {
+        "summary": "Generate",
+        "operationId": "generate_api_v1_plans_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/revisions/propose": {
+      "post": {
+        "summary": "Propose",
+        "operationId": "propose_api_v1_revisions_propose_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposeRevisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/revisions/validate": {
+      "post": {
+        "summary": "Validate",
+        "operationId": "validate_api_v1_revisions_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRevisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/proactive/evaluate": {
+      "post": {
+        "summary": "Proactive",
+        "operationId": "proactive_api_v1_proactive_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateProactiveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/content/prepare": {
+      "post": {
+        "summary": "Prepare",
+        "operationId": "prepare_api_v1_content_prepare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/content/refine": {
+      "post": {
+        "summary": "Refine",
+        "operationId": "refine_api_v1_content_refine_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefineContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/nearby/search": {
+      "post": {
+        "summary": "Nearby",
+        "operationId": "nearby_api_v1_nearby_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NearbySearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/places/search": {
+      "post": {
+        "summary": "Places",
+        "operationId": "places_api_v1_places_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchPlacesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SearchPlacesResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes/segments": {
+      "post": {
+        "summary": "Routes",
+        "operationId": "routes_api_v1_routes_segments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteSegmentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RouteSegmentsResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "summary": "Get Job",
+        "operationId": "get_job_api_v1_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "afterSequence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Aftersequence"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobSnapshot_Union_ParseRequirementsResult__PlanResult__RevisionOutcome__ContentOutcome__ClarificationOutcome__ValidateRevisionResult__EvaluateProactiveResult__PrepareContentResult__RefineContentResult__NearbySearchResult___"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel Job",
+        "operationId": "cancel_job_api_v1_jobs__job_id__delete",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CancelJobResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivityChange": {
+        "properties": {
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "oldStartAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldstartat"
+          },
+          "newStartAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newstartat"
+          },
+          "oldEndAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldendat"
+          },
+          "newEndAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newendat"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "activityId",
+          "fields"
+        ],
+        "title": "ActivityChange"
+      },
+      "ActivityEndpoint": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "ACTIVITY",
+            "title": "Kind"
+          },
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "place": {
+            "$ref": "#/components/schemas/Place"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "activityId",
+          "place"
+        ],
+        "title": "ActivityEndpoint"
+      },
+      "ActivityLockChange": {
+        "properties": {
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "activityId",
+          "locked"
+        ],
+        "title": "ActivityLockChange"
+      },
+      "AddOperation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "ADD",
+            "title": "Type"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/ItineraryActivity"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "activity"
+        ],
+        "title": "AddOperation"
+      },
+      "ApiError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          },
+          "fieldPath": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fieldpath"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "title": "ApiError"
+      },
+      "ApiResponse_CancelJobResult_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CancelJobResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[CancelJobResult]"
+      },
+      "ApiResponse_CapabilitySet_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilitySet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[CapabilitySet]"
+      },
+      "ApiResponse_HealthResult_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HealthResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[HealthResult]"
+      },
+      "ApiResponse_JobAccepted_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobAccepted"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[JobAccepted]"
+      },
+      "ApiResponse_JobSnapshot_Union_ParseRequirementsResult__PlanResult__RevisionOutcome__ContentOutcome__ClarificationOutcome__ValidateRevisionResult__EvaluateProactiveResult__PrepareContentResult__RefineContentResult__NearbySearchResult___": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSnapshot_Union_ParseRequirementsResult__PlanResult__RevisionOutcome__ContentOutcome__ClarificationOutcome__ValidateRevisionResult__EvaluateProactiveResult__PrepareContentResult__RefineContentResult__NearbySearchResult__"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[JobSnapshot[Union[ParseRequirementsResult, PlanResult, RevisionOutcome, ContentOutcome, ClarificationOutcome, ValidateRevisionResult, EvaluateProactiveResult, PrepareContentResult, RefineContentResult, NearbySearchResult]]]"
+      },
+      "ApiResponse_RouteSegmentsResult_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RouteSegmentsResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[RouteSegmentsResult]"
+      },
+      "ApiResponse_SearchPlacesResult_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SearchPlacesResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[SearchPlacesResult]"
+      },
+      "BoundaryEndpoint": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "START_POINT",
+              "END_POINT"
+            ],
+            "title": "Kind"
+          },
+          "place": {
+            "$ref": "#/components/schemas/Place"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "place"
+        ],
+        "title": "BoundaryEndpoint"
+      },
+      "BoundarySegment": {
+        "properties": {
+          "dayIndex": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Dayindex"
+          },
+          "from": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ActivityEndpoint"
+              },
+              {
+                "$ref": "#/components/schemas/BoundaryEndpoint"
+              }
+            ],
+            "title": "From",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "ACTIVITY": "#/components/schemas/ActivityEndpoint",
+                "END_POINT": "#/components/schemas/BoundaryEndpoint",
+                "START_POINT": "#/components/schemas/BoundaryEndpoint"
+              }
+            }
+          },
+          "to": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ActivityEndpoint"
+              },
+              {
+                "$ref": "#/components/schemas/BoundaryEndpoint"
+              }
+            ],
+            "title": "To",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "ACTIVITY": "#/components/schemas/ActivityEndpoint",
+                "END_POINT": "#/components/schemas/BoundaryEndpoint",
+                "START_POINT": "#/components/schemas/BoundaryEndpoint"
+              }
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "title": "Mode"
+          },
+          "durationMin": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationmin"
+          },
+          "distanceMeters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancemeters"
+          },
+          "routeGeometry": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GeoPoint"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Routegeometry"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dayIndex",
+          "from",
+          "to",
+          "mode",
+          "evidence"
+        ],
+        "title": "BoundarySegment"
+      },
+      "CancelJobResult": {
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Jobid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "jobId",
+          "status"
+        ],
+        "title": "CancelJobResult"
+      },
+      "CapabilityLimits": {
+        "properties": {
+          "pollIntervalMs": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Pollintervalms"
+          },
+          "maxPollIntervalMs": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Maxpollintervalms"
+          },
+          "jobTtlSeconds": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Jobttlseconds"
+          },
+          "requestTimeoutSeconds": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Requesttimeoutseconds"
+          },
+          "maxJobSeconds": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Maxjobseconds"
+          },
+          "maxBodyBytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Maxbodybytes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pollIntervalMs",
+          "maxPollIntervalMs",
+          "jobTtlSeconds",
+          "requestTimeoutSeconds",
+          "maxJobSeconds",
+          "maxBodyBytes"
+        ],
+        "title": "CapabilityLimits"
+      },
+      "CapabilitySet": {
+        "properties": {
+          "planning": {
+            "type": "boolean",
+            "title": "Planning"
+          },
+          "poiSearch": {
+            "type": "boolean",
+            "title": "Poisearch"
+          },
+          "routes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "WALK",
+                "TRANSIT",
+                "DRIVE"
+              ]
+            },
+            "type": "array",
+            "title": "Routes"
+          },
+          "content": {
+            "type": "boolean",
+            "title": "Content"
+          },
+          "nearby": {
+            "type": "boolean",
+            "title": "Nearby"
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo"
+          },
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/ToolCapability"
+            },
+            "type": "array",
+            "title": "Tools"
+          },
+          "modelRoutes": {
+            "items": {
+              "$ref": "#/components/schemas/ModelRouteCapability"
+            },
+            "type": "array",
+            "title": "Modelroutes"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/CapabilityLimits"
+          },
+          "geoPolicy": {
+            "$ref": "#/components/schemas/GeoPolicy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "planning",
+          "poiSearch",
+          "routes",
+          "content",
+          "nearby",
+          "demo",
+          "tools",
+          "modelRoutes",
+          "limits",
+          "geoPolicy"
+        ],
+        "title": "CapabilitySet"
+      },
+      "CardEvidence": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "SIMULATED",
+              "USER_CORRECTION"
+            ],
+            "title": "Source"
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Eventid"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Facts"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "eventId",
+          "facts"
+        ],
+        "title": "CardEvidence"
+      },
+      "ClarificationOutcome": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "CLARIFICATION",
+            "title": "Kind"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Place"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "questions",
+          "candidates"
+        ],
+        "title": "ClarificationOutcome"
+      },
+      "CompanionPreference": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Label"
+          },
+          "interests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Interests"
+          },
+          "walkingTolerance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "LOW",
+                  "MEDIUM",
+                  "HIGH"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Walkingtolerance"
+          },
+          "personalBudgetCny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Personalbudgetcny"
+          },
+          "specialNeeds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Specialneeds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "interests",
+          "specialNeeds"
+        ],
+        "title": "CompanionPreference"
+      },
+      "ContentOutcome": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "CONTENT",
+            "title": "Kind"
+          },
+          "content": {
+            "$ref": "#/components/schemas/PreparedContent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "content"
+        ],
+        "title": "ContentOutcome"
+      },
+      "ConversationMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ConversationMessage"
+      },
+      "EstimatedChanges": {
+        "properties": {
+          "travelMinutesDelta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Travelminutesdelta"
+          },
+          "costCnyDelta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costcnydelta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EstimatedChanges"
+      },
+      "EvaluateProactiveRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "tripState": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "currentEvent": {
+            "$ref": "#/components/schemas/ProactiveEvent"
+          },
+          "recentNotifications": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationRecord"
+            },
+            "type": "array",
+            "title": "Recentnotifications"
+          },
+          "uiBusy": {
+            "type": "boolean",
+            "title": "Uibusy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "tripState",
+          "currentEvent",
+          "recentNotifications",
+          "uiBusy"
+        ],
+        "title": "EvaluateProactiveRequest"
+      },
+      "EvaluateProactiveResult": {
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/ProactiveDecision"
+          },
+          "contents": {
+            "items": {
+              "$ref": "#/components/schemas/PreparedContent"
+            },
+            "type": "array",
+            "title": "Contents"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision",
+          "contents"
+        ],
+        "title": "EvaluateProactiveResult"
+      },
+      "Evidence": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "externalId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Externalid"
+          },
+          "fetchedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetchedat"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "ESTIMATED",
+              "UNKNOWN",
+              "FAILED"
+            ],
+            "title": "Status"
+          },
+          "sourceUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourceurl"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "status"
+        ],
+        "title": "Evidence"
+      },
+      "Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence"
+        ],
+        "title": "Fact[Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Ge(ge=0), AllowInfNan(allow_inf_nan=False)])]]"
+      },
+      "Fact_str_": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence"
+        ],
+        "title": "Fact[str]"
+      },
+      "FixedConstraint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "activityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activityid"
+          },
+          "place": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "startAt": {
+            "type": "string",
+            "title": "Startat"
+          },
+          "endAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endat"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "startAt",
+          "reason",
+          "locked"
+        ],
+        "title": "FixedConstraint"
+      },
+      "GeneratePlanRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "requirements": {
+            "$ref": "#/components/schemas/TripRequirements"
+          },
+          "mode": {
+            "type": "string",
+            "const": "PLANNING",
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "requirements",
+          "mode"
+        ],
+        "title": "GeneratePlanRequest"
+      },
+      "GeoPoint": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lng"
+          },
+          "coordinateSystem": {
+            "type": "string",
+            "enum": [
+              "GCJ02",
+              "WGS84"
+            ],
+            "title": "Coordinatesystem"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lat",
+          "lng",
+          "coordinateSystem"
+        ],
+        "title": "GeoPoint"
+      },
+      "GeoPolicy": {
+        "properties": {
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Policyversion"
+          },
+          "arrivalRadiusMeters": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Arrivalradiusmeters"
+          },
+          "departureRadiusMeters": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Departureradiusmeters"
+          },
+          "maxAccuracyMeters": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Maxaccuracymeters"
+          },
+          "arrivalDwellSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Arrivaldwellseconds"
+          },
+          "departureDwellSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Departuredwellseconds"
+          },
+          "minValidSamples": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Minvalidsamples"
+          },
+          "maxSpeedMetersPerSecond": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Maxspeedmeterspersecond"
+          },
+          "maxSampleGapSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Maxsamplegapseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "policyVersion",
+          "arrivalRadiusMeters",
+          "departureRadiusMeters",
+          "maxAccuracyMeters",
+          "arrivalDwellSeconds",
+          "departureDwellSeconds",
+          "minValidSamples",
+          "maxSpeedMetersPerSecond",
+          "maxSampleGapSeconds"
+        ],
+        "title": "GeoPolicy"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResult": {
+        "properties": {
+          "serviceStatus": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "DEGRADED"
+            ],
+            "title": "Servicestatus"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Version"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitySet"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "serviceStatus",
+          "version",
+          "capabilities"
+        ],
+        "title": "HealthResult"
+      },
+      "ItineraryActivity": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "place": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "dayIndex": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Dayindex"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Orderindex"
+          },
+          "startAt": {
+            "type": "string",
+            "title": "Startat"
+          },
+          "endAt": {
+            "type": "string",
+            "title": "Endat"
+          },
+          "estimatedCostCny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimatedcostcny"
+          },
+          "costStatus": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "ESTIMATED",
+              "UNKNOWN",
+              "FAILED"
+            ],
+            "title": "Coststatus"
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          },
+          "mandatory": {
+            "type": "boolean",
+            "title": "Mandatory"
+          },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "APPROACHING",
+              "ARRIVED",
+              "VISITING",
+              "INFERRED_COMPLETE",
+              "LOCATION_UNKNOWN"
+            ],
+            "title": "Progress"
+          },
+          "intentIds": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Intentids"
+          },
+          "bookingStatus": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "UNSPECIFIED",
+                  "REQUIRED",
+                  "BOOKED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bookingstatus"
+          },
+          "bookingEvidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Evidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "place",
+          "dayIndex",
+          "orderIndex",
+          "startAt",
+          "endAt",
+          "costStatus",
+          "locked",
+          "mandatory",
+          "progress",
+          "intentIds"
+        ],
+        "title": "ItineraryActivity"
+      },
+      "JobAccepted": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "jobId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Jobid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "jobId"
+        ],
+        "title": "JobAccepted"
+      },
+      "JobSnapshot_Union_ParseRequirementsResult__PlanResult__RevisionOutcome__ContentOutcome__ClarificationOutcome__ValidateRevisionResult__EvaluateProactiveResult__PrepareContentResult__RefineContentResult__NearbySearchResult__": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "jobId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Jobid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "progressEvents": {
+            "items": {
+              "$ref": "#/components/schemas/ProgressEvent"
+            },
+            "type": "array",
+            "title": "Progressevents"
+          },
+          "nextCursor": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Nextcursor"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParseRequirementsResult"
+              },
+              {
+                "$ref": "#/components/schemas/PlanResult"
+              },
+              {
+                "$ref": "#/components/schemas/RevisionOutcome"
+              },
+              {
+                "$ref": "#/components/schemas/ContentOutcome"
+              },
+              {
+                "$ref": "#/components/schemas/ClarificationOutcome"
+              },
+              {
+                "$ref": "#/components/schemas/ValidateRevisionResult"
+              },
+              {
+                "$ref": "#/components/schemas/EvaluateProactiveResult"
+              },
+              {
+                "$ref": "#/components/schemas/PrepareContentResult"
+              },
+              {
+                "$ref": "#/components/schemas/RefineContentResult"
+              },
+              {
+                "$ref": "#/components/schemas/NearbySearchResult"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "jobId",
+          "status",
+          "progressEvents",
+          "nextCursor"
+        ],
+        "title": "JobSnapshot[Union[ParseRequirementsResult, PlanResult, RevisionOutcome, ContentOutcome, ClarificationOutcome, ValidateRevisionResult, EvaluateProactiveResult, PrepareContentResult, RefineContentResult, NearbySearchResult]]"
+      },
+      "ModelRouteCapability": {
+        "properties": {
+          "agentId": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "A3",
+              "A4",
+              "A5",
+              "A6",
+              "A7"
+            ],
+            "title": "Agentid"
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Model"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agentId",
+          "provider",
+          "model",
+          "available"
+        ],
+        "title": "ModelRouteCapability"
+      },
+      "MoveOperation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MOVE",
+            "title": "Type"
+          },
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "dayIndex": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Dayindex"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Orderindex"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "activityId",
+          "dayIndex",
+          "orderIndex"
+        ],
+        "title": "MoveOperation"
+      },
+      "NearbyCandidate": {
+        "properties": {
+          "place": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "distanceMeters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancemeters"
+          },
+          "distanceEvidence": {
+            "$ref": "#/components/schemas/Evidence"
+          },
+          "relevanceReason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Relevancereason"
+          },
+          "estimatedCostCny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimatedcostcny"
+          },
+          "costStatus": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "ESTIMATED",
+              "UNKNOWN",
+              "FAILED"
+            ],
+            "title": "Coststatus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "place",
+          "distanceEvidence",
+          "relevanceReason",
+          "costStatus"
+        ],
+        "title": "NearbyCandidate"
+      },
+      "NearbySearchRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "tripState": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD",
+              "REST",
+              "PHOTO"
+            ],
+            "title": "Category"
+          },
+          "preferences": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferences"
+          },
+          "selectedContext": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SelectedContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "tripState",
+          "location",
+          "category",
+          "preferences"
+        ],
+        "title": "NearbySearchRequest"
+      },
+      "NearbySearchResult": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/NearbyCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidates"
+        ],
+        "title": "NearbySearchResult"
+      },
+      "NotificationCard": {
+        "properties": {
+          "cardId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Cardid"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "L1",
+              "L2",
+              "L3"
+            ],
+            "title": "Level"
+          },
+          "module": {
+            "type": "string",
+            "enum": [
+              "KNOWLEDGE",
+              "PERSONAL_GOAL",
+              "TRIP_RISK",
+              "NEARBY"
+            ],
+            "title": "Module"
+          },
+          "activityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activityid"
+          },
+          "intentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intentid"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "actions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "VIEW_CONTENT",
+                "VIEW_SCRIPT",
+                "VIEW_SHOOTING_CHECKLIST",
+                "REMIND_LATER",
+                "IGNORE",
+                "VIEW_REVISION",
+                "VIEW_NEARBY",
+                "ADD_TO_PLAN"
+              ]
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "contentIds": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Contentids"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/CardEvidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cardId",
+          "level",
+          "module",
+          "title",
+          "actions",
+          "contentIds",
+          "evidence"
+        ],
+        "title": "NotificationCard"
+      },
+      "NotificationPolicy": {
+        "properties": {
+          "enableL1": {
+            "type": "boolean",
+            "title": "Enablel1"
+          },
+          "enableL2": {
+            "type": "boolean",
+            "title": "Enablel2"
+          },
+          "enableL3": {
+            "type": "boolean",
+            "title": "Enablel3"
+          },
+          "paused": {
+            "type": "boolean",
+            "title": "Paused"
+          },
+          "cooldownMinutes": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Cooldownminutes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enableL1",
+          "enableL2",
+          "enableL3",
+          "paused",
+          "cooldownMinutes"
+        ],
+        "title": "NotificationPolicy"
+      },
+      "NotificationRecord": {
+        "properties": {
+          "notificationId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Notificationid"
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Eventid"
+          },
+          "tripRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Triprevision"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "SIMULATED",
+              "USER_CORRECTION"
+            ],
+            "title": "Source"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "arrivalId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrivalid"
+          },
+          "activityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activityid"
+          },
+          "intentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intentid"
+          },
+          "riskCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Riskcode"
+          },
+          "contentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contentid"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "L1",
+              "L2",
+              "L3"
+            ],
+            "title": "Level"
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Decision"
+          },
+          "suppressionReason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suppressionreason"
+          },
+          "shownAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shownat"
+          },
+          "actionTaken": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "VIEW_CONTENT",
+                  "VIEW_SCRIPT",
+                  "VIEW_SHOOTING_CHECKLIST",
+                  "REMIND_LATER",
+                  "IGNORE",
+                  "VIEW_REVISION",
+                  "VIEW_NEARBY",
+                  "ADD_TO_PLAN"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actiontaken"
+          },
+          "actionAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actionat"
+          },
+          "snoozeUntil": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snoozeuntil"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "notificationId",
+          "eventId",
+          "tripRevision",
+          "source",
+          "level",
+          "decision"
+        ],
+        "title": "NotificationRecord"
+      },
+      "ParseRequirementsRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text"
+          },
+          "selectedContext": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SelectedContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "conversation": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ConversationMessage"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "text"
+        ],
+        "title": "ParseRequirementsRequest"
+      },
+      "ParseRequirementsResult": {
+        "properties": {
+          "requirements": {
+            "$ref": "#/components/schemas/TripRequirements"
+          },
+          "intents": {
+            "items": {
+              "$ref": "#/components/schemas/TravelIntent"
+            },
+            "type": "array",
+            "title": "Intents"
+          },
+          "missingFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missingfields"
+          },
+          "uncertainFields": {
+            "items": {
+              "$ref": "#/components/schemas/UncertainField"
+            },
+            "type": "array",
+            "title": "Uncertainfields"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "requirements",
+          "intents",
+          "missingFields",
+          "uncertainFields"
+        ],
+        "title": "ParseRequirementsResult"
+      },
+      "Place": {
+        "properties": {
+          "poiId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Poiid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "openingHours": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ticketPriceCny": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "queueMinutes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bookingNote": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "poiId",
+          "name",
+          "location",
+          "evidence"
+        ],
+        "title": "Place"
+      },
+      "PlaceReference": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "place": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Place"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "PlaceReference"
+      },
+      "PlanResult": {
+        "properties": {
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TripState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationReport"
+          },
+          "preparedContents": {
+            "items": {
+              "$ref": "#/components/schemas/PreparedContent"
+            },
+            "type": "array",
+            "title": "Preparedcontents"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "validation",
+          "preparedContents"
+        ],
+        "title": "PlanResult"
+      },
+      "PrepareContentRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "tripState": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "intents": {
+            "items": {
+              "$ref": "#/components/schemas/TravelIntent"
+            },
+            "type": "array",
+            "title": "Intents"
+          },
+          "selectedContext": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SelectedContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "tripState",
+          "intents"
+        ],
+        "title": "PrepareContentRequest"
+      },
+      "PrepareContentResult": {
+        "properties": {
+          "contents": {
+            "items": {
+              "$ref": "#/components/schemas/PreparedContent"
+            },
+            "type": "array",
+            "title": "Contents"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contents"
+        ],
+        "title": "PrepareContentResult"
+      },
+      "PreparedContent": {
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Contentid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "activityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activityid"
+          },
+          "intentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intentid"
+          },
+          "placeId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Placeid"
+          },
+          "module": {
+            "type": "string",
+            "enum": [
+              "KNOWLEDGE",
+              "PERSONAL_GOAL",
+              "TRIP_RISK",
+              "NEARBY"
+            ],
+            "title": "Module"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Body"
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Version"
+          },
+          "generatedAt": {
+            "type": "string",
+            "title": "Generatedat"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "scopeNote": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Scopenote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contentId",
+          "tripId",
+          "baseRevision",
+          "placeId",
+          "module",
+          "title",
+          "body",
+          "version",
+          "generatedAt",
+          "evidence",
+          "scopeNote"
+        ],
+        "title": "PreparedContent"
+      },
+      "ProactiveDecision": {
+        "properties": {
+          "decisionId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Decisionid"
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Eventid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "shouldNotify": {
+            "type": "boolean",
+            "title": "Shouldnotify"
+          },
+          "reasonCode": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reasoncode"
+          },
+          "suppressionReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suppressionreason"
+          },
+          "card": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotificationCard"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decisionId",
+          "eventId",
+          "tripId",
+          "baseRevision",
+          "shouldNotify",
+          "reasonCode"
+        ],
+        "title": "ProactiveDecision"
+      },
+      "ProactiveEvent": {
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Eventid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Revision"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "SIMULATED",
+              "USER_CORRECTION"
+            ],
+            "title": "Source"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "APPROACH",
+              "ARRIVE",
+              "LEAVE",
+              "RISK",
+              "RESUME"
+            ],
+            "title": "Type"
+          },
+          "activityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activityid"
+          },
+          "arrivalId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrivalid"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accuracyMeters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracymeters"
+          },
+          "occurredAt": {
+            "type": "string",
+            "title": "Occurredat"
+          },
+          "risk": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "eventId",
+          "tripId",
+          "revision",
+          "source",
+          "type",
+          "occurredAt"
+        ],
+        "title": "ProactiveEvent"
+      },
+      "ProgressEvent": {
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Eventid"
+          },
+          "sequence": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Sequence"
+          },
+          "occurredAt": {
+            "type": "string",
+            "title": "Occurredat"
+          },
+          "runId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Runid"
+          },
+          "agentId": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "A3",
+              "A4",
+              "A5",
+              "A6",
+              "A7"
+            ],
+            "title": "Agentid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "agent_started",
+              "agent_completed",
+              "agent_failed",
+              "tool_call_started",
+              "tool_call_finished"
+            ],
+            "title": "Type"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "toolName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Toolname"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Traceid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "eventId",
+          "sequence",
+          "occurredAt",
+          "runId",
+          "agentId",
+          "type",
+          "message",
+          "traceId"
+        ],
+        "title": "ProgressEvent"
+      },
+      "ProposeRevisionRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "tripState": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "selectedContext": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SelectedContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "conversation": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ConversationMessage"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation"
+          },
+          "operations": {
+            "anyOf": [
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AddOperation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RemoveOperation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ReplaceOperation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MoveOperation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UpdateTimeOperation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UpdateDurationOperation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UpdateConstraintOperation"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                      "ADD": "#/components/schemas/AddOperation",
+                      "MOVE": "#/components/schemas/MoveOperation",
+                      "REMOVE": "#/components/schemas/RemoveOperation",
+                      "REPLACE": "#/components/schemas/ReplaceOperation",
+                      "UPDATE_CONSTRAINT": "#/components/schemas/UpdateConstraintOperation",
+                      "UPDATE_DURATION": "#/components/schemas/UpdateDurationOperation",
+                      "UPDATE_TIME": "#/components/schemas/UpdateTimeOperation"
+                    }
+                  }
+                },
+                "type": "array",
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operations"
+          },
+          "userRequest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Userrequest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "tripState"
+        ],
+        "title": "ProposeRevisionRequest"
+      },
+      "RefineContentRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "tripState": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "intentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intentid"
+          },
+          "preparedContent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreparedContent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "userRequest": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Userrequest"
+          },
+          "context": {
+            "$ref": "#/components/schemas/SelectedContext"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "tripState",
+          "userRequest",
+          "context"
+        ],
+        "title": "RefineContentRequest"
+      },
+      "RefineContentResult": {
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/PreparedContent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "RefineContentResult"
+      },
+      "RemoveOperation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "REMOVE",
+            "title": "Type"
+          },
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "activityId"
+        ],
+        "title": "RemoveOperation"
+      },
+      "ReplaceOperation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "REPLACE",
+            "title": "Type"
+          },
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "candidatePlaceId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Candidateplaceid"
+          },
+          "candidatePlace": {
+            "$ref": "#/components/schemas/Place"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "activityId",
+          "candidatePlaceId",
+          "candidatePlace"
+        ],
+        "title": "ReplaceOperation"
+      },
+      "RevisionDiff": {
+        "properties": {
+          "added": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Added"
+          },
+          "removed": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Removed"
+          },
+          "moved": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Moved"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "added",
+          "removed",
+          "moved"
+        ],
+        "title": "RevisionDiff"
+      },
+      "RevisionOutcome": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "REVISION",
+            "title": "Kind"
+          },
+          "proposal": {
+            "$ref": "#/components/schemas/RevisionProposal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "proposal"
+        ],
+        "title": "RevisionOutcome"
+      },
+      "RevisionProposal": {
+        "properties": {
+          "proposalId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Proposalid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "operations": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AddOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/RemoveOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/ReplaceOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/MoveOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/UpdateTimeOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/UpdateDurationOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/UpdateConstraintOperation"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "ADD": "#/components/schemas/AddOperation",
+                  "MOVE": "#/components/schemas/MoveOperation",
+                  "REMOVE": "#/components/schemas/RemoveOperation",
+                  "REPLACE": "#/components/schemas/ReplaceOperation",
+                  "UPDATE_CONSTRAINT": "#/components/schemas/UpdateConstraintOperation",
+                  "UPDATE_DURATION": "#/components/schemas/UpdateDurationOperation",
+                  "UPDATE_TIME": "#/components/schemas/UpdateTimeOperation"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Operations"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "hardViolations": {
+            "items": {
+              "$ref": "#/components/schemas/Violation"
+            },
+            "type": "array",
+            "title": "Hardviolations"
+          },
+          "unknownChecks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unknownchecks"
+          },
+          "diff": {
+            "$ref": "#/components/schemas/RevisionDiff"
+          },
+          "estimatedChanges": {
+            "$ref": "#/components/schemas/EstimatedChanges"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationReport"
+          },
+          "activityChanges": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityChange"
+            },
+            "type": "array",
+            "title": "Activitychanges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "proposalId",
+          "tripId",
+          "baseRevision",
+          "operations",
+          "candidate",
+          "hardViolations",
+          "unknownChecks",
+          "diff",
+          "estimatedChanges",
+          "validation",
+          "activityChanges"
+        ],
+        "title": "RevisionProposal"
+      },
+      "RiskDetail": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Evidence"
+          },
+          "activityIds": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Activityids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "evidence",
+          "activityIds"
+        ],
+        "title": "RiskDetail"
+      },
+      "RouteSegmentsRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "requirements": {
+            "$ref": "#/components/schemas/TripRequirements"
+          },
+          "activities": {
+            "items": {
+              "$ref": "#/components/schemas/ItineraryActivity"
+            },
+            "type": "array",
+            "title": "Activities"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "requirements",
+          "activities",
+          "mode"
+        ],
+        "title": "RouteSegmentsRequest"
+      },
+      "RouteSegmentsResult": {
+        "properties": {
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/TravelSegment"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "boundarySegments": {
+            "items": {
+              "$ref": "#/components/schemas/BoundarySegment"
+            },
+            "type": "array",
+            "title": "Boundarysegments"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "segments",
+          "boundarySegments",
+          "warnings"
+        ],
+        "title": "RouteSegmentsResult"
+      },
+      "SearchPlacesRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1,
+            "title": "City"
+          },
+          "keyword": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Keyword"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "city",
+          "keyword"
+        ],
+        "title": "SearchPlacesRequest"
+      },
+      "SearchPlacesResult": {
+        "properties": {
+          "places": {
+            "items": {
+              "$ref": "#/components/schemas/Place"
+            },
+            "type": "array",
+            "title": "Places"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "places"
+        ],
+        "title": "SearchPlacesResult"
+      },
+      "SelectedContext": {
+        "properties": {
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "planRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Planrevision"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PLANNING",
+              "TRAVELING"
+            ],
+            "title": "Mode"
+          },
+          "selectedActivityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selectedactivityid"
+          },
+          "selectedPoiId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selectedpoiid"
+          },
+          "activeDay": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Activeday"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tripId",
+          "planRevision",
+          "mode",
+          "activeDay"
+        ],
+        "title": "SelectedContext"
+      },
+      "ToolCapability": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "available"
+        ],
+        "title": "ToolCapability"
+      },
+      "TravelIntent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "activityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activityid"
+          },
+          "placeId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeid"
+          },
+          "placeQuery": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placequery"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "KNOWLEDGE",
+              "PHOTO",
+              "VIDEO_SHOOT",
+              "SPEECH",
+              "CHECK_IN",
+              "FOOD",
+              "OTHER"
+            ],
+            "title": "Type"
+          },
+          "userRequest": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Userrequest"
+          },
+          "desiredOutputs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Desiredoutputs"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "READY",
+              "TRIGGERED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "preparedContentIds": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Preparedcontentids"
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "userRequest",
+          "desiredOutputs",
+          "confirmed",
+          "status",
+          "preparedContentIds",
+          "locked"
+        ],
+        "title": "TravelIntent"
+      },
+      "TravelSegment": {
+        "properties": {
+          "fromActivityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fromactivityid"
+          },
+          "toActivityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Toactivityid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "title": "Mode"
+          },
+          "durationMin": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationmin"
+          },
+          "distanceMeters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancemeters"
+          },
+          "routeGeometry": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GeoPoint"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Routegeometry"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "fromActivityId",
+          "toActivityId",
+          "mode",
+          "evidence"
+        ],
+        "title": "TravelSegment"
+      },
+      "TripRequirements": {
+        "properties": {
+          "requirementsId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Requirementsid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Version"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "destinationCity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destinationcity"
+          },
+          "startDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Startdate"
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enddate"
+          },
+          "timezone": {
+            "type": "string",
+            "const": "Asia/Shanghai",
+            "title": "Timezone"
+          },
+          "travelerCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Travelercount"
+          },
+          "budgetCny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budgetcny"
+          },
+          "budgetScope": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "PER_PERSON",
+                  "TOTAL"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budgetscope"
+          },
+          "budgetIsHardLimit": {
+            "type": "boolean",
+            "title": "Budgetishardlimit"
+          },
+          "includesAccommodation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Includesaccommodation"
+          },
+          "includesIntercityTransport": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Includesintercitytransport"
+          },
+          "arrivalAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrivalat"
+          },
+          "departureAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Departureat"
+          },
+          "startPoint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "endPoint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "transportModes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "WALK",
+                "TRANSIT",
+                "DRIVE"
+              ]
+            },
+            "type": "array",
+            "title": "Transportmodes"
+          },
+          "mustVisit": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceReference"
+            },
+            "type": "array",
+            "title": "Mustvisit"
+          },
+          "avoidPlaces": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceReference"
+            },
+            "type": "array",
+            "title": "Avoidplaces"
+          },
+          "preferences": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferences"
+          },
+          "companions": {
+            "items": {
+              "$ref": "#/components/schemas/CompanionPreference"
+            },
+            "type": "array",
+            "title": "Companions"
+          },
+          "walkingTolerance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "LOW",
+                  "MEDIUM",
+                  "HIGH"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Walkingtolerance"
+          },
+          "specialNeeds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Specialneeds"
+          },
+          "dailyStartTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dailystarttime"
+          },
+          "dailyEndTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dailyendtime"
+          },
+          "fixedConstraints": {
+            "items": {
+              "$ref": "#/components/schemas/FixedConstraint"
+            },
+            "type": "array",
+            "title": "Fixedconstraints"
+          },
+          "intents": {
+            "items": {
+              "$ref": "#/components/schemas/TravelIntent"
+            },
+            "type": "array",
+            "title": "Intents"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "requirementsId",
+          "version",
+          "confirmed",
+          "timezone",
+          "budgetIsHardLimit",
+          "transportModes",
+          "mustVisit",
+          "avoidPlaces",
+          "preferences",
+          "companions",
+          "specialNeeds",
+          "fixedConstraints",
+          "intents"
+        ],
+        "title": "TripRequirements"
+      },
+      "TripState": {
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schemaversion"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Revision"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "destinationCity": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Destinationcity"
+          },
+          "startDate": {
+            "type": "string",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "title": "Enddate"
+          },
+          "travelerCount": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Travelercount"
+          },
+          "budgetCny": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budgetcny"
+          },
+          "budgetScope": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "PER_PERSON",
+                  "TOTAL"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budgetscope"
+          },
+          "companions": {
+            "items": {
+              "$ref": "#/components/schemas/CompanionPreference"
+            },
+            "type": "array",
+            "title": "Companions"
+          },
+          "preferences": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferences"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PLANNING",
+              "TRAVELING"
+            ],
+            "title": "Mode"
+          },
+          "lifecycle": {
+            "type": "string",
+            "enum": [
+              "DRAFT_INPUT",
+              "PLANNING",
+              "PLAN_READY",
+              "TRAVELING",
+              "TRIP_ENDED"
+            ],
+            "title": "Lifecycle"
+          },
+          "requirements": {
+            "$ref": "#/components/schemas/TripRequirements"
+          },
+          "activities": {
+            "items": {
+              "$ref": "#/components/schemas/ItineraryActivity"
+            },
+            "type": "array",
+            "title": "Activities"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/TravelSegment"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "boundarySegments": {
+            "items": {
+              "$ref": "#/components/schemas/BoundarySegment"
+            },
+            "type": "array",
+            "title": "Boundarysegments"
+          },
+          "intents": {
+            "items": {
+              "$ref": "#/components/schemas/TravelIntent"
+            },
+            "type": "array",
+            "title": "Intents"
+          },
+          "notificationPolicy": {
+            "$ref": "#/components/schemas/NotificationPolicy"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "tripId",
+          "revision",
+          "title",
+          "destinationCity",
+          "startDate",
+          "endDate",
+          "travelerCount",
+          "companions",
+          "preferences",
+          "mode",
+          "lifecycle",
+          "requirements",
+          "activities",
+          "segments",
+          "boundarySegments",
+          "intents",
+          "notificationPolicy",
+          "updatedAt"
+        ],
+        "title": "TripState"
+      },
+      "UncertainField": {
+        "properties": {
+          "fieldPath": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fieldpath"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "candidates": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Place"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "fieldPath",
+          "reason"
+        ],
+        "title": "UncertainField"
+      },
+      "UpdateConstraintOperation": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_budgetCny"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_budgetScope"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_budgetIsHardLimit"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_includesAccommodation"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_includesIntercityTransport"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_transportModes"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_preferences"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_companions"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_specialNeeds"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_walkingTolerance"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_startDate"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_endDate"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_arrivalAt"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_departureAt"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_dailyStartTime"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_dailyEndTime"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_startPoint"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_endPoint"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_mustVisit"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_avoidPlaces"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_fixedConstraints"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_intents"
+          },
+          {
+            "$ref": "#/components/schemas/UpdateConstraint_activityLocked"
+          }
+        ],
+        "title": "UpdateConstraintOperation",
+        "description": "Named flattened union so OpenAPI discriminator mapping always points to a reference.",
+        "discriminator": {
+          "propertyName": "key",
+          "mapping": {
+            "activityLocked": "#/components/schemas/UpdateConstraint_activityLocked",
+            "arrivalAt": "#/components/schemas/UpdateConstraint_arrivalAt",
+            "avoidPlaces": "#/components/schemas/UpdateConstraint_avoidPlaces",
+            "budgetCny": "#/components/schemas/UpdateConstraint_budgetCny",
+            "budgetIsHardLimit": "#/components/schemas/UpdateConstraint_budgetIsHardLimit",
+            "budgetScope": "#/components/schemas/UpdateConstraint_budgetScope",
+            "companions": "#/components/schemas/UpdateConstraint_companions",
+            "dailyEndTime": "#/components/schemas/UpdateConstraint_dailyEndTime",
+            "dailyStartTime": "#/components/schemas/UpdateConstraint_dailyStartTime",
+            "departureAt": "#/components/schemas/UpdateConstraint_departureAt",
+            "endDate": "#/components/schemas/UpdateConstraint_endDate",
+            "endPoint": "#/components/schemas/UpdateConstraint_endPoint",
+            "fixedConstraints": "#/components/schemas/UpdateConstraint_fixedConstraints",
+            "includesAccommodation": "#/components/schemas/UpdateConstraint_includesAccommodation",
+            "includesIntercityTransport": "#/components/schemas/UpdateConstraint_includesIntercityTransport",
+            "intents": "#/components/schemas/UpdateConstraint_intents",
+            "mustVisit": "#/components/schemas/UpdateConstraint_mustVisit",
+            "preferences": "#/components/schemas/UpdateConstraint_preferences",
+            "specialNeeds": "#/components/schemas/UpdateConstraint_specialNeeds",
+            "startDate": "#/components/schemas/UpdateConstraint_startDate",
+            "startPoint": "#/components/schemas/UpdateConstraint_startPoint",
+            "transportModes": "#/components/schemas/UpdateConstraint_transportModes",
+            "walkingTolerance": "#/components/schemas/UpdateConstraint_walkingTolerance"
+          }
+        }
+      },
+      "UpdateConstraint_activityLocked": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "activityLocked",
+            "title": "Key"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ActivityLockChange"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_activityLocked"
+      },
+      "UpdateConstraint_arrivalAt": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "arrivalAt",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_arrivalAt"
+      },
+      "UpdateConstraint_avoidPlaces": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "avoidPlaces",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceReference"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_avoidPlaces"
+      },
+      "UpdateConstraint_budgetCny": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "budgetCny",
+            "title": "Key"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_budgetCny"
+      },
+      "UpdateConstraint_budgetIsHardLimit": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "budgetIsHardLimit",
+            "title": "Key"
+          },
+          "value": {
+            "type": "boolean",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_budgetIsHardLimit"
+      },
+      "UpdateConstraint_budgetScope": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "budgetScope",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "PER_PERSON",
+              "TOTAL"
+            ],
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_budgetScope"
+      },
+      "UpdateConstraint_companions": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "companions",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/components/schemas/CompanionPreference"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_companions"
+      },
+      "UpdateConstraint_dailyEndTime": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "dailyEndTime",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_dailyEndTime"
+      },
+      "UpdateConstraint_dailyStartTime": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "dailyStartTime",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_dailyStartTime"
+      },
+      "UpdateConstraint_departureAt": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "departureAt",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_departureAt"
+      },
+      "UpdateConstraint_endDate": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "endDate",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_endDate"
+      },
+      "UpdateConstraint_endPoint": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "endPoint",
+            "title": "Key"
+          },
+          "value": {
+            "$ref": "#/components/schemas/PlaceReference"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_endPoint"
+      },
+      "UpdateConstraint_fixedConstraints": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "fixedConstraints",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/components/schemas/FixedConstraint"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_fixedConstraints"
+      },
+      "UpdateConstraint_includesAccommodation": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "includesAccommodation",
+            "title": "Key"
+          },
+          "value": {
+            "type": "boolean",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_includesAccommodation"
+      },
+      "UpdateConstraint_includesIntercityTransport": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "includesIntercityTransport",
+            "title": "Key"
+          },
+          "value": {
+            "type": "boolean",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_includesIntercityTransport"
+      },
+      "UpdateConstraint_intents": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "intents",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/components/schemas/TravelIntent"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_intents"
+      },
+      "UpdateConstraint_mustVisit": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "mustVisit",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceReference"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_mustVisit"
+      },
+      "UpdateConstraint_preferences": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "preferences",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_preferences"
+      },
+      "UpdateConstraint_specialNeeds": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "specialNeeds",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_specialNeeds"
+      },
+      "UpdateConstraint_startDate": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "startDate",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_startDate"
+      },
+      "UpdateConstraint_startPoint": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "startPoint",
+            "title": "Key"
+          },
+          "value": {
+            "$ref": "#/components/schemas/PlaceReference"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_startPoint"
+      },
+      "UpdateConstraint_transportModes": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "transportModes",
+            "title": "Key"
+          },
+          "value": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "WALK",
+                "TRANSIT",
+                "DRIVE"
+              ]
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_transportModes"
+      },
+      "UpdateConstraint_walkingTolerance": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "const": "walkingTolerance",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "title": "Value"
+          },
+          "type": {
+            "type": "string",
+            "const": "UPDATE_CONSTRAINT",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "type"
+        ],
+        "title": "UpdateConstraint_walkingTolerance"
+      },
+      "UpdateDurationOperation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "UPDATE_DURATION",
+            "title": "Type"
+          },
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "durationMin": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Durationmin"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "activityId",
+          "durationMin"
+        ],
+        "title": "UpdateDurationOperation"
+      },
+      "UpdateTimeOperation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "UPDATE_TIME",
+            "title": "Type"
+          },
+          "activityId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Activityid"
+          },
+          "startAt": {
+            "type": "string",
+            "title": "Startat"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "activityId",
+          "startAt"
+        ],
+        "title": "UpdateTimeOperation"
+      },
+      "ValidateRevisionRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "tripState": {
+            "$ref": "#/components/schemas/TripState"
+          },
+          "proposal": {
+            "$ref": "#/components/schemas/RevisionProposal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "tripState",
+          "proposal"
+        ],
+        "title": "ValidateRevisionRequest"
+      },
+      "ValidateRevisionResult": {
+        "properties": {
+          "proposalId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Proposalid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationReport"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "proposalId",
+          "baseRevision",
+          "validation"
+        ],
+        "title": "ValidateRevisionResult"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationReport": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "FEASIBLE",
+              "PARTIALLY_VERIFIED",
+              "INFEASIBLE"
+            ],
+            "title": "Status"
+          },
+          "hardViolations": {
+            "items": {
+              "$ref": "#/components/schemas/Violation"
+            },
+            "type": "array",
+            "title": "Hardviolations"
+          },
+          "unknownChecks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unknownchecks"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "committable": {
+            "type": "boolean",
+            "title": "Committable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "hardViolations",
+          "unknownChecks",
+          "warnings",
+          "committable"
+        ],
+        "title": "ValidationReport"
+      },
+      "Violation": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Code"
+          },
+          "activityIds": {
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Activityids"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "activityIds",
+          "message"
+        ],
+        "title": "Violation"
+      }
+    }
+  }
+}

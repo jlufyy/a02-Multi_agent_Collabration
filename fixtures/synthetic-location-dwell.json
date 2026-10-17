@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "sourceKind": "SYNTHETIC",
+    "generatedAt": "2026-10-16T12:00:00+08:00",
+    "verifiedAt": null,
+    "note": "人工构造契约及规则测试输入。地点和轨迹不证明真实 API、POI 或设备验证成功。"
+  },
+  "samples": [
+    {
+      "sampleId": "syn-sample-0",
+      "tripId": "syn-trip-北京-2",
+      "source": "SIMULATED",
+      "demoRunId": "syn-demo-run-1",
+      "location": {
+        "lat": 39.9,
+        "lng": 116.4,
+        "coordinateSystem": "WGS84"
+      },
+      "accuracyMeters": 10,
+      "timestamp": "2026-10-20T10:00:00+08:00",
+      "pageVisible": true
+    },
+    {
+      "sampleId": "syn-sample-1",
+      "tripId": "syn-trip-北京-2",
+      "source": "SIMULATED",
+      "demoRunId": "syn-demo-run-1",
+      "location": {
+        "lat": 39.9,
+        "lng": 116.4,
+        "coordinateSystem": "WGS84"
+      },
+      "accuracyMeters": 10,
+      "timestamp": "2026-10-20T10:00:45+08:00",
+      "pageVisible": true
+    },
+    {
+      "sampleId": "syn-sample-2",
+      "tripId": "syn-trip-北京-2",
+      "source": "SIMULATED",
+      "demoRunId": "syn-demo-run-1",
+      "location": {
+        "lat": 39.9,
+        "lng": 116.4,
+        "coordinateSystem": "WGS84"
+      },
+      "accuracyMeters": 10,
+      "timestamp": "2026-10-20T10:01:30+08:00",
+      "pageVisible": true
+    },
+    {
+      "sampleId": "syn-sample-3",
+      "tripId": "syn-trip-北京-2",
+      "source": "SIMULATED",
+      "demoRunId": "syn-demo-run-1",
+      "location": {
+        "lat": 39.9,
+        "lng": 116.4,
+        "coordinateSystem": "WGS84"
+      },
+      "accuracyMeters": 10,
+      "timestamp": "2026-10-20T10:02:15+08:00",
+      "pageVisible": true
+    },
+    {
+      "sampleId": "syn-sample-4",
+      "tripId": "syn-trip-北京-2",
+      "source": "SIMULATED",
+      "demoRunId": "syn-demo-run-1",
+      "location": {
+        "lat": 39.9,
+        "lng": 116.4,
+        "coordinateSystem": "WGS84"
+      },
+      "accuracyMeters": 10,
+      "timestamp": "2026-10-20T10:03:00+08:00",
+      "pageVisible": true
+    }
+  ]
+}

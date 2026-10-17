@@ -1,0 +1,11 @@
+{
+  "policyVersion": "geo-m0-2026-10-16",
+  "arrivalRadiusMeters": 250,
+  "departureRadiusMeters": 375,
+  "maxAccuracyMeters": 100,
+  "arrivalDwellSeconds": 90,
+  "departureDwellSeconds": 120,
+  "minValidSamples": 3,
+  "maxSpeedMetersPerSecond": 70,
+  "maxSampleGapSeconds": 120
+}

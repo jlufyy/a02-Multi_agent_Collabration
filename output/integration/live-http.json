@@ -1,0 +1,218 @@
+{
+  "timestamp": "2026-10-17T08:13:56.489756+08:00",
+  "baseUrl": "http://127.0.0.1:8010",
+  "evidenceType": "LIVE_HTTP_SYNTHETIC_TRAVEL_INPUT",
+  "cases": [
+    {
+      "case": "health",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "capabilities",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/favicon.svg",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/docs",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/openapi.json",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "reject-/.env",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "reject-/apps/api/app/config.py",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "reject-/api/v1/missing",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "reject-/assets/missing.js",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "live-poi-search",
+      "status": "PASS"
+    },
+    {
+      "case": "deepseek-parse-reused-live-job",
+      "status": "PASS",
+      "traceId": "5b09d64b8725455484486fb73d74688b"
+    },
+    {
+      "case": "parse-factual-fields",
+      "status": "PASS"
+    },
+    {
+      "case": "live-plan",
+      "status": "FAIL",
+      "jobStatus": "FAILED",
+      "seconds": 2.01,
+      "traceId": "854b1a8bbe394730a1692f45da62db11",
+      "progressSequenceMonotonic": true,
+      "errors": [
+        {
+          "code": "INTERNAL_ERROR",
+          "message": "服务执行失败，请使用 trace_id 排查。",
+          "retryable": false
+        }
+      ]
+    },
+    {
+      "case": "remaining-checks-use-existing-plan",
+      "status": "PASS",
+      "evidenceNote": "Fallback test request with explicit verified POI binding; failed generation and browser defect remain unfixed."
+    },
+    {
+      "case": "fallback-source-validation",
+      "status": "OBSERVATION",
+      "activities": 3,
+      "validation": "PARTIALLY_VERIFIED",
+      "unknownChecks": [
+        "OPENING_HOURS_UNKNOWN:activity-ae920b882eed52639b4a:开放时段未核实或尚不能可靠解析。",
+        "COST_UNKNOWN:activity-ae920b882eed52639b4a:整团活动费用未完全核实。",
+        "OPENING_HOURS_UNKNOWN:activity-db1c5b165bea5138a6d1:开放时段未核实或尚不能可靠解析。",
+        "COST_UNKNOWN:activity-db1c5b165bea5138a6d1:整团活动费用未完全核实。",
+        "OPENING_HOURS_UNKNOWN:activity-1d39831777cf5210b56a:开放时段未核实或尚不能可靠解析。",
+        "COST_UNKNOWN:activity-1d39831777cf5210b56a:整团活动费用未完全核实。",
+        "MUST_VISIT_UNRESOLVED:天坛公园:必去地点尚未明确匹配。",
+        "TRANSIT_COST_UNKNOWN:路线契约未提供票价，不能将交通费用记为0。"
+      ],
+      "committable": false,
+      "note": "Original source proposal was blocked. Remaining HTTP test requests explicitly bind the known real POI; application code and browser state remain unchanged."
+    },
+    {
+      "case": "live-route-segments",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "live-propose",
+      "status": "PASS",
+      "jobStatus": "PARTIAL",
+      "seconds": 2.01,
+      "traceId": "e8335f0fd8ee4e93805d211ecb6cb063",
+      "progressSequenceMonotonic": true,
+      "errors": []
+    },
+    {
+      "case": "live-final-validate",
+      "status": "PASS",
+      "jobStatus": "PARTIAL",
+      "seconds": 2.02,
+      "traceId": "4d9529c972894261940e52d66ae14ada",
+      "progressSequenceMonotonic": true,
+      "errors": []
+    },
+    {
+      "case": "final-validation-committable",
+      "status": "PASS"
+    },
+    {
+      "case": "live-nearby",
+      "status": "PASS",
+      "jobStatus": "SUCCEEDED",
+      "seconds": 2.02,
+      "traceId": "c6064597c0da4df18486537af66f6597",
+      "progressSequenceMonotonic": true,
+      "errors": []
+    },
+    {
+      "case": "aiping-content",
+      "status": "FAIL",
+      "jobStatus": "FAILED",
+      "seconds": 130.22,
+      "traceId": "6e661f1252704aaf960d73d5bb8af8ea",
+      "progressSequenceMonotonic": true,
+      "errors": [
+        {
+          "code": "LLM_TIMEOUT",
+          "message": "模型请求超时",
+          "retryable": true
+        }
+      ]
+    },
+    {
+      "case": "empty-content-prepare",
+      "status": "PASS",
+      "jobStatus": "SUCCEEDED",
+      "seconds": 2.02,
+      "traceId": "a302bd8089a148cc8c15a78945d0a5e3",
+      "progressSequenceMonotonic": true,
+      "errors": []
+    },
+    {
+      "case": "demo-proactive-not-real-gps",
+      "status": "PASS",
+      "jobStatus": "SUCCEEDED",
+      "seconds": 2.03,
+      "traceId": "61d93a4b98ec48c59a439f019accdae2",
+      "progressSequenceMonotonic": true,
+      "errors": []
+    },
+    {
+      "case": "stale-revision-rejected",
+      "status": "PASS",
+      "http": 409
+    },
+    {
+      "case": "known-defect-nearby-z-time-reproduced",
+      "status": "PASS",
+      "http": 422,
+      "errors": [
+        {
+          "code": "VALIDATION_ERROR",
+          "message": "Value error, plan time must have +08:00 offset",
+          "retryable": false,
+          "fieldPath": "operations.0.ADD.activity.endAt"
+        }
+      ]
+    },
+    {
+      "case": "cancel-job",
+      "status": "PASS"
+    },
+    {
+      "case": "idempotency",
+      "status": "PASS"
+    }
+  ],
+  "modelRoutes": [
+    {
+      "agentId": "A1",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "available": true
+    },
+    {
+      "agentId": "A7",
+      "provider": "aiping",
+      "model": "Qwen3.8-27B",
+      "available": true
+    }
+  ],
+  "contentGenerated": false
+}

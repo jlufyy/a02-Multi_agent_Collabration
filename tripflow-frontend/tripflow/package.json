@@ -1,0 +1,10 @@
+{
+  "name": "tripflow",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm -w @tripflow/web run dev",
+    "build": "npm -w @tripflow/web run build",
+    "test": "npm -w @tripflow/web run test"
+  }
+}

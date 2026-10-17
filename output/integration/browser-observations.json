@@ -1,0 +1,47 @@
+{
+  "evidenceType": "BROWSER_UI_OBSERVATIONS",
+  "date": "2026-10-17",
+  "browser": "Codex in-app browser",
+  "origin": "http://127.0.0.1:8010",
+  "applicationMocked": false,
+  "observations": [
+    {
+      "case": "real-natural-language-parse-and-plan",
+      "status": "OBSERVED_SUCCESS",
+      "tripId": "trip_9c7c8a0643564fe9",
+      "input": "2026年10月20日1人北京一日游、天坛公园、历史文化、步行、人均300元软预算、9点到18点",
+      "planPlaces": [
+        "天坛公园",
+        "故宫博物院",
+        "故宫博物院-养心殿"
+      ],
+      "validation": "PARTIALLY_VERIFIED"
+    },
+    {
+      "case": "save-and-reload",
+      "status": "PASS",
+      "detail": "点击保存行程后，重新加载页面，仍显示同一tripId和三站日程。"
+    },
+    {
+      "case": "map",
+      "status": "BLOCKED_CONFIGURATION",
+      "visibleText": "地图未配置 · 行程仍可编辑"
+    },
+    {
+      "case": "duration-format",
+      "status": "DEFECT_REPRODUCED",
+      "visibleExamples": [
+        "1小时25.766666666666666分",
+        "4.766666666666667分钟"
+      ]
+    },
+    {
+      "case": "natural-language-edit",
+      "status": "DEFECT_REPRODUCED",
+      "request": "将天坛公园游览时长从90分钟改为100分钟，其余条件不变。",
+      "visibleText": "MUST_VISIT_UNRESOLVED:天坛公园:必去地点尚未明确匹配。",
+      "confirmButton": "无法应用（存在冲突）",
+      "confirmEnabled": false
+    }
+  ]
+}

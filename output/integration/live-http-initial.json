@@ -1,0 +1,103 @@
+{
+  "timestamp": "2026-10-17T08:11:34.587717+08:00",
+  "baseUrl": "http://127.0.0.1:8010",
+  "evidenceType": "LIVE_HTTP_SYNTHETIC_TRAVEL_INPUT",
+  "cases": [
+    {
+      "case": "health",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "capabilities",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/favicon.svg",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/docs",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "serve-/openapi.json",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "case": "reject-/.env",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "reject-/apps/api/app/config.py",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "reject-/api/v1/missing",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "reject-/assets/missing.js",
+      "status": "PASS",
+      "http": 404
+    },
+    {
+      "case": "live-poi-search",
+      "status": "PASS"
+    },
+    {
+      "case": "deepseek-parse",
+      "status": "PASS",
+      "jobStatus": "SUCCEEDED",
+      "seconds": 10.01,
+      "traceId": "5b09d64b8725455484486fb73d74688b",
+      "progressSequenceMonotonic": true,
+      "errors": []
+    },
+    {
+      "case": "parse-factual-fields",
+      "status": "PASS"
+    },
+    {
+      "case": "live-plan",
+      "status": "FAIL",
+      "jobStatus": "FAILED",
+      "seconds": 2.02,
+      "traceId": "cb11c19c47e14d31a0ad1c8f4fc19a97",
+      "progressSequenceMonotonic": true,
+      "errors": [
+        {
+          "code": "INTERNAL_ERROR",
+          "message": "服务执行失败，请使用 trace_id 排查。",
+          "retryable": false
+        }
+      ]
+    }
+  ],
+  "modelRoutes": [
+    {
+      "agentId": "A1",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "available": true
+    },
+    {
+      "agentId": "A7",
+      "provider": "aiping",
+      "model": "Qwen3.8-27B",
+      "available": true
+    }
+  ]
+}

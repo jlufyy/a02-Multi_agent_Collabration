@@ -1,0 +1,65 @@
+import { z } from 'zod';
+import * as S from './schema';
+
+export * as schemas from './schema';
+export { CONTRACT_VERSION } from './schema';
+
+export type JobStatus = z.infer<typeof S.JobStatus>;
+export type DataStatus = z.infer<typeof S.DataStatus>;
+export type ValidationStatus = z.infer<typeof S.ValidationStatus>;
+export type EventSource = z.infer<typeof S.EventSource>;
+export type TripMode = z.infer<typeof S.TripMode>;
+export type ExecutionMode = z.infer<typeof S.ExecutionMode>;
+export type Lifecycle = z.infer<typeof S.Lifecycle>;
+export type TravelMode = z.infer<typeof S.TravelMode>;
+export type ActivityProgress = z.infer<typeof S.ActivityProgress>;
+export type IntentType = z.infer<typeof S.IntentType>;
+export type ServiceModule = z.infer<typeof S.ServiceModule>;
+export type AgentId = z.infer<typeof S.AgentId>;
+export type NotificationLevel = z.infer<typeof S.NotificationLevel>;
+export type ApiError = z.infer<typeof S.ApiError>;
+export type GeoPoint = z.infer<typeof S.GeoPoint>;
+export type Evidence = z.infer<typeof S.Evidence>;
+export type Place = z.infer<typeof S.Place>;
+export type CompanionPreference = z.infer<typeof S.CompanionPreference>;
+export type TravelIntent = z.infer<typeof S.TravelIntent>;
+export type PlaceReference = z.infer<typeof S.PlaceReference>;
+export type FixedConstraint = z.infer<typeof S.FixedConstraint>;
+export type TripRequirements = z.infer<typeof S.TripRequirements>;
+export type NotificationPolicy = z.infer<typeof S.NotificationPolicy>;
+export type TravelSegment = z.infer<typeof S.TravelSegment>;
+export type BoundarySegment = z.infer<typeof S.BoundarySegment>;
+export type ItineraryActivity = z.infer<typeof S.ItineraryActivity>;
+export type TripState = z.infer<typeof S.TripState>;
+export type ConstraintChange = z.infer<typeof S.ConstraintChange>;
+export type EditOperation = z.infer<typeof S.EditOperation>;
+export type Violation = z.infer<typeof S.Violation>;
+export type ValidationReport = z.infer<typeof S.ValidationReport>;
+export type RevisionProposal = z.infer<typeof S.RevisionProposal>;
+export type PreparedContent = z.infer<typeof S.PreparedContent>;
+export type SelectedContext = z.infer<typeof S.SelectedContext>;
+export type ConversationMessage = z.infer<typeof S.ConversationMessage>;
+export type RevisionResult = z.infer<typeof S.RevisionResult>;
+export type PlanResult = z.infer<typeof S.PlanResult>;
+export type NormalizedLocationEvent = z.infer<typeof S.NormalizedLocationEvent>;
+export type ProactiveEvent = z.infer<typeof S.ProactiveEvent>;
+export type NotificationAction = z.infer<typeof S.NotificationAction>;
+export type ProactiveDecision = z.infer<typeof S.ProactiveDecision>;
+export type NotificationRecord = z.infer<typeof S.NotificationRecord>;
+export type GeoRuntimeState = z.infer<typeof S.GeoRuntimeState>;
+export type GeoPolicy = z.infer<typeof S.GeoPolicy>;
+export type ProgressEvent = z.infer<typeof S.ProgressEvent>;
+export type CapabilitySet = z.infer<typeof S.CapabilitySet>;
+export type NearbyCandidate = z.infer<typeof S.NearbyCandidate>;
+export type ParseResult = z.infer<typeof S.ParseResult>;
+export type ValidateResult = z.infer<typeof S.ValidateResult>;
+export type EvaluateResult = z.infer<typeof S.EvaluateResult>;
+
+export type ExecutionContext = { executionMode: ExecutionMode; demoRunId?: string };
+export type RequestContext = ExecutionContext & { tripId: string; baseRevision: number };
+
+export type EventLogEntry = {
+  logId: string; tripId: string; tripRevision: number; source: EventSource; demoRunId?: string;
+  occurredAt: string; event?: ProactiveEvent; notification?: NotificationRecord;
+  correction?: { activityId: string; previous: ActivityProgress; next: ActivityProgress; reason: string };
+};

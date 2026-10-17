@@ -1,0 +1,31 @@
+{
+  "privateCredentialScan": {
+    "status": "PASS",
+    "fileCount": 18,
+    "matchingFiles": []
+  },
+  "documentation": {
+    "README.md": {
+      "exists": true,
+      "localBrokenLinks": []
+    },
+    "docs/TripFlow_整合测试与问题建议_2026-10-17.md": {
+      "exists": true,
+      "localBrokenLinks": []
+    }
+  },
+  "instances": {
+    "8010": {
+      "http": 200
+    },
+    "8011": {
+      "state": "stopped",
+      "errorType": "ConnectTimeout"
+    },
+    "5173": {
+      "state": "stopped",
+      "errorType": "ConnectTimeout"
+    }
+  },
+  "frontendBuildExists": true
+}

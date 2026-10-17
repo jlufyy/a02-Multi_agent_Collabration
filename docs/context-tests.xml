@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="SYNTHETIC WGS84/GCJ02 conversion and tagged-distance guard" time="0.001947" classname="test"/>
+	<testcase name="arrival requires dwell and sample count; duplicate does not add count" time="0.001710" classname="test"/>
+	<testcase name="departure requires separate dwell and hysteresis" time="0.000611" classname="test"/>
+	<testcase name="600m accuracy is unknown and cannot accrue dwell" time="0.001160" classname="test"/>
+	<testcase name="speed jump resets and cannot create ARRIVE/LEAVE" time="0.000369" classname="test"/>
+	<testcase name="hidden/resume samples cannot bridge missing dwell" time="0.000249" classname="test"/>
+	<testcase name="explicit suspend is pure and resets the next fresh interval" time="0.000319" classname="test"/>
+	<testcase name="long gap starts new interval; out-of-order is ignored" time="0.000265" classname="test"/>
+	<testcase name="overlapping fences choose exactly one nearest activity" time="0.000441" classname="test"/>
+	<testcase name="same-day re-entry produces independent arrivalId" time="0.000703" classname="test"/>
+	<testcase name="cross-day same POI triggers distinct activity and arrival" time="0.000342" classname="test"/>
+	<testcase name="real and simulation isolation enforced" time="0.000594" classname="test"/>
+	<testcase name="L3>L2>L1 priority emits at most one without writing shownAt" time="0.000537" classname="test"/>
+	<testcase name="pause/busy suppress ordinary cards while enabled credible L3 passes" time="0.000207" classname="test"/>
+	<testcase name="dedup ignores revision, actual shown/ignore facts matter" time="0.000264" classname="test"/>
+	<testcase name="L2 once per intent per arrival; cooldown applies across activities" time="0.000200" classname="test"/>
+	<testcase name="snooze and expiry rechecked, stale context rejected" time="0.000109" classname="test"/>
+	<testcase name="real risks need verified evidence and risk dedup breaks ordinary cooldown" time="0.000168" classname="test"/>
+	<testcase name="fact projection survives undo, correction latest wins and demo never pollutes" time="0.000374" classname="test"/>
+	<testcase name="content applicability checks revision, POI and cancellation" time="0.000174" classname="test"/>
+	<testcase name="queued arrival notification is filtered after leaving or losing position" time="0.000111" classname="test"/>
+	<testcase name="DEMO corrections are replayed only in their own run" time="0.000166" classname="test"/>
+	<testcase name="changing trip dates does not replay an arrival from the old day" time="0.000143" classname="test"/>
+	<!-- tests 23 -->
+	<!-- suites 0 -->
+	<!-- pass 23 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 102.0953 -->
+</testsuites>

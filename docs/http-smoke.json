@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-10-16T23:21:11.790475+00:00",
+  "evidenceType": "LIVE_LOCAL_HTTP",
+  "healthHTTP": 200,
+  "serviceStatus": "OK",
+  "modelRoutes": [
+    {
+      "agentId": "A1",
+      "provider": "aiping",
+      "model": "DeepSeek-V3.2",
+      "available": true
+    },
+    {
+      "agentId": "A7",
+      "provider": "aiping",
+      "model": "Qwen3.8-27B",
+      "available": true
+    }
+  ],
+  "openapiHTTP": 200,
+  "docsHTTP": 200,
+  "searchHTTP": 200,
+  "searchCount": 20,
+  "parseAcceptedHTTP": 202,
+  "parseJobStatus": "SUCCEEDED",
+  "parseElapsedSeconds": 13.09,
+  "progressEventCount": 4,
+  "parseMatchesRequest": true
+}

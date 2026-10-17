@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: tripflow
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGINS
+        sync: false
+      - key: AMAP_API_KEY
+        sync: false
+      - key: AIPING_API_KEY
+        sync: false
+      - key: AIPING_BASE_URL
+        value: https://aiping.cn/api/v1
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-flash
