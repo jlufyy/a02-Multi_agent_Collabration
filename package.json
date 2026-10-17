@@ -1,0 +1,21 @@
+{
+  "name": "tripflow",
+  "private": true,
+  "scripts": {
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-tripflow.ps1",
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-tripflow.ps1 -Dev",
+    "dev:api": "python apps/api/serve.py",
+    "dev:web": "npm --prefix tripflow-frontend/tripflow run dev",
+    "setup:web": "npm --prefix tripflow-frontend/tripflow ci --no-audit --no-fund",
+    "build": "npm --prefix tripflow-frontend/tripflow run build",
+    "test:web": "npm --prefix tripflow-frontend/tripflow test",
+    "contracts": "python packages/contracts/generate.py --app-openapi",
+    "contracts:check": "python packages/contracts/generate.py --app-openapi --check",
+    "test:context": "node --test packages/context-engine/test.mjs",
+    "test:api": "python -m pytest apps/api/tests -c apps/api/pyproject.toml",
+    "typecheck": "tsc --noEmit --strict --lib ES2022,DOM --moduleResolution bundler --module esnext packages/contracts/generated/index.d.ts packages/context-engine/index.d.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

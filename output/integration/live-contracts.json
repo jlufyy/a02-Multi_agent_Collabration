@@ -1,0 +1,82 @@
+[
+  {
+    "case": "health",
+    "status": "PASS"
+  },
+  {
+    "case": "capabilities",
+    "status": "PASS"
+  },
+  {
+    "case": "places",
+    "status": "PASS"
+  },
+  {
+    "case": "deepseek-parse-reused-live-job",
+    "status": "PASS"
+  },
+  {
+    "case": "live-plan-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "live-plan",
+    "status": "PASS"
+  },
+  {
+    "case": "routes",
+    "status": "PASS"
+  },
+  {
+    "case": "live-propose-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "live-propose",
+    "status": "PASS"
+  },
+  {
+    "case": "live-final-validate-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "live-final-validate",
+    "status": "PASS"
+  },
+  {
+    "case": "live-nearby-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "live-nearby",
+    "status": "PASS"
+  },
+  {
+    "case": "aiping-content-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "aiping-content",
+    "status": "PASS"
+  },
+  {
+    "case": "empty-content-prepare-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "empty-content-prepare",
+    "status": "PASS"
+  },
+  {
+    "case": "demo-proactive-not-real-gps-accepted",
+    "status": "PASS"
+  },
+  {
+    "case": "demo-proactive-not-real-gps",
+    "status": "PASS"
+  },
+  {
+    "case": "cancel",
+    "status": "PASS"
+  }
+]

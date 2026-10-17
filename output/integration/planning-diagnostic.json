@@ -1,0 +1,36 @@
+{
+  "type": "LIVE_MAP_DIAGNOSIS",
+  "applicationModified": false,
+  "places": [
+    {
+      "id": "activity-845a6c959f405aaab1b5",
+      "name": "八达岭长城"
+    },
+    {
+      "id": "activity-9cc3a07ab3185efd875d",
+      "name": "故宫博物院-交泰殿"
+    },
+    {
+      "id": "activity-6e9084d6d58e5ce09a34",
+      "name": "故宫博物院-养心殿"
+    }
+  ],
+  "routes": [
+    {
+      "durationMin": 893.35,
+      "distanceMeters": 67001.0
+    },
+    {
+      "durationMin": 1.9833333333333334,
+      "distanceMeters": 149.0
+    }
+  ],
+  "status": "REPRODUCED",
+  "errors": [
+    {
+      "loc": [],
+      "msg": "Value error, activity dayIndex/date mismatch",
+      "type": "value_error"
+    }
+  ]
+}

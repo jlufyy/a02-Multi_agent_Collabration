@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "sourceKind": "SYNTHETIC",
+    "generatedAt": "2026-10-16T12:00:00+08:00",
+    "verifiedAt": null,
+    "note": "人工构造契约及规则测试输入。地点和轨迹不证明真实 API、POI 或设备验证成功。"
+  },
+  "cases": [
+    {
+      "name": "REAL rejects demoRunId",
+      "schema": "ExecutionContext",
+      "input": {
+        "executionMode": "REAL",
+        "demoRunId": "syn-demo"
+      },
+      "expectedError": "demoRunId"
+    },
+    {
+      "name": "DEMO requires run",
+      "schema": "ExecutionContext",
+      "input": {
+        "executionMode": "DEMO"
+      },
+      "expectedError": "demoRunId"
+    },
+    {
+      "name": "Bad replacement id",
+      "schema": "EditOperation",
+      "input": {
+        "type": "REPLACE",
+        "activityId": "a",
+        "candidatePlaceId": "other",
+        "candidatePlace": {
+          "poiId": "syn-poi-北京-0",
+          "name": "SYNTHETIC 北京测试地点1",
+          "location": {
+            "lat": 39.9,
+            "lng": 116.4,
+            "coordinateSystem": "WGS84"
+          },
+          "evidence": [
+            {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          ],
+          "openingHours": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          },
+          "ticketPriceCny": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          }
+        }
+      },
+      "expectedError": "candidatePlaceId"
+    },
+    {
+      "name": "Unsafe commit",
+      "schema": "ValidationReport",
+      "input": {
+        "status": "INFEASIBLE",
+        "hardViolations": [],
+        "unknownChecks": [],
+        "warnings": [],
+        "committable": true
+      },
+      "expectedError": "committed"
+    },
+    {
+      "name": "Unaware timestamp",
+      "schema": "Evidence",
+      "input": {
+        "provider": "SYNTHETIC",
+        "status": "UNKNOWN",
+        "fetchedAt": "2026-10-16T12:00:00"
+      },
+      "expectedError": "timezone"
+    }
+  ]
+}

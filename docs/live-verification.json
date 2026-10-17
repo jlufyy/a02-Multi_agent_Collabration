@@ -1,0 +1,292 @@
+{
+  "timestamp": "2026-10-16T15:55:11.835353+00:00",
+  "evidenceType": "LIVE_API_WITH_EXPLICIT_SIMULATED_LOCATION_CASE",
+  "records": [
+    {
+      "case": "poi-天坛公园",
+      "status": "PASS",
+      "count": 20,
+      "exactNames": [
+        "天坛公园",
+        "天坛公园售票处",
+        "天坛公园-月季园",
+        "天坛公园-圜丘",
+        "天坛公园东门售票处"
+      ]
+    },
+    {
+      "case": "poi-天安门",
+      "status": "PASS",
+      "count": 20,
+      "exactNames": [
+        "天安门",
+        "天安门广场",
+        "天安门东(地铁站)",
+        "天安门广场-国旗",
+        "天安门-城楼"
+      ]
+    },
+    {
+      "case": "poi-豫园",
+      "status": "PASS",
+      "count": 20,
+      "exactNames": [
+        "上海豫园",
+        "豫园(地铁站)",
+        "豫园-内园",
+        "豫园老街",
+        "豫园老街"
+      ]
+    },
+    {
+      "case": "route-WALK",
+      "status": "PASS",
+      "durationMin": 59.36666666666667,
+      "geometryPoints": 110
+    },
+    {
+      "case": "route-TRANSIT",
+      "status": "PASS",
+      "durationMin": 49.21666666666667,
+      "geometryPoints": 0
+    },
+    {
+      "case": "route-DRIVE",
+      "status": "PASS",
+      "durationMin": 22.25,
+      "geometryPoints": 96
+    },
+    {
+      "case": "A1-parse",
+      "status": "PASS",
+      "intentCount": 1,
+      "missingFields": []
+    },
+    {
+      "case": "P1-real-plan",
+      "status": "PASS",
+      "validation": {
+        "status": "PARTIALLY_VERIFIED",
+        "hardViolations": [],
+        "unknownChecks": [
+          "OPENING_HOURS_UNKNOWN:activity-d8426b23da86551c8f29:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-d8426b23da86551c8f29:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-b13b3bdc2e8759b7843d:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-b13b3bdc2e8759b7843d:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-118c3254654e50fcb692:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-118c3254654e50fcb692:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-aa9917aa64585493a405:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-aa9917aa64585493a405:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-b19285ae13e55774b510:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-b19285ae13e55774b510:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-2fb6a7d4fb2c574fb888:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-2fb6a7d4fb2c574fb888:整团活动费用未完全核实。",
+          "ROUTE_GEOMETRY_UNKNOWN:activity-d8426b23da86551c8f29->activity-b13b3bdc2e8759b7843d:缺少真实路段几何。",
+          "ROUTE_GEOMETRY_UNKNOWN:activity-b13b3bdc2e8759b7843d->activity-118c3254654e50fcb692:缺少真实路段几何。",
+          "ROUTE_GEOMETRY_UNKNOWN:activity-aa9917aa64585493a405->activity-b19285ae13e55774b510:缺少真实路段几何。",
+          "TRANSIT_COST_UNKNOWN:路线契约未提供票价，不能将交通费用记为0。"
+        ],
+        "warnings": [],
+        "committable": true
+      },
+      "activityCount": 6,
+      "contentCount": 1,
+      "agents": [
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A7"
+      ]
+    },
+    {
+      "case": "A7-second-model",
+      "status": "PASS",
+      "contentChars": 516
+    },
+    {
+      "case": "P2-real-proposal",
+      "status": "PASS",
+      "committable": true
+    },
+    {
+      "case": "P2-final-recheck",
+      "status": "PASS",
+      "committable": true,
+      "safelyRequiresReproposal": false,
+      "validation": {
+        "status": "PARTIALLY_VERIFIED",
+        "hardViolations": [],
+        "unknownChecks": [
+          "OPENING_HOURS_UNKNOWN:activity-d8426b23da86551c8f29:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-d8426b23da86551c8f29:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-b13b3bdc2e8759b7843d:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-b13b3bdc2e8759b7843d:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-118c3254654e50fcb692:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-118c3254654e50fcb692:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-aa9917aa64585493a405:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-aa9917aa64585493a405:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-b19285ae13e55774b510:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-b19285ae13e55774b510:整团活动费用未完全核实。",
+          "OPENING_HOURS_UNKNOWN:activity-2fb6a7d4fb2c574fb888:开放时段未核实或尚不能可靠解析。",
+          "COST_UNKNOWN:activity-2fb6a7d4fb2c574fb888:整团活动费用未完全核实。",
+          "ROUTE_GEOMETRY_UNKNOWN:activity-d8426b23da86551c8f29->activity-b13b3bdc2e8759b7843d:缺少真实路段几何。",
+          "ROUTE_GEOMETRY_UNKNOWN:activity-b13b3bdc2e8759b7843d->activity-118c3254654e50fcb692:缺少真实路段几何。",
+          "ROUTE_GEOMETRY_UNKNOWN:activity-aa9917aa64585493a405->activity-b19285ae13e55774b510:缺少真实路段几何。",
+          "TRANSIT_COST_UNKNOWN:路线契约未提供票价，不能将交通费用记为0。"
+        ],
+        "warnings": [],
+        "committable": true
+      }
+    },
+    {
+      "case": "P3-simulated-arrival-real-model",
+      "status": "PASS",
+      "eventSource": "SIMULATED",
+      "usedBrowserStateMachine": true,
+      "cardLevel": "L2"
+    },
+    {
+      "case": "city-days-北京-1",
+      "status": "PASS",
+      "daysCovered": 1,
+      "validationStatus": "PARTIALLY_VERIFIED",
+      "hardCodes": [],
+      "unknownCount": 8
+    },
+    {
+      "case": "city-days-上海-3",
+      "status": "PASS",
+      "daysCovered": 3,
+      "validationStatus": "PARTIALLY_VERIFIED",
+      "hardCodes": [],
+      "unknownCount": 23
+    }
+  ],
+  "modelCalls": [
+    {
+      "agentId": "A1",
+      "provider": "aiping",
+      "model": "DeepSeek-V3.2",
+      "requestedModel": "DeepSeek-V3.2",
+      "latencyMs": 21890,
+      "attempts": 1,
+      "inputTokens": 3608,
+      "outputTokens": 358,
+      "estimatedCostCny": null,
+      "reservedCostCny": 1,
+      "costStatus": "UNKNOWN",
+      "upstreamProvider": "-",
+      "repairAttempts": 0,
+      "calls": [
+        {
+          "provider": "aiping",
+          "model": "DeepSeek-V3.2",
+          "requestedModel": "DeepSeek-V3.2",
+          "latencyMs": 21890,
+          "attempts": 1,
+          "inputTokens": 3608,
+          "outputTokens": 358,
+          "estimatedCostCny": null,
+          "reservedCostCny": 1,
+          "costStatus": "UNKNOWN",
+          "upstreamProvider": "-"
+        }
+      ]
+    },
+    {
+      "agentId": "A7",
+      "provider": "aiping",
+      "model": "Qwen3.8-27B",
+      "requestedModel": "Qwen3.8-27B",
+      "latencyMs": 53172,
+      "attempts": 1,
+      "inputTokens": 1517,
+      "outputTokens": 1872,
+      "estimatedCostCny": null,
+      "reservedCostCny": 1,
+      "costStatus": "UNKNOWN",
+      "upstreamProvider": "-",
+      "repairAttempts": 0,
+      "calls": [
+        {
+          "provider": "aiping",
+          "model": "Qwen3.8-27B",
+          "requestedModel": "Qwen3.8-27B",
+          "latencyMs": 53172,
+          "attempts": 1,
+          "inputTokens": 1517,
+          "outputTokens": 1872,
+          "estimatedCostCny": null,
+          "reservedCostCny": 1,
+          "costStatus": "UNKNOWN",
+          "upstreamProvider": "-"
+        }
+      ]
+    },
+    {
+      "agentId": "A7",
+      "provider": "aiping",
+      "model": "Qwen3.8-27B",
+      "requestedModel": "Qwen3.8-27B",
+      "latencyMs": 38657,
+      "attempts": 1,
+      "inputTokens": 1432,
+      "outputTokens": 1239,
+      "estimatedCostCny": null,
+      "reservedCostCny": 1,
+      "costStatus": "UNKNOWN",
+      "upstreamProvider": "-",
+      "repairAttempts": 0,
+      "calls": [
+        {
+          "provider": "aiping",
+          "model": "Qwen3.8-27B",
+          "requestedModel": "Qwen3.8-27B",
+          "latencyMs": 38657,
+          "attempts": 1,
+          "inputTokens": 1432,
+          "outputTokens": 1239,
+          "estimatedCostCny": null,
+          "reservedCostCny": 1,
+          "costStatus": "UNKNOWN",
+          "upstreamProvider": "-"
+        }
+      ]
+    },
+    {
+      "agentId": "A7",
+      "provider": "aiping",
+      "model": "Qwen3.8-27B",
+      "requestedModel": "Qwen3.8-27B",
+      "latencyMs": 112703,
+      "attempts": 2,
+      "inputTokens": 1552,
+      "outputTokens": 1753,
+      "estimatedCostCny": null,
+      "reservedCostCny": 1,
+      "costStatus": "UNKNOWN",
+      "upstreamProvider": "-",
+      "repairAttempts": 0,
+      "calls": [
+        {
+          "provider": "aiping",
+          "model": "Qwen3.8-27B",
+          "requestedModel": "Qwen3.8-27B",
+          "latencyMs": 112703,
+          "attempts": 2,
+          "inputTokens": 1552,
+          "outputTokens": 1753,
+          "estimatedCostCny": null,
+          "reservedCostCny": 1,
+          "costStatus": "UNKNOWN",
+          "upstreamProvider": "-"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "AIPing is one aggregator; two model families are not proof of two independent contracted API suppliers.",
+    "No secret, full provider response, raw location track, or full POI database is stored in this report."
+  ]
+}

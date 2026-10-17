@@ -1,0 +1,223 @@
+{
+  "metadata": {
+    "sourceKind": "SYNTHETIC",
+    "generatedAt": "2026-10-16T12:00:00+08:00",
+    "verifiedAt": null,
+    "note": "人工构造契约及规则测试输入。地点和轨迹不证明真实 API、POI 或设备验证成功。"
+  },
+  "tripState": {
+    "schemaVersion": 1,
+    "tripId": "syn-trip-北京-3",
+    "revision": 0,
+    "title": "SYNTHETIC 北京3日",
+    "destinationCity": "北京",
+    "startDate": "2026-10-20",
+    "endDate": "2026-10-22",
+    "travelerCount": 2,
+    "budgetCny": 1000,
+    "budgetScope": "TOTAL",
+    "companions": [
+      {
+        "id": "syn-traveler-1",
+        "label": "同行者",
+        "interests": [
+          "摄影"
+        ],
+        "walkingTolerance": "LOW",
+        "specialNeeds": []
+      }
+    ],
+    "preferences": [
+      "SYNTHETIC:公园"
+    ],
+    "mode": "PLANNING",
+    "lifecycle": "PLAN_READY",
+    "requirements": {
+      "requirementsId": "syn-req-北京-3",
+      "version": 1,
+      "confirmed": true,
+      "destinationCity": "北京",
+      "startDate": "2026-10-20",
+      "endDate": "2026-10-22",
+      "timezone": "Asia/Shanghai",
+      "travelerCount": 2,
+      "budgetCny": 1000,
+      "budgetScope": "TOTAL",
+      "budgetIsHardLimit": true,
+      "includesAccommodation": false,
+      "includesIntercityTransport": false,
+      "transportModes": [
+        "WALK"
+      ],
+      "mustVisit": [],
+      "avoidPlaces": [],
+      "preferences": [
+        "SYNTHETIC:公园"
+      ],
+      "companions": [
+        {
+          "id": "syn-traveler-1",
+          "label": "同行者",
+          "interests": [
+            "摄影"
+          ],
+          "walkingTolerance": "LOW",
+          "specialNeeds": []
+        }
+      ],
+      "specialNeeds": [],
+      "dailyStartTime": "09:00",
+      "dailyEndTime": "18:00",
+      "fixedConstraints": [],
+      "intents": []
+    },
+    "activities": [
+      {
+        "id": "syn-activity-0",
+        "place": {
+          "poiId": "syn-poi-北京-0",
+          "name": "SYNTHETIC 北京测试地点1",
+          "location": {
+            "lat": 39.9,
+            "lng": 116.4,
+            "coordinateSystem": "WGS84"
+          },
+          "evidence": [
+            {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          ],
+          "openingHours": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          },
+          "ticketPriceCny": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          }
+        },
+        "dayIndex": 0,
+        "orderIndex": 0,
+        "startAt": "2026-10-20T10:00:00+08:00",
+        "endAt": "2026-10-20T11:00:00+08:00",
+        "costStatus": "UNKNOWN",
+        "locked": false,
+        "mandatory": false,
+        "progress": "NOT_STARTED",
+        "intentIds": []
+      },
+      {
+        "id": "syn-activity-1",
+        "place": {
+          "poiId": "syn-poi-北京-1",
+          "name": "SYNTHETIC 北京测试地点2",
+          "location": {
+            "lat": 39.9,
+            "lng": 116.4,
+            "coordinateSystem": "WGS84"
+          },
+          "evidence": [
+            {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          ],
+          "openingHours": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          },
+          "ticketPriceCny": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          }
+        },
+        "dayIndex": 1,
+        "orderIndex": 0,
+        "startAt": "2026-10-21T10:00:00+08:00",
+        "endAt": "2026-10-21T11:00:00+08:00",
+        "costStatus": "UNKNOWN",
+        "locked": false,
+        "mandatory": false,
+        "progress": "NOT_STARTED",
+        "intentIds": []
+      },
+      {
+        "id": "syn-activity-2",
+        "place": {
+          "poiId": "syn-poi-北京-2",
+          "name": "SYNTHETIC 北京测试地点3",
+          "location": {
+            "lat": 39.9,
+            "lng": 116.4,
+            "coordinateSystem": "WGS84"
+          },
+          "evidence": [
+            {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          ],
+          "openingHours": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          },
+          "ticketPriceCny": {
+            "evidence": {
+              "provider": "SYNTHETIC",
+              "status": "UNKNOWN",
+              "fetchedAt": "2026-10-16T12:00:00+08:00",
+              "note": "Synthetic fixture; not verified"
+            }
+          }
+        },
+        "dayIndex": 2,
+        "orderIndex": 0,
+        "startAt": "2026-10-22T10:00:00+08:00",
+        "endAt": "2026-10-22T11:00:00+08:00",
+        "costStatus": "UNKNOWN",
+        "locked": false,
+        "mandatory": false,
+        "progress": "NOT_STARTED",
+        "intentIds": []
+      }
+    ],
+    "segments": [],
+    "boundarySegments": [],
+    "intents": [],
+    "notificationPolicy": {
+      "enableL1": true,
+      "enableL2": true,
+      "enableL3": true,
+      "paused": false,
+      "cooldownMinutes": 15
+    },
+    "updatedAt": "2026-10-16T12:00:00+08:00"
+  }
+}

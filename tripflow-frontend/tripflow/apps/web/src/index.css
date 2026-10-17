@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+html, body, #root { height: 100%; }
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+/* 冷白底的淡蓝光晕 */
+.sky-bg {
+  background-color: #F4F7FB;
+  background-image: radial-gradient(900px 420px at 50% -10%, rgba(47,124,246,.12), transparent 60%);
+}
+.font-display { font-weight: 700; letter-spacing: .01em; }
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-1.5 rounded-btn px-4 min-h-[44px] text-[15px] font-medium transition active:scale-[.97] disabled:opacity-45 disabled:active:scale-100 select-none; }
+  .btn-primary { @apply btn rounded-full bg-brand text-white shadow-float hover:bg-brand-deep; }
+  .btn-accent { @apply btn rounded-full bg-brand text-white hover:bg-brand-deep; }
+  .btn-ghost { @apply btn rounded-full bg-transparent text-ink hover:bg-sand/70; }
+  .btn-soft { @apply btn rounded-full bg-brand-mist text-brand-deep hover:bg-brand-soft; }
+  .btn-danger { @apply btn rounded-full bg-danger text-white; }
+  .icon-btn { @apply inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/95 text-ink shadow-card backdrop-blur transition active:scale-95 disabled:opacity-40; }
+  .card { @apply rounded-card bg-card shadow-card; }
+  .field { @apply w-full rounded-[12px] border border-sand bg-white px-3 py-2.5 text-[15px] outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15; }
+  .label { @apply mb-1 block text-[13px] font-medium text-ink-soft; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-medium; }
+  /* Apple 地图式材质：半透明 + 背景模糊 + 发丝边 */
+  .glass { @apply border border-white bg-white/90 shadow-[0_4px_18px_-6px_rgba(24,33,47,.18)] backdrop-blur-xl; }
+  .glass-btn { @apply glass inline-flex h-11 w-11 items-center justify-center rounded-full text-ink transition active:scale-95; }
+  .glass-stack-btn { @apply flex h-11 w-11 items-center justify-center text-ink transition active:bg-ink/10 disabled:opacity-40; }
+  .glass-stack-btn + .glass-stack-btn { @apply border-t border-ink/10; }
+  .round-btn { @apply inline-flex h-9 w-9 items-center justify-center rounded-full bg-ink/[.06] text-ink-soft transition active:scale-95 disabled:opacity-35; }
+  .section-title { @apply text-[13px] font-semibold text-ink-soft; }
+  .row-card { @apply flex items-center gap-3 rounded-[14px] bg-[#F7F9FC] px-3.5 py-3; }
+  .row-icon { @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-mist text-brand; }
+}
+
+.animate-rise { animation: rise .26s cubic-bezier(.22,1.2,.36,1) both; }
+.animate-fade { animation: fade .2s ease-out both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.pulse-dot::after {
+  content: ""; position: absolute; inset: -6px; border-radius: 9999px; border: 2px solid currentColor; opacity: .5;
+  animation: ping 1.6s cubic-bezier(0,0,.2,1) infinite;
+}
+@keyframes ping { 75%, 100% { transform: scale(1.8); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }

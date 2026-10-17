@@ -1,0 +1,6773 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tripflow.local/contracts/TripFlow-Split-v1",
+  "title": "TripFlow-Split-v1",
+  "$defs": {
+    "ApiError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "retryable": {
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "fieldPath": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fieldpath"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "title": "ApiError",
+      "type": "object"
+    },
+    "ApiResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "minLength": 1,
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "data": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data"
+        },
+        "errors": {
+          "items": {
+            "$ref": "#/$defs/ApiError"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "trace_id": {
+          "minLength": 1,
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "status",
+        "data",
+        "errors",
+        "trace_id"
+      ],
+      "title": "ApiResponse",
+      "type": "object"
+    },
+    "GeoPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lng": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lng",
+          "type": "number"
+        },
+        "coordinateSystem": {
+          "enum": [
+            "GCJ02",
+            "WGS84"
+          ],
+          "title": "Coordinatesystem",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lat",
+        "lng",
+        "coordinateSystem"
+      ],
+      "title": "GeoPoint",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "externalId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Externalid"
+        },
+        "fetchedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fetchedat"
+        },
+        "status": {
+          "enum": [
+            "VERIFIED",
+            "ESTIMATED",
+            "UNKNOWN",
+            "FAILED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "sourceUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourceurl"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "provider",
+        "status"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "evidence"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "evidence"
+      ],
+      "title": "Fact[Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Ge(ge=0), AllowInfNan(allow_inf_nan=False)])]]",
+      "type": "object"
+    },
+    "Fact_str_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "evidence"
+      ],
+      "title": "Fact[str]",
+      "type": "object"
+    },
+    "Place": {
+      "additionalProperties": false,
+      "properties": {
+        "poiId": {
+          "minLength": 1,
+          "title": "Poiid",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "location": {
+          "$ref": "#/$defs/GeoPoint"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "openingHours": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Fact_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ticketPriceCny": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "queueMinutes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rating": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bookingNote": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Fact_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "poiId",
+        "name",
+        "location",
+        "evidence"
+      ],
+      "title": "Place",
+      "type": "object"
+    },
+    "CompanionPreference": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "interests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Interests",
+          "type": "array"
+        },
+        "walkingTolerance": {
+          "anyOf": [
+            {
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Walkingtolerance"
+        },
+        "personalBudgetCny": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Personalbudgetcny"
+        },
+        "specialNeeds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Specialneeds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "interests",
+        "specialNeeds"
+      ],
+      "title": "CompanionPreference",
+      "type": "object"
+    },
+    "TravelIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "activityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activityid"
+        },
+        "placeId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placeid"
+        },
+        "placeQuery": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placequery"
+        },
+        "type": {
+          "enum": [
+            "KNOWLEDGE",
+            "PHOTO",
+            "VIDEO_SHOOT",
+            "SPEECH",
+            "CHECK_IN",
+            "FOOD",
+            "OTHER"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "userRequest": {
+          "minLength": 1,
+          "title": "Userrequest",
+          "type": "string"
+        },
+        "desiredOutputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Desiredoutputs",
+          "type": "array"
+        },
+        "confirmed": {
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "READY",
+            "TRIGGERED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "preparedContentIds": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Preparedcontentids",
+          "type": "array"
+        },
+        "locked": {
+          "title": "Locked",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "userRequest",
+        "desiredOutputs",
+        "confirmed",
+        "status",
+        "preparedContentIds",
+        "locked"
+      ],
+      "title": "TravelIntent",
+      "type": "object"
+    },
+    "PlaceReference": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "place": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Place"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "PlaceReference",
+      "type": "object"
+    },
+    "FixedConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "activityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activityid"
+        },
+        "place": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlaceReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "startAt": {
+          "title": "Startat",
+          "type": "string"
+        },
+        "endAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endat"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "locked": {
+          "title": "Locked",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "startAt",
+        "reason",
+        "locked"
+      ],
+      "title": "FixedConstraint",
+      "type": "object"
+    },
+    "TripRequirements": {
+      "additionalProperties": false,
+      "properties": {
+        "requirementsId": {
+          "minLength": 1,
+          "title": "Requirementsid",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 0,
+          "title": "Version",
+          "type": "integer"
+        },
+        "confirmed": {
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "destinationCity": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Destinationcity"
+        },
+        "startDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Startdate"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enddate"
+        },
+        "timezone": {
+          "const": "Asia/Shanghai",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "travelerCount": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Travelercount"
+        },
+        "budgetCny": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budgetcny"
+        },
+        "budgetScope": {
+          "anyOf": [
+            {
+              "enum": [
+                "PER_PERSON",
+                "TOTAL"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budgetscope"
+        },
+        "budgetIsHardLimit": {
+          "title": "Budgetishardlimit",
+          "type": "boolean"
+        },
+        "includesAccommodation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Includesaccommodation"
+        },
+        "includesIntercityTransport": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Includesintercitytransport"
+        },
+        "arrivalAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrivalat"
+        },
+        "departureAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Departureat"
+        },
+        "startPoint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlaceReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "endPoint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlaceReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "transportModes": {
+          "items": {
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "type": "string"
+          },
+          "title": "Transportmodes",
+          "type": "array"
+        },
+        "mustVisit": {
+          "items": {
+            "$ref": "#/$defs/PlaceReference"
+          },
+          "title": "Mustvisit",
+          "type": "array"
+        },
+        "avoidPlaces": {
+          "items": {
+            "$ref": "#/$defs/PlaceReference"
+          },
+          "title": "Avoidplaces",
+          "type": "array"
+        },
+        "preferences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preferences",
+          "type": "array"
+        },
+        "companions": {
+          "items": {
+            "$ref": "#/$defs/CompanionPreference"
+          },
+          "title": "Companions",
+          "type": "array"
+        },
+        "walkingTolerance": {
+          "anyOf": [
+            {
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Walkingtolerance"
+        },
+        "specialNeeds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Specialneeds",
+          "type": "array"
+        },
+        "dailyStartTime": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dailystarttime"
+        },
+        "dailyEndTime": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dailyendtime"
+        },
+        "fixedConstraints": {
+          "items": {
+            "$ref": "#/$defs/FixedConstraint"
+          },
+          "title": "Fixedconstraints",
+          "type": "array"
+        },
+        "intents": {
+          "items": {
+            "$ref": "#/$defs/TravelIntent"
+          },
+          "title": "Intents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirementsId",
+        "version",
+        "confirmed",
+        "timezone",
+        "budgetIsHardLimit",
+        "transportModes",
+        "mustVisit",
+        "avoidPlaces",
+        "preferences",
+        "companions",
+        "specialNeeds",
+        "fixedConstraints",
+        "intents"
+      ],
+      "title": "TripRequirements",
+      "type": "object"
+    },
+    "NotificationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "enableL1": {
+          "title": "Enablel1",
+          "type": "boolean"
+        },
+        "enableL2": {
+          "title": "Enablel2",
+          "type": "boolean"
+        },
+        "enableL3": {
+          "title": "Enablel3",
+          "type": "boolean"
+        },
+        "paused": {
+          "title": "Paused",
+          "type": "boolean"
+        },
+        "cooldownMinutes": {
+          "minimum": 0,
+          "title": "Cooldownminutes",
+          "type": "number"
+        }
+      },
+      "required": [
+        "enableL1",
+        "enableL2",
+        "enableL3",
+        "paused",
+        "cooldownMinutes"
+      ],
+      "title": "NotificationPolicy",
+      "type": "object"
+    },
+    "TravelSegment": {
+      "additionalProperties": false,
+      "properties": {
+        "fromActivityId": {
+          "minLength": 1,
+          "title": "Fromactivityid",
+          "type": "string"
+        },
+        "toActivityId": {
+          "minLength": 1,
+          "title": "Toactivityid",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "WALK",
+            "TRANSIT",
+            "DRIVE"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "durationMin": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Durationmin"
+        },
+        "distanceMeters": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distancemeters"
+        },
+        "routeGeometry": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/GeoPoint"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Routegeometry"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "fromActivityId",
+        "toActivityId",
+        "mode",
+        "evidence"
+      ],
+      "title": "TravelSegment",
+      "type": "object"
+    },
+    "ActivityEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "ACTIVITY",
+          "title": "Kind",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "place": {
+          "$ref": "#/$defs/Place"
+        }
+      },
+      "required": [
+        "kind",
+        "activityId",
+        "place"
+      ],
+      "title": "ActivityEndpoint",
+      "type": "object"
+    },
+    "BoundaryEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "START_POINT",
+            "END_POINT"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "place": {
+          "$ref": "#/$defs/Place"
+        }
+      },
+      "required": [
+        "kind",
+        "place"
+      ],
+      "title": "BoundaryEndpoint",
+      "type": "object"
+    },
+    "BoundarySegment": {
+      "additionalProperties": false,
+      "properties": {
+        "dayIndex": {
+          "minimum": 0,
+          "title": "Dayindex",
+          "type": "integer"
+        },
+        "from": {
+          "discriminator": {
+            "mapping": {
+              "ACTIVITY": "#/$defs/ActivityEndpoint",
+              "END_POINT": "#/$defs/BoundaryEndpoint",
+              "START_POINT": "#/$defs/BoundaryEndpoint"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActivityEndpoint"
+            },
+            {
+              "$ref": "#/$defs/BoundaryEndpoint"
+            }
+          ],
+          "title": "From"
+        },
+        "to": {
+          "discriminator": {
+            "mapping": {
+              "ACTIVITY": "#/$defs/ActivityEndpoint",
+              "END_POINT": "#/$defs/BoundaryEndpoint",
+              "START_POINT": "#/$defs/BoundaryEndpoint"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActivityEndpoint"
+            },
+            {
+              "$ref": "#/$defs/BoundaryEndpoint"
+            }
+          ],
+          "title": "To"
+        },
+        "mode": {
+          "enum": [
+            "WALK",
+            "TRANSIT",
+            "DRIVE"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "durationMin": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Durationmin"
+        },
+        "distanceMeters": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distancemeters"
+        },
+        "routeGeometry": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/GeoPoint"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Routegeometry"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "dayIndex",
+        "from",
+        "to",
+        "mode",
+        "evidence"
+      ],
+      "title": "BoundarySegment",
+      "type": "object"
+    },
+    "ItineraryActivity": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "place": {
+          "$ref": "#/$defs/Place"
+        },
+        "dayIndex": {
+          "minimum": 0,
+          "title": "Dayindex",
+          "type": "integer"
+        },
+        "orderIndex": {
+          "minimum": 0,
+          "title": "Orderindex",
+          "type": "integer"
+        },
+        "startAt": {
+          "title": "Startat",
+          "type": "string"
+        },
+        "endAt": {
+          "title": "Endat",
+          "type": "string"
+        },
+        "estimatedCostCny": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedcostcny"
+        },
+        "costStatus": {
+          "enum": [
+            "VERIFIED",
+            "ESTIMATED",
+            "UNKNOWN",
+            "FAILED"
+          ],
+          "title": "Coststatus",
+          "type": "string"
+        },
+        "locked": {
+          "title": "Locked",
+          "type": "boolean"
+        },
+        "mandatory": {
+          "title": "Mandatory",
+          "type": "boolean"
+        },
+        "progress": {
+          "enum": [
+            "NOT_STARTED",
+            "APPROACHING",
+            "ARRIVED",
+            "VISITING",
+            "INFERRED_COMPLETE",
+            "LOCATION_UNKNOWN"
+          ],
+          "title": "Progress",
+          "type": "string"
+        },
+        "intentIds": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Intentids",
+          "type": "array"
+        },
+        "bookingStatus": {
+          "anyOf": [
+            {
+              "enum": [
+                "UNSPECIFIED",
+                "REQUIRED",
+                "BOOKED"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bookingstatus"
+        },
+        "bookingEvidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Evidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "place",
+        "dayIndex",
+        "orderIndex",
+        "startAt",
+        "endAt",
+        "costStatus",
+        "locked",
+        "mandatory",
+        "progress",
+        "intentIds"
+      ],
+      "title": "ItineraryActivity",
+      "type": "object"
+    },
+    "TripState": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1,
+          "title": "Schemaversion",
+          "type": "integer"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "destinationCity": {
+          "minLength": 1,
+          "title": "Destinationcity",
+          "type": "string"
+        },
+        "startDate": {
+          "title": "Startdate",
+          "type": "string"
+        },
+        "endDate": {
+          "title": "Enddate",
+          "type": "string"
+        },
+        "travelerCount": {
+          "exclusiveMinimum": 0,
+          "title": "Travelercount",
+          "type": "integer"
+        },
+        "budgetCny": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budgetcny"
+        },
+        "budgetScope": {
+          "anyOf": [
+            {
+              "enum": [
+                "PER_PERSON",
+                "TOTAL"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budgetscope"
+        },
+        "companions": {
+          "items": {
+            "$ref": "#/$defs/CompanionPreference"
+          },
+          "title": "Companions",
+          "type": "array"
+        },
+        "preferences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preferences",
+          "type": "array"
+        },
+        "mode": {
+          "enum": [
+            "PLANNING",
+            "TRAVELING"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "lifecycle": {
+          "enum": [
+            "DRAFT_INPUT",
+            "PLANNING",
+            "PLAN_READY",
+            "TRAVELING",
+            "TRIP_ENDED"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "requirements": {
+          "$ref": "#/$defs/TripRequirements"
+        },
+        "activities": {
+          "items": {
+            "$ref": "#/$defs/ItineraryActivity"
+          },
+          "title": "Activities",
+          "type": "array"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/TravelSegment"
+          },
+          "title": "Segments",
+          "type": "array"
+        },
+        "boundarySegments": {
+          "items": {
+            "$ref": "#/$defs/BoundarySegment"
+          },
+          "title": "Boundarysegments",
+          "type": "array"
+        },
+        "intents": {
+          "items": {
+            "$ref": "#/$defs/TravelIntent"
+          },
+          "title": "Intents",
+          "type": "array"
+        },
+        "notificationPolicy": {
+          "$ref": "#/$defs/NotificationPolicy"
+        },
+        "updatedAt": {
+          "title": "Updatedat",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "tripId",
+        "revision",
+        "title",
+        "destinationCity",
+        "startDate",
+        "endDate",
+        "travelerCount",
+        "companions",
+        "preferences",
+        "mode",
+        "lifecycle",
+        "requirements",
+        "activities",
+        "segments",
+        "boundarySegments",
+        "intents",
+        "notificationPolicy",
+        "updatedAt"
+      ],
+      "title": "TripState",
+      "type": "object"
+    },
+    "AddOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "ADD",
+          "title": "Type",
+          "type": "string"
+        },
+        "activity": {
+          "$ref": "#/$defs/ItineraryActivity"
+        }
+      },
+      "required": [
+        "type",
+        "activity"
+      ],
+      "title": "AddOperation",
+      "type": "object"
+    },
+    "RemoveOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "REMOVE",
+          "title": "Type",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "activityId"
+      ],
+      "title": "RemoveOperation",
+      "type": "object"
+    },
+    "ReplaceOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "REPLACE",
+          "title": "Type",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "candidatePlaceId": {
+          "minLength": 1,
+          "title": "Candidateplaceid",
+          "type": "string"
+        },
+        "candidatePlace": {
+          "$ref": "#/$defs/Place"
+        }
+      },
+      "required": [
+        "type",
+        "activityId",
+        "candidatePlaceId",
+        "candidatePlace"
+      ],
+      "title": "ReplaceOperation",
+      "type": "object"
+    },
+    "MoveOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "MOVE",
+          "title": "Type",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "dayIndex": {
+          "minimum": 0,
+          "title": "Dayindex",
+          "type": "integer"
+        },
+        "orderIndex": {
+          "minimum": 0,
+          "title": "Orderindex",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "activityId",
+        "dayIndex",
+        "orderIndex"
+      ],
+      "title": "MoveOperation",
+      "type": "object"
+    },
+    "UpdateTimeOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "UPDATE_TIME",
+          "title": "Type",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "startAt": {
+          "title": "Startat",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "activityId",
+        "startAt"
+      ],
+      "title": "UpdateTimeOperation",
+      "type": "object"
+    },
+    "UpdateDurationOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "UPDATE_DURATION",
+          "title": "Type",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "durationMin": {
+          "exclusiveMinimum": 0,
+          "title": "Durationmin",
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "activityId",
+        "durationMin"
+      ],
+      "title": "UpdateDurationOperation",
+      "type": "object"
+    },
+    "ActivityLockChange": {
+      "additionalProperties": false,
+      "properties": {
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "locked": {
+          "title": "Locked",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "activityId",
+        "locked"
+      ],
+      "title": "ActivityLockChange",
+      "type": "object"
+    },
+    "Violation": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "activityIds": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Activityids",
+          "type": "array"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "activityIds",
+        "message"
+      ],
+      "title": "Violation",
+      "type": "object"
+    },
+    "ValidationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "FEASIBLE",
+            "PARTIALLY_VERIFIED",
+            "INFEASIBLE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "hardViolations": {
+          "items": {
+            "$ref": "#/$defs/Violation"
+          },
+          "title": "Hardviolations",
+          "type": "array"
+        },
+        "unknownChecks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unknownchecks",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "committable": {
+          "title": "Committable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status",
+        "hardViolations",
+        "unknownChecks",
+        "warnings",
+        "committable"
+      ],
+      "title": "ValidationReport",
+      "type": "object"
+    },
+    "RevisionDiff": {
+      "additionalProperties": false,
+      "properties": {
+        "added": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Added",
+          "type": "array"
+        },
+        "removed": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Removed",
+          "type": "array"
+        },
+        "moved": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Moved",
+          "type": "array"
+        }
+      },
+      "required": [
+        "added",
+        "removed",
+        "moved"
+      ],
+      "title": "RevisionDiff",
+      "type": "object"
+    },
+    "EstimatedChanges": {
+      "additionalProperties": false,
+      "properties": {
+        "travelMinutesDelta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Travelminutesdelta"
+        },
+        "costCnyDelta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Costcnydelta"
+        }
+      },
+      "title": "EstimatedChanges",
+      "type": "object"
+    },
+    "ActivityChange": {
+      "additionalProperties": false,
+      "properties": {
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "oldStartAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Oldstartat"
+        },
+        "newStartAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Newstartat"
+        },
+        "oldEndAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Oldendat"
+        },
+        "newEndAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Newendat"
+        },
+        "fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activityId",
+        "fields"
+      ],
+      "title": "ActivityChange",
+      "type": "object"
+    },
+    "UpdateConstraintOperation": {
+      "description": "Named flattened union so OpenAPI discriminator mapping always points to a reference.",
+      "discriminator": {
+        "mapping": {
+          "activityLocked": "#/$defs/UpdateConstraint_activityLocked",
+          "arrivalAt": "#/$defs/UpdateConstraint_arrivalAt",
+          "avoidPlaces": "#/$defs/UpdateConstraint_avoidPlaces",
+          "budgetCny": "#/$defs/UpdateConstraint_budgetCny",
+          "budgetIsHardLimit": "#/$defs/UpdateConstraint_budgetIsHardLimit",
+          "budgetScope": "#/$defs/UpdateConstraint_budgetScope",
+          "companions": "#/$defs/UpdateConstraint_companions",
+          "dailyEndTime": "#/$defs/UpdateConstraint_dailyEndTime",
+          "dailyStartTime": "#/$defs/UpdateConstraint_dailyStartTime",
+          "departureAt": "#/$defs/UpdateConstraint_departureAt",
+          "endDate": "#/$defs/UpdateConstraint_endDate",
+          "endPoint": "#/$defs/UpdateConstraint_endPoint",
+          "fixedConstraints": "#/$defs/UpdateConstraint_fixedConstraints",
+          "includesAccommodation": "#/$defs/UpdateConstraint_includesAccommodation",
+          "includesIntercityTransport": "#/$defs/UpdateConstraint_includesIntercityTransport",
+          "intents": "#/$defs/UpdateConstraint_intents",
+          "mustVisit": "#/$defs/UpdateConstraint_mustVisit",
+          "preferences": "#/$defs/UpdateConstraint_preferences",
+          "specialNeeds": "#/$defs/UpdateConstraint_specialNeeds",
+          "startDate": "#/$defs/UpdateConstraint_startDate",
+          "startPoint": "#/$defs/UpdateConstraint_startPoint",
+          "transportModes": "#/$defs/UpdateConstraint_transportModes",
+          "walkingTolerance": "#/$defs/UpdateConstraint_walkingTolerance"
+        },
+        "propertyName": "key"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/UpdateConstraint_budgetCny"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_budgetScope"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_budgetIsHardLimit"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_includesAccommodation"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_includesIntercityTransport"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_transportModes"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_preferences"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_companions"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_specialNeeds"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_walkingTolerance"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_startDate"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_endDate"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_arrivalAt"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_departureAt"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_dailyStartTime"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_dailyEndTime"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_startPoint"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_endPoint"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_mustVisit"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_avoidPlaces"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_fixedConstraints"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_intents"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraint_activityLocked"
+        }
+      ],
+      "title": "UpdateConstraintOperation"
+    },
+    "UpdateConstraint_activityLocked": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "activityLocked",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/ActivityLockChange"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_activityLocked",
+      "type": "object"
+    },
+    "UpdateConstraint_arrivalAt": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "arrivalAt",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_arrivalAt",
+      "type": "object"
+    },
+    "UpdateConstraint_avoidPlaces": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "avoidPlaces",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/PlaceReference"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_avoidPlaces",
+      "type": "object"
+    },
+    "UpdateConstraint_budgetCny": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "budgetCny",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_budgetCny",
+      "type": "object"
+    },
+    "UpdateConstraint_budgetIsHardLimit": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "budgetIsHardLimit",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_budgetIsHardLimit",
+      "type": "object"
+    },
+    "UpdateConstraint_budgetScope": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "budgetScope",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "enum": [
+            "PER_PERSON",
+            "TOTAL"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_budgetScope",
+      "type": "object"
+    },
+    "UpdateConstraint_companions": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "companions",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/CompanionPreference"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_companions",
+      "type": "object"
+    },
+    "UpdateConstraint_dailyEndTime": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "dailyEndTime",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_dailyEndTime",
+      "type": "object"
+    },
+    "UpdateConstraint_dailyStartTime": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "dailyStartTime",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_dailyStartTime",
+      "type": "object"
+    },
+    "UpdateConstraint_departureAt": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "departureAt",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_departureAt",
+      "type": "object"
+    },
+    "UpdateConstraint_endDate": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "endDate",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_endDate",
+      "type": "object"
+    },
+    "UpdateConstraint_endPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "endPoint",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/PlaceReference"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_endPoint",
+      "type": "object"
+    },
+    "UpdateConstraint_fixedConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "fixedConstraints",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/FixedConstraint"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_fixedConstraints",
+      "type": "object"
+    },
+    "UpdateConstraint_includesAccommodation": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "includesAccommodation",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_includesAccommodation",
+      "type": "object"
+    },
+    "UpdateConstraint_includesIntercityTransport": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "includesIntercityTransport",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_includesIntercityTransport",
+      "type": "object"
+    },
+    "UpdateConstraint_intents": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "intents",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/TravelIntent"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_intents",
+      "type": "object"
+    },
+    "UpdateConstraint_mustVisit": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "mustVisit",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/PlaceReference"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_mustVisit",
+      "type": "object"
+    },
+    "UpdateConstraint_preferences": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "preferences",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_preferences",
+      "type": "object"
+    },
+    "UpdateConstraint_specialNeeds": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "specialNeeds",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_specialNeeds",
+      "type": "object"
+    },
+    "UpdateConstraint_startDate": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "startDate",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_startDate",
+      "type": "object"
+    },
+    "UpdateConstraint_startPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "startPoint",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/PlaceReference"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_startPoint",
+      "type": "object"
+    },
+    "UpdateConstraint_transportModes": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "transportModes",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "type": "string"
+          },
+          "title": "Value",
+          "type": "array"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_transportModes",
+      "type": "object"
+    },
+    "UpdateConstraint_walkingTolerance": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "walkingTolerance",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ],
+          "title": "Value",
+          "type": "string"
+        },
+        "type": {
+          "const": "UPDATE_CONSTRAINT",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "type"
+      ],
+      "title": "UpdateConstraint_walkingTolerance",
+      "type": "object"
+    },
+    "RevisionProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "proposalId": {
+          "minLength": 1,
+          "title": "Proposalid",
+          "type": "string"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "operations": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "ADD": "#/$defs/AddOperation",
+                "MOVE": "#/$defs/MoveOperation",
+                "REMOVE": "#/$defs/RemoveOperation",
+                "REPLACE": "#/$defs/ReplaceOperation",
+                "UPDATE_CONSTRAINT": "#/$defs/UpdateConstraintOperation",
+                "UPDATE_DURATION": "#/$defs/UpdateDurationOperation",
+                "UPDATE_TIME": "#/$defs/UpdateTimeOperation"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/AddOperation"
+              },
+              {
+                "$ref": "#/$defs/RemoveOperation"
+              },
+              {
+                "$ref": "#/$defs/ReplaceOperation"
+              },
+              {
+                "$ref": "#/$defs/MoveOperation"
+              },
+              {
+                "$ref": "#/$defs/UpdateTimeOperation"
+              },
+              {
+                "$ref": "#/$defs/UpdateDurationOperation"
+              },
+              {
+                "$ref": "#/$defs/UpdateConstraintOperation"
+              }
+            ]
+          },
+          "title": "Operations",
+          "type": "array"
+        },
+        "candidate": {
+          "$ref": "#/$defs/TripState"
+        },
+        "hardViolations": {
+          "items": {
+            "$ref": "#/$defs/Violation"
+          },
+          "title": "Hardviolations",
+          "type": "array"
+        },
+        "unknownChecks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unknownchecks",
+          "type": "array"
+        },
+        "diff": {
+          "$ref": "#/$defs/RevisionDiff"
+        },
+        "estimatedChanges": {
+          "$ref": "#/$defs/EstimatedChanges"
+        },
+        "validation": {
+          "$ref": "#/$defs/ValidationReport"
+        },
+        "activityChanges": {
+          "items": {
+            "$ref": "#/$defs/ActivityChange"
+          },
+          "title": "Activitychanges",
+          "type": "array"
+        }
+      },
+      "required": [
+        "proposalId",
+        "tripId",
+        "baseRevision",
+        "operations",
+        "candidate",
+        "hardViolations",
+        "unknownChecks",
+        "diff",
+        "estimatedChanges",
+        "validation",
+        "activityChanges"
+      ],
+      "title": "RevisionProposal",
+      "type": "object"
+    },
+    "PreparedContent": {
+      "additionalProperties": false,
+      "properties": {
+        "contentId": {
+          "minLength": 1,
+          "title": "Contentid",
+          "type": "string"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "activityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activityid"
+        },
+        "intentId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intentid"
+        },
+        "placeId": {
+          "minLength": 1,
+          "title": "Placeid",
+          "type": "string"
+        },
+        "module": {
+          "enum": [
+            "KNOWLEDGE",
+            "PERSONAL_GOAL",
+            "TRIP_RISK",
+            "NEARBY"
+          ],
+          "title": "Module",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "body": {
+          "minLength": 1,
+          "title": "Body",
+          "type": "string"
+        },
+        "version": {
+          "exclusiveMinimum": 0,
+          "title": "Version",
+          "type": "integer"
+        },
+        "generatedAt": {
+          "title": "Generatedat",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "scopeNote": {
+          "minLength": 1,
+          "title": "Scopenote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contentId",
+        "tripId",
+        "baseRevision",
+        "placeId",
+        "module",
+        "title",
+        "body",
+        "version",
+        "generatedAt",
+        "evidence",
+        "scopeNote"
+      ],
+      "title": "PreparedContent",
+      "type": "object"
+    },
+    "SelectedContext": {
+      "additionalProperties": false,
+      "properties": {
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "planRevision": {
+          "minimum": 0,
+          "title": "Planrevision",
+          "type": "integer"
+        },
+        "mode": {
+          "enum": [
+            "PLANNING",
+            "TRAVELING"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "selectedActivityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selectedactivityid"
+        },
+        "selectedPoiId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selectedpoiid"
+        },
+        "activeDay": {
+          "minimum": 0,
+          "title": "Activeday",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "tripId",
+        "planRevision",
+        "mode",
+        "activeDay"
+      ],
+      "title": "SelectedContext",
+      "type": "object"
+    },
+    "ConversationMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "content": {
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "ConversationMessage",
+      "type": "object"
+    },
+    "RevisionOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "REVISION",
+          "title": "Kind",
+          "type": "string"
+        },
+        "proposal": {
+          "$ref": "#/$defs/RevisionProposal"
+        }
+      },
+      "required": [
+        "kind",
+        "proposal"
+      ],
+      "title": "RevisionOutcome",
+      "type": "object"
+    },
+    "ContentOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "CONTENT",
+          "title": "Kind",
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/PreparedContent"
+        }
+      },
+      "required": [
+        "kind",
+        "content"
+      ],
+      "title": "ContentOutcome",
+      "type": "object"
+    },
+    "ClarificationOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "CLARIFICATION",
+          "title": "Kind",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/Place"
+          },
+          "title": "Candidates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "questions",
+        "candidates"
+      ],
+      "title": "ClarificationOutcome",
+      "type": "object"
+    },
+    "PlanResult": {
+      "additionalProperties": false,
+      "properties": {
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TripState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "validation": {
+          "$ref": "#/$defs/ValidationReport"
+        },
+        "preparedContents": {
+          "items": {
+            "$ref": "#/$defs/PreparedContent"
+          },
+          "title": "Preparedcontents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "validation",
+        "preparedContents"
+      ],
+      "title": "PlanResult",
+      "type": "object"
+    },
+    "ExecutionContext": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        }
+      },
+      "required": [
+        "executionMode"
+      ],
+      "title": "ExecutionContext",
+      "type": "object"
+    },
+    "RequestContext": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision"
+      ],
+      "title": "RequestContext",
+      "type": "object"
+    },
+    "NormalizedLocationEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "sampleId": {
+          "minLength": 1,
+          "title": "Sampleid",
+          "type": "string"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "REAL",
+            "SIMULATED"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "location": {
+          "$ref": "#/$defs/GeoPoint"
+        },
+        "accuracyMeters": {
+          "minimum": 0,
+          "title": "Accuracymeters",
+          "type": "number"
+        },
+        "timestamp": {
+          "title": "Timestamp",
+          "type": "string"
+        },
+        "pageVisible": {
+          "title": "Pagevisible",
+          "type": "boolean"
+        },
+        "speedMetersPerSecond": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speedmeterspersecond"
+        }
+      },
+      "required": [
+        "sampleId",
+        "tripId",
+        "source",
+        "location",
+        "accuracyMeters",
+        "timestamp",
+        "pageVisible"
+      ],
+      "title": "NormalizedLocationEvent",
+      "type": "object"
+    },
+    "RiskDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "activityIds": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Activityids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "evidence",
+        "activityIds"
+      ],
+      "title": "RiskDetail",
+      "type": "object"
+    },
+    "ProactiveEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "eventId": {
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "source": {
+          "enum": [
+            "REAL",
+            "SIMULATED",
+            "USER_CORRECTION"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "APPROACH",
+            "ARRIVE",
+            "LEAVE",
+            "RISK",
+            "RESUME"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "activityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activityid"
+        },
+        "arrivalId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrivalid"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeoPoint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "accuracyMeters": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracymeters"
+        },
+        "occurredAt": {
+          "title": "Occurredat",
+          "type": "string"
+        },
+        "risk": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RiskDetail"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "eventId",
+        "tripId",
+        "revision",
+        "source",
+        "type",
+        "occurredAt"
+      ],
+      "title": "ProactiveEvent",
+      "type": "object"
+    },
+    "CardEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "enum": [
+            "REAL",
+            "SIMULATED",
+            "USER_CORRECTION"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "eventId": {
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Facts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "eventId",
+        "facts"
+      ],
+      "title": "CardEvidence",
+      "type": "object"
+    },
+    "NotificationCard": {
+      "additionalProperties": false,
+      "properties": {
+        "cardId": {
+          "minLength": 1,
+          "title": "Cardid",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "L1",
+            "L2",
+            "L3"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "module": {
+          "enum": [
+            "KNOWLEDGE",
+            "PERSONAL_GOAL",
+            "TRIP_RISK",
+            "NEARBY"
+          ],
+          "title": "Module",
+          "type": "string"
+        },
+        "activityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activityid"
+        },
+        "intentId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intentid"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "actions": {
+          "items": {
+            "enum": [
+              "VIEW_CONTENT",
+              "VIEW_SCRIPT",
+              "VIEW_SHOOTING_CHECKLIST",
+              "REMIND_LATER",
+              "IGNORE",
+              "VIEW_REVISION",
+              "VIEW_NEARBY",
+              "ADD_TO_PLAN"
+            ],
+            "type": "string"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "contentIds": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Contentids",
+          "type": "array"
+        },
+        "evidence": {
+          "$ref": "#/$defs/CardEvidence"
+        }
+      },
+      "required": [
+        "cardId",
+        "level",
+        "module",
+        "title",
+        "actions",
+        "contentIds",
+        "evidence"
+      ],
+      "title": "NotificationCard",
+      "type": "object"
+    },
+    "ProactiveDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "decisionId": {
+          "minLength": 1,
+          "title": "Decisionid",
+          "type": "string"
+        },
+        "eventId": {
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "shouldNotify": {
+          "title": "Shouldnotify",
+          "type": "boolean"
+        },
+        "reasonCode": {
+          "minLength": 1,
+          "title": "Reasoncode",
+          "type": "string"
+        },
+        "suppressionReason": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Suppressionreason"
+        },
+        "card": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NotificationCard"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "decisionId",
+        "eventId",
+        "tripId",
+        "baseRevision",
+        "shouldNotify",
+        "reasonCode"
+      ],
+      "title": "ProactiveDecision",
+      "type": "object"
+    },
+    "NotificationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "notificationId": {
+          "minLength": 1,
+          "title": "Notificationid",
+          "type": "string"
+        },
+        "eventId": {
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "tripRevision": {
+          "minimum": 0,
+          "title": "Triprevision",
+          "type": "integer"
+        },
+        "source": {
+          "enum": [
+            "REAL",
+            "SIMULATED",
+            "USER_CORRECTION"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "arrivalId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrivalid"
+        },
+        "activityId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activityid"
+        },
+        "intentId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intentid"
+        },
+        "riskCode": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskcode"
+        },
+        "contentId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contentid"
+        },
+        "level": {
+          "enum": [
+            "L1",
+            "L2",
+            "L3"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "decision": {
+          "minLength": 1,
+          "title": "Decision",
+          "type": "string"
+        },
+        "suppressionReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Suppressionreason"
+        },
+        "shownAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shownat"
+        },
+        "actionTaken": {
+          "anyOf": [
+            {
+              "enum": [
+                "VIEW_CONTENT",
+                "VIEW_SCRIPT",
+                "VIEW_SHOOTING_CHECKLIST",
+                "REMIND_LATER",
+                "IGNORE",
+                "VIEW_REVISION",
+                "VIEW_NEARBY",
+                "ADD_TO_PLAN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actiontaken"
+        },
+        "actionAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actionat"
+        },
+        "snoozeUntil": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Snoozeuntil"
+        }
+      },
+      "required": [
+        "notificationId",
+        "eventId",
+        "tripRevision",
+        "source",
+        "level",
+        "decision"
+      ],
+      "title": "NotificationRecord",
+      "type": "object"
+    },
+    "ProgressCorrection": {
+      "additionalProperties": false,
+      "properties": {
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "previous": {
+          "enum": [
+            "NOT_STARTED",
+            "APPROACHING",
+            "ARRIVED",
+            "VISITING",
+            "INFERRED_COMPLETE",
+            "LOCATION_UNKNOWN"
+          ],
+          "title": "Previous",
+          "type": "string"
+        },
+        "next": {
+          "enum": [
+            "NOT_STARTED",
+            "APPROACHING",
+            "ARRIVED",
+            "VISITING",
+            "INFERRED_COMPLETE",
+            "LOCATION_UNKNOWN"
+          ],
+          "title": "Next",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "activityId",
+        "previous",
+        "next",
+        "reason"
+      ],
+      "title": "ProgressCorrection",
+      "type": "object"
+    },
+    "EventLogEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "logId": {
+          "minLength": 1,
+          "title": "Logid",
+          "type": "string"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "tripRevision": {
+          "minimum": 0,
+          "title": "Triprevision",
+          "type": "integer"
+        },
+        "source": {
+          "enum": [
+            "REAL",
+            "SIMULATED",
+            "USER_CORRECTION"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "occurredAt": {
+          "title": "Occurredat",
+          "type": "string"
+        },
+        "event": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProactiveEvent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "notification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NotificationRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "correction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProgressCorrection"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "logId",
+        "tripId",
+        "tripRevision",
+        "source",
+        "occurredAt"
+      ],
+      "title": "EventLogEntry",
+      "type": "object"
+    },
+    "GeoRuntimeState": {
+      "additionalProperties": false,
+      "properties": {
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "activityId": {
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "REAL",
+            "SIMULATED"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "progress": {
+          "enum": [
+            "NOT_STARTED",
+            "APPROACHING",
+            "ARRIVED",
+            "VISITING",
+            "INFERRED_COMPLETE",
+            "LOCATION_UNKNOWN"
+          ],
+          "title": "Progress",
+          "type": "string"
+        },
+        "arrivalId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrivalid"
+        },
+        "candidateSince": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidatesince"
+        },
+        "outsideSince": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outsidesince"
+        },
+        "lastValidSampleAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastvalidsampleat"
+        }
+      },
+      "required": [
+        "tripId",
+        "activityId",
+        "source",
+        "progress"
+      ],
+      "title": "GeoRuntimeState",
+      "type": "object"
+    },
+    "GeoPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "policyVersion": {
+          "minLength": 1,
+          "title": "Policyversion",
+          "type": "string"
+        },
+        "arrivalRadiusMeters": {
+          "exclusiveMinimum": 0,
+          "title": "Arrivalradiusmeters",
+          "type": "number"
+        },
+        "departureRadiusMeters": {
+          "exclusiveMinimum": 0,
+          "title": "Departureradiusmeters",
+          "type": "number"
+        },
+        "maxAccuracyMeters": {
+          "exclusiveMinimum": 0,
+          "title": "Maxaccuracymeters",
+          "type": "number"
+        },
+        "arrivalDwellSeconds": {
+          "exclusiveMinimum": 0,
+          "title": "Arrivaldwellseconds",
+          "type": "number"
+        },
+        "departureDwellSeconds": {
+          "exclusiveMinimum": 0,
+          "title": "Departuredwellseconds",
+          "type": "number"
+        },
+        "minValidSamples": {
+          "exclusiveMinimum": 0,
+          "title": "Minvalidsamples",
+          "type": "integer"
+        },
+        "maxSpeedMetersPerSecond": {
+          "exclusiveMinimum": 0,
+          "title": "Maxspeedmeterspersecond",
+          "type": "number"
+        },
+        "maxSampleGapSeconds": {
+          "exclusiveMinimum": 0,
+          "title": "Maxsamplegapseconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "policyVersion",
+        "arrivalRadiusMeters",
+        "departureRadiusMeters",
+        "maxAccuracyMeters",
+        "arrivalDwellSeconds",
+        "departureDwellSeconds",
+        "minValidSamples",
+        "maxSpeedMetersPerSecond",
+        "maxSampleGapSeconds"
+      ],
+      "title": "GeoPolicy",
+      "type": "object"
+    },
+    "ProgressEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "eventId": {
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "sequence": {
+          "exclusiveMinimum": 0,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "occurredAt": {
+          "title": "Occurredat",
+          "type": "string"
+        },
+        "runId": {
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "agentId": {
+          "enum": [
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6",
+            "A7"
+          ],
+          "title": "Agentid",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "agent_started",
+            "agent_completed",
+            "agent_failed",
+            "tool_call_started",
+            "tool_call_finished"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "toolName": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Toolname"
+        },
+        "traceId": {
+          "minLength": 1,
+          "title": "Traceid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "eventId",
+        "sequence",
+        "occurredAt",
+        "runId",
+        "agentId",
+        "type",
+        "message",
+        "traceId"
+      ],
+      "title": "ProgressEvent",
+      "type": "object"
+    },
+    "JobAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "jobId": {
+          "minLength": 1,
+          "title": "Jobid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "jobId"
+      ],
+      "title": "JobAccepted",
+      "type": "object"
+    },
+    "JobSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "jobId": {
+          "minLength": 1,
+          "title": "Jobid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "progressEvents": {
+          "items": {
+            "$ref": "#/$defs/ProgressEvent"
+          },
+          "title": "Progressevents",
+          "type": "array"
+        },
+        "nextCursor": {
+          "minimum": 0,
+          "title": "Nextcursor",
+          "type": "integer"
+        },
+        "result": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "jobId",
+        "status",
+        "progressEvents",
+        "nextCursor"
+      ],
+      "title": "JobSnapshot",
+      "type": "object"
+    },
+    "ToolCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "name",
+        "available"
+      ],
+      "title": "ToolCapability",
+      "type": "object"
+    },
+    "ModelRouteCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "agentId": {
+          "enum": [
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6",
+            "A7"
+          ],
+          "title": "Agentid",
+          "type": "string"
+        },
+        "provider": {
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "agentId",
+        "provider",
+        "model",
+        "available"
+      ],
+      "title": "ModelRouteCapability",
+      "type": "object"
+    },
+    "CapabilityLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "pollIntervalMs": {
+          "exclusiveMinimum": 0,
+          "title": "Pollintervalms",
+          "type": "integer"
+        },
+        "maxPollIntervalMs": {
+          "exclusiveMinimum": 0,
+          "title": "Maxpollintervalms",
+          "type": "integer"
+        },
+        "jobTtlSeconds": {
+          "exclusiveMinimum": 0,
+          "title": "Jobttlseconds",
+          "type": "integer"
+        },
+        "requestTimeoutSeconds": {
+          "exclusiveMinimum": 0,
+          "title": "Requesttimeoutseconds",
+          "type": "integer"
+        },
+        "maxJobSeconds": {
+          "exclusiveMinimum": 0,
+          "title": "Maxjobseconds",
+          "type": "integer"
+        },
+        "maxBodyBytes": {
+          "exclusiveMinimum": 0,
+          "title": "Maxbodybytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "pollIntervalMs",
+        "maxPollIntervalMs",
+        "jobTtlSeconds",
+        "requestTimeoutSeconds",
+        "maxJobSeconds",
+        "maxBodyBytes"
+      ],
+      "title": "CapabilityLimits",
+      "type": "object"
+    },
+    "CapabilitySet": {
+      "additionalProperties": false,
+      "properties": {
+        "planning": {
+          "title": "Planning",
+          "type": "boolean"
+        },
+        "poiSearch": {
+          "title": "Poisearch",
+          "type": "boolean"
+        },
+        "routes": {
+          "items": {
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "type": "string"
+          },
+          "title": "Routes",
+          "type": "array"
+        },
+        "content": {
+          "title": "Content",
+          "type": "boolean"
+        },
+        "nearby": {
+          "title": "Nearby",
+          "type": "boolean"
+        },
+        "demo": {
+          "title": "Demo",
+          "type": "boolean"
+        },
+        "tools": {
+          "items": {
+            "$ref": "#/$defs/ToolCapability"
+          },
+          "title": "Tools",
+          "type": "array"
+        },
+        "modelRoutes": {
+          "items": {
+            "$ref": "#/$defs/ModelRouteCapability"
+          },
+          "title": "Modelroutes",
+          "type": "array"
+        },
+        "limits": {
+          "$ref": "#/$defs/CapabilityLimits"
+        },
+        "geoPolicy": {
+          "$ref": "#/$defs/GeoPolicy"
+        }
+      },
+      "required": [
+        "planning",
+        "poiSearch",
+        "routes",
+        "content",
+        "nearby",
+        "demo",
+        "tools",
+        "modelRoutes",
+        "limits",
+        "geoPolicy"
+      ],
+      "title": "CapabilitySet",
+      "type": "object"
+    },
+    "HealthResult": {
+      "additionalProperties": false,
+      "properties": {
+        "serviceStatus": {
+          "enum": [
+            "OK",
+            "DEGRADED"
+          ],
+          "title": "Servicestatus",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/CapabilitySet"
+        }
+      },
+      "required": [
+        "serviceStatus",
+        "version",
+        "capabilities"
+      ],
+      "title": "HealthResult",
+      "type": "object"
+    },
+    "NearbyCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "place": {
+          "$ref": "#/$defs/Place"
+        },
+        "distanceMeters": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distancemeters"
+        },
+        "distanceEvidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "relevanceReason": {
+          "minLength": 1,
+          "title": "Relevancereason",
+          "type": "string"
+        },
+        "estimatedCostCny": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedcostcny"
+        },
+        "costStatus": {
+          "enum": [
+            "VERIFIED",
+            "ESTIMATED",
+            "UNKNOWN",
+            "FAILED"
+          ],
+          "title": "Coststatus",
+          "type": "string"
+        }
+      },
+      "required": [
+        "place",
+        "distanceEvidence",
+        "relevanceReason",
+        "costStatus"
+      ],
+      "title": "NearbyCandidate",
+      "type": "object"
+    },
+    "ParseRequirementsRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "selectedContext": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SelectedContext"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "conversation": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ConversationMessage"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conversation"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "text"
+      ],
+      "title": "ParseRequirementsRequest",
+      "type": "object"
+    },
+    "UncertainField": {
+      "additionalProperties": false,
+      "properties": {
+        "fieldPath": {
+          "minLength": 1,
+          "title": "Fieldpath",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "candidates": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Place"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidates"
+        }
+      },
+      "required": [
+        "fieldPath",
+        "reason"
+      ],
+      "title": "UncertainField",
+      "type": "object"
+    },
+    "ParseRequirementsResult": {
+      "additionalProperties": false,
+      "properties": {
+        "requirements": {
+          "$ref": "#/$defs/TripRequirements"
+        },
+        "intents": {
+          "items": {
+            "$ref": "#/$defs/TravelIntent"
+          },
+          "title": "Intents",
+          "type": "array"
+        },
+        "missingFields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missingfields",
+          "type": "array"
+        },
+        "uncertainFields": {
+          "items": {
+            "$ref": "#/$defs/UncertainField"
+          },
+          "title": "Uncertainfields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirements",
+        "intents",
+        "missingFields",
+        "uncertainFields"
+      ],
+      "title": "ParseRequirementsResult",
+      "type": "object"
+    },
+    "GeneratePlanRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "requirements": {
+          "$ref": "#/$defs/TripRequirements"
+        },
+        "mode": {
+          "const": "PLANNING",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "requirements",
+        "mode"
+      ],
+      "title": "GeneratePlanRequest",
+      "type": "object"
+    },
+    "TripRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState"
+      ],
+      "title": "TripRequest",
+      "type": "object"
+    },
+    "ProposeRevisionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        },
+        "selectedContext": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SelectedContext"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "conversation": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ConversationMessage"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conversation"
+        },
+        "operations": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "ADD": "#/$defs/AddOperation",
+                    "MOVE": "#/$defs/MoveOperation",
+                    "REMOVE": "#/$defs/RemoveOperation",
+                    "REPLACE": "#/$defs/ReplaceOperation",
+                    "UPDATE_CONSTRAINT": "#/$defs/UpdateConstraintOperation",
+                    "UPDATE_DURATION": "#/$defs/UpdateDurationOperation",
+                    "UPDATE_TIME": "#/$defs/UpdateTimeOperation"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/AddOperation"
+                  },
+                  {
+                    "$ref": "#/$defs/RemoveOperation"
+                  },
+                  {
+                    "$ref": "#/$defs/ReplaceOperation"
+                  },
+                  {
+                    "$ref": "#/$defs/MoveOperation"
+                  },
+                  {
+                    "$ref": "#/$defs/UpdateTimeOperation"
+                  },
+                  {
+                    "$ref": "#/$defs/UpdateDurationOperation"
+                  },
+                  {
+                    "$ref": "#/$defs/UpdateConstraintOperation"
+                  }
+                ]
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Operations"
+        },
+        "userRequest": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Userrequest"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState"
+      ],
+      "title": "ProposeRevisionRequest",
+      "type": "object"
+    },
+    "ValidateRevisionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        },
+        "proposal": {
+          "$ref": "#/$defs/RevisionProposal"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState",
+        "proposal"
+      ],
+      "title": "ValidateRevisionRequest",
+      "type": "object"
+    },
+    "ValidateRevisionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "proposalId": {
+          "minLength": 1,
+          "title": "Proposalid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "validation": {
+          "$ref": "#/$defs/ValidationReport"
+        }
+      },
+      "required": [
+        "proposalId",
+        "baseRevision",
+        "validation"
+      ],
+      "title": "ValidateRevisionResult",
+      "type": "object"
+    },
+    "SearchPlacesRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "city": {
+          "minLength": 1,
+          "title": "City",
+          "type": "string"
+        },
+        "keyword": {
+          "minLength": 1,
+          "title": "Keyword",
+          "type": "string"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeoPoint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "executionMode",
+        "city",
+        "keyword"
+      ],
+      "title": "SearchPlacesRequest",
+      "type": "object"
+    },
+    "SearchPlacesResult": {
+      "additionalProperties": false,
+      "properties": {
+        "places": {
+          "items": {
+            "$ref": "#/$defs/Place"
+          },
+          "title": "Places",
+          "type": "array"
+        }
+      },
+      "required": [
+        "places"
+      ],
+      "title": "SearchPlacesResult",
+      "type": "object"
+    },
+    "RouteSegmentsRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "requirements": {
+          "$ref": "#/$defs/TripRequirements"
+        },
+        "activities": {
+          "items": {
+            "$ref": "#/$defs/ItineraryActivity"
+          },
+          "title": "Activities",
+          "type": "array"
+        },
+        "mode": {
+          "enum": [
+            "WALK",
+            "TRANSIT",
+            "DRIVE"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "requirements",
+        "activities",
+        "mode"
+      ],
+      "title": "RouteSegmentsRequest",
+      "type": "object"
+    },
+    "RouteSegmentsResult": {
+      "additionalProperties": false,
+      "properties": {
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/TravelSegment"
+          },
+          "title": "Segments",
+          "type": "array"
+        },
+        "boundarySegments": {
+          "items": {
+            "$ref": "#/$defs/BoundarySegment"
+          },
+          "title": "Boundarysegments",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "segments",
+        "boundarySegments",
+        "warnings"
+      ],
+      "title": "RouteSegmentsResult",
+      "type": "object"
+    },
+    "EvaluateProactiveRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        },
+        "currentEvent": {
+          "$ref": "#/$defs/ProactiveEvent"
+        },
+        "recentNotifications": {
+          "items": {
+            "$ref": "#/$defs/NotificationRecord"
+          },
+          "title": "Recentnotifications",
+          "type": "array"
+        },
+        "uiBusy": {
+          "title": "Uibusy",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState",
+        "currentEvent",
+        "recentNotifications",
+        "uiBusy"
+      ],
+      "title": "EvaluateProactiveRequest",
+      "type": "object"
+    },
+    "EvaluateProactiveResult": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/ProactiveDecision"
+        },
+        "contents": {
+          "items": {
+            "$ref": "#/$defs/PreparedContent"
+          },
+          "title": "Contents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "decision",
+        "contents"
+      ],
+      "title": "EvaluateProactiveResult",
+      "type": "object"
+    },
+    "PrepareContentRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        },
+        "intents": {
+          "items": {
+            "$ref": "#/$defs/TravelIntent"
+          },
+          "title": "Intents",
+          "type": "array"
+        },
+        "selectedContext": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SelectedContext"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState",
+        "intents"
+      ],
+      "title": "PrepareContentRequest",
+      "type": "object"
+    },
+    "PrepareContentResult": {
+      "additionalProperties": false,
+      "properties": {
+        "contents": {
+          "items": {
+            "$ref": "#/$defs/PreparedContent"
+          },
+          "title": "Contents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "contents"
+      ],
+      "title": "PrepareContentResult",
+      "type": "object"
+    },
+    "RefineContentRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        },
+        "intentId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intentid"
+        },
+        "preparedContent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PreparedContent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "userRequest": {
+          "minLength": 1,
+          "title": "Userrequest",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/SelectedContext"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState",
+        "userRequest",
+        "context"
+      ],
+      "title": "RefineContentRequest",
+      "type": "object"
+    },
+    "RefineContentResult": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/PreparedContent"
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "title": "RefineContentResult",
+      "type": "object"
+    },
+    "NearbySearchRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "tripState": {
+          "$ref": "#/$defs/TripState"
+        },
+        "location": {
+          "$ref": "#/$defs/GeoPoint"
+        },
+        "category": {
+          "enum": [
+            "FOOD",
+            "REST",
+            "PHOTO"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "preferences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preferences",
+          "type": "array"
+        },
+        "selectedContext": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SelectedContext"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "tripState",
+        "location",
+        "category",
+        "preferences"
+      ],
+      "title": "NearbySearchRequest",
+      "type": "object"
+    },
+    "NearbySearchResult": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/NearbyCandidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "candidates"
+      ],
+      "title": "NearbySearchResult",
+      "type": "object"
+    },
+    "CancelJobResult": {
+      "additionalProperties": false,
+      "properties": {
+        "jobId": {
+          "minLength": 1,
+          "title": "Jobid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "jobId",
+        "status"
+      ],
+      "title": "CancelJobResult",
+      "type": "object"
+    },
+    "EditOperation": {
+      "discriminator": {
+        "mapping": {
+          "ADD": "#/$defs/AddOperation",
+          "MOVE": "#/$defs/MoveOperation",
+          "REMOVE": "#/$defs/RemoveOperation",
+          "REPLACE": "#/$defs/ReplaceOperation",
+          "UPDATE_CONSTRAINT": "#/$defs/UpdateConstraintOperation",
+          "UPDATE_DURATION": "#/$defs/UpdateDurationOperation",
+          "UPDATE_TIME": "#/$defs/UpdateTimeOperation"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/AddOperation"
+        },
+        {
+          "$ref": "#/$defs/RemoveOperation"
+        },
+        {
+          "$ref": "#/$defs/ReplaceOperation"
+        },
+        {
+          "$ref": "#/$defs/MoveOperation"
+        },
+        {
+          "$ref": "#/$defs/UpdateTimeOperation"
+        },
+        {
+          "$ref": "#/$defs/UpdateDurationOperation"
+        },
+        {
+          "$ref": "#/$defs/UpdateConstraintOperation"
+        }
+      ]
+    },
+    "Constraint_activityLocked": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "activityLocked",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/ActivityLockChange"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_activityLocked",
+      "type": "object"
+    },
+    "Constraint_arrivalAt": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "arrivalAt",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_arrivalAt",
+      "type": "object"
+    },
+    "Constraint_avoidPlaces": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "avoidPlaces",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/PlaceReference"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_avoidPlaces",
+      "type": "object"
+    },
+    "Constraint_budgetCny": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "budgetCny",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_budgetCny",
+      "type": "object"
+    },
+    "Constraint_budgetIsHardLimit": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "budgetIsHardLimit",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_budgetIsHardLimit",
+      "type": "object"
+    },
+    "Constraint_budgetScope": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "budgetScope",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "enum": [
+            "PER_PERSON",
+            "TOTAL"
+          ],
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_budgetScope",
+      "type": "object"
+    },
+    "Constraint_companions": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "companions",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/CompanionPreference"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_companions",
+      "type": "object"
+    },
+    "Constraint_dailyEndTime": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "dailyEndTime",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_dailyEndTime",
+      "type": "object"
+    },
+    "Constraint_dailyStartTime": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "dailyStartTime",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_dailyStartTime",
+      "type": "object"
+    },
+    "Constraint_departureAt": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "departureAt",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_departureAt",
+      "type": "object"
+    },
+    "Constraint_endDate": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "endDate",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_endDate",
+      "type": "object"
+    },
+    "Constraint_endPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "endPoint",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/PlaceReference"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_endPoint",
+      "type": "object"
+    },
+    "Constraint_fixedConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "fixedConstraints",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/FixedConstraint"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_fixedConstraints",
+      "type": "object"
+    },
+    "Constraint_includesAccommodation": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "includesAccommodation",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_includesAccommodation",
+      "type": "object"
+    },
+    "Constraint_includesIntercityTransport": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "includesIntercityTransport",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_includesIntercityTransport",
+      "type": "object"
+    },
+    "Constraint_intents": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "intents",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/TravelIntent"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_intents",
+      "type": "object"
+    },
+    "Constraint_mustVisit": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "mustVisit",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "$ref": "#/$defs/PlaceReference"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_mustVisit",
+      "type": "object"
+    },
+    "Constraint_preferences": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "preferences",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_preferences",
+      "type": "object"
+    },
+    "Constraint_specialNeeds": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "specialNeeds",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_specialNeeds",
+      "type": "object"
+    },
+    "Constraint_startDate": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "startDate",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_startDate",
+      "type": "object"
+    },
+    "Constraint_startPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "startPoint",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/PlaceReference"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_startPoint",
+      "type": "object"
+    },
+    "Constraint_transportModes": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "transportModes",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "enum": [
+              "WALK",
+              "TRANSIT",
+              "DRIVE"
+            ],
+            "type": "string"
+          },
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_transportModes",
+      "type": "object"
+    },
+    "Constraint_walkingTolerance": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "const": "walkingTolerance",
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ],
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Constraint_walkingTolerance",
+      "type": "object"
+    },
+    "ConstraintChange": {
+      "discriminator": {
+        "mapping": {
+          "activityLocked": "#/$defs/Constraint_activityLocked",
+          "arrivalAt": "#/$defs/Constraint_arrivalAt",
+          "avoidPlaces": "#/$defs/Constraint_avoidPlaces",
+          "budgetCny": "#/$defs/Constraint_budgetCny",
+          "budgetIsHardLimit": "#/$defs/Constraint_budgetIsHardLimit",
+          "budgetScope": "#/$defs/Constraint_budgetScope",
+          "companions": "#/$defs/Constraint_companions",
+          "dailyEndTime": "#/$defs/Constraint_dailyEndTime",
+          "dailyStartTime": "#/$defs/Constraint_dailyStartTime",
+          "departureAt": "#/$defs/Constraint_departureAt",
+          "endDate": "#/$defs/Constraint_endDate",
+          "endPoint": "#/$defs/Constraint_endPoint",
+          "fixedConstraints": "#/$defs/Constraint_fixedConstraints",
+          "includesAccommodation": "#/$defs/Constraint_includesAccommodation",
+          "includesIntercityTransport": "#/$defs/Constraint_includesIntercityTransport",
+          "intents": "#/$defs/Constraint_intents",
+          "mustVisit": "#/$defs/Constraint_mustVisit",
+          "preferences": "#/$defs/Constraint_preferences",
+          "specialNeeds": "#/$defs/Constraint_specialNeeds",
+          "startDate": "#/$defs/Constraint_startDate",
+          "startPoint": "#/$defs/Constraint_startPoint",
+          "transportModes": "#/$defs/Constraint_transportModes",
+          "walkingTolerance": "#/$defs/Constraint_walkingTolerance"
+        },
+        "propertyName": "key"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Constraint_budgetCny"
+        },
+        {
+          "$ref": "#/$defs/Constraint_budgetScope"
+        },
+        {
+          "$ref": "#/$defs/Constraint_budgetIsHardLimit"
+        },
+        {
+          "$ref": "#/$defs/Constraint_includesAccommodation"
+        },
+        {
+          "$ref": "#/$defs/Constraint_includesIntercityTransport"
+        },
+        {
+          "$ref": "#/$defs/Constraint_transportModes"
+        },
+        {
+          "$ref": "#/$defs/Constraint_preferences"
+        },
+        {
+          "$ref": "#/$defs/Constraint_companions"
+        },
+        {
+          "$ref": "#/$defs/Constraint_specialNeeds"
+        },
+        {
+          "$ref": "#/$defs/Constraint_walkingTolerance"
+        },
+        {
+          "$ref": "#/$defs/Constraint_startDate"
+        },
+        {
+          "$ref": "#/$defs/Constraint_endDate"
+        },
+        {
+          "$ref": "#/$defs/Constraint_arrivalAt"
+        },
+        {
+          "$ref": "#/$defs/Constraint_departureAt"
+        },
+        {
+          "$ref": "#/$defs/Constraint_dailyStartTime"
+        },
+        {
+          "$ref": "#/$defs/Constraint_dailyEndTime"
+        },
+        {
+          "$ref": "#/$defs/Constraint_startPoint"
+        },
+        {
+          "$ref": "#/$defs/Constraint_endPoint"
+        },
+        {
+          "$ref": "#/$defs/Constraint_mustVisit"
+        },
+        {
+          "$ref": "#/$defs/Constraint_avoidPlaces"
+        },
+        {
+          "$ref": "#/$defs/Constraint_fixedConstraints"
+        },
+        {
+          "$ref": "#/$defs/Constraint_intents"
+        },
+        {
+          "$ref": "#/$defs/Constraint_activityLocked"
+        }
+      ]
+    },
+    "RevisionResult": {
+      "discriminator": {
+        "mapping": {
+          "CLARIFICATION": "#/$defs/ClarificationOutcome",
+          "CONTENT": "#/$defs/ContentOutcome",
+          "REVISION": "#/$defs/RevisionOutcome"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/RevisionOutcome"
+        },
+        {
+          "$ref": "#/$defs/ContentOutcome"
+        },
+        {
+          "$ref": "#/$defs/ClarificationOutcome"
+        }
+      ]
+    },
+    "RouteEndpoint": {
+      "discriminator": {
+        "mapping": {
+          "ACTIVITY": "#/$defs/ActivityEndpoint",
+          "END_POINT": "#/$defs/BoundaryEndpoint",
+          "START_POINT": "#/$defs/BoundaryEndpoint"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ActivityEndpoint"
+        },
+        {
+          "$ref": "#/$defs/BoundaryEndpoint"
+        }
+      ]
+    },
+    "JobStatus": {
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "PARTIAL",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "type": "string"
+    },
+    "DataStatus": {
+      "enum": [
+        "VERIFIED",
+        "ESTIMATED",
+        "UNKNOWN",
+        "FAILED"
+      ],
+      "type": "string"
+    },
+    "ValidationStatus": {
+      "enum": [
+        "FEASIBLE",
+        "PARTIALLY_VERIFIED",
+        "INFEASIBLE"
+      ],
+      "type": "string"
+    },
+    "EventSource": {
+      "enum": [
+        "REAL",
+        "SIMULATED",
+        "USER_CORRECTION"
+      ],
+      "type": "string"
+    },
+    "TripMode": {
+      "enum": [
+        "PLANNING",
+        "TRAVELING"
+      ],
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "REAL",
+        "DEMO"
+      ],
+      "type": "string"
+    },
+    "Lifecycle": {
+      "enum": [
+        "DRAFT_INPUT",
+        "PLANNING",
+        "PLAN_READY",
+        "TRAVELING",
+        "TRIP_ENDED"
+      ],
+      "type": "string"
+    },
+    "TravelMode": {
+      "enum": [
+        "WALK",
+        "TRANSIT",
+        "DRIVE"
+      ],
+      "type": "string"
+    },
+    "ActivityProgress": {
+      "enum": [
+        "NOT_STARTED",
+        "APPROACHING",
+        "ARRIVED",
+        "VISITING",
+        "INFERRED_COMPLETE",
+        "LOCATION_UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "IntentType": {
+      "enum": [
+        "KNOWLEDGE",
+        "PHOTO",
+        "VIDEO_SHOOT",
+        "SPEECH",
+        "CHECK_IN",
+        "FOOD",
+        "OTHER"
+      ],
+      "type": "string"
+    },
+    "ServiceModule": {
+      "enum": [
+        "KNOWLEDGE",
+        "PERSONAL_GOAL",
+        "TRIP_RISK",
+        "NEARBY"
+      ],
+      "type": "string"
+    },
+    "AgentId": {
+      "enum": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "A7"
+      ],
+      "type": "string"
+    },
+    "NotificationAction": {
+      "enum": [
+        "VIEW_CONTENT",
+        "VIEW_SCRIPT",
+        "VIEW_SHOOTING_CHECKLIST",
+        "REMIND_LATER",
+        "IGNORE",
+        "VIEW_REVISION",
+        "VIEW_NEARBY",
+        "ADD_TO_PLAN"
+      ],
+      "type": "string"
+    },
+    "JobResult": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ParseRequirementsResult"
+        },
+        {
+          "$ref": "#/$defs/PlanResult"
+        },
+        {
+          "discriminator": {
+            "mapping": {
+              "CLARIFICATION": "#/$defs/ClarificationOutcome",
+              "CONTENT": "#/$defs/ContentOutcome",
+              "REVISION": "#/$defs/RevisionOutcome"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RevisionOutcome"
+            },
+            {
+              "$ref": "#/$defs/ContentOutcome"
+            },
+            {
+              "$ref": "#/$defs/ClarificationOutcome"
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/ValidateRevisionResult"
+        },
+        {
+          "$ref": "#/$defs/EvaluateProactiveResult"
+        },
+        {
+          "$ref": "#/$defs/PrepareContentResult"
+        },
+        {
+          "$ref": "#/$defs/RefineContentResult"
+        },
+        {
+          "$ref": "#/$defs/NearbySearchResult"
+        }
+      ]
+    },
+    "TypedJobSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "jobId": {
+          "minLength": 1,
+          "title": "Jobid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "progressEvents": {
+          "items": {
+            "$ref": "#/$defs/ProgressEvent"
+          },
+          "title": "Progressevents",
+          "type": "array"
+        },
+        "nextCursor": {
+          "minimum": 0,
+          "title": "Nextcursor",
+          "type": "integer"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ParseRequirementsResult"
+            },
+            {
+              "$ref": "#/$defs/PlanResult"
+            },
+            {
+              "discriminator": {
+                "mapping": {
+                  "CLARIFICATION": "#/$defs/ClarificationOutcome",
+                  "CONTENT": "#/$defs/ContentOutcome",
+                  "REVISION": "#/$defs/RevisionOutcome"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RevisionOutcome"
+                },
+                {
+                  "$ref": "#/$defs/ContentOutcome"
+                },
+                {
+                  "$ref": "#/$defs/ClarificationOutcome"
+                }
+              ]
+            },
+            {
+              "$ref": "#/$defs/ValidateRevisionResult"
+            },
+            {
+              "$ref": "#/$defs/EvaluateProactiveResult"
+            },
+            {
+              "$ref": "#/$defs/PrepareContentResult"
+            },
+            {
+              "$ref": "#/$defs/RefineContentResult"
+            },
+            {
+              "$ref": "#/$defs/NearbySearchResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "jobId",
+        "status",
+        "progressEvents",
+        "nextCursor"
+      ],
+      "title": "JobSnapshot[Union[ParseRequirementsResult, PlanResult, Annotated[Union[RevisionOutcome, ContentOutcome, ClarificationOutcome], FieldInfo(annotation=NoneType, required=True, discriminator='kind')], ValidateRevisionResult, EvaluateProactiveResult, PrepareContentResult, RefineContentResult, NearbySearchResult]]",
+      "type": "object"
+    },
+    "JobAcceptedResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "minLength": 1,
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JobAccepted"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "errors": {
+          "items": {
+            "$ref": "#/$defs/ApiError"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "trace_id": {
+          "minLength": 1,
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "status",
+        "data",
+        "errors",
+        "trace_id"
+      ],
+      "title": "ApiResponse[JobAccepted]",
+      "type": "object"
+    },
+    "JobSnapshot_Union_ParseRequirementsResult__PlanResult__Annotated_Union_RevisionOutcome__ContentOutcome__ClarificationOutcome___FieldInfo_annotation_NoneType__required_True__discriminator__kind_____ValidateRevisionResult__EvaluateProactiveResult__PrepareContentResult__RefineContentResult__NearbySearchResult__": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "jobId": {
+          "minLength": 1,
+          "title": "Jobid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "progressEvents": {
+          "items": {
+            "$ref": "#/$defs/ProgressEvent"
+          },
+          "title": "Progressevents",
+          "type": "array"
+        },
+        "nextCursor": {
+          "minimum": 0,
+          "title": "Nextcursor",
+          "type": "integer"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ParseRequirementsResult"
+            },
+            {
+              "$ref": "#/$defs/PlanResult"
+            },
+            {
+              "discriminator": {
+                "mapping": {
+                  "CLARIFICATION": "#/$defs/ClarificationOutcome",
+                  "CONTENT": "#/$defs/ContentOutcome",
+                  "REVISION": "#/$defs/RevisionOutcome"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RevisionOutcome"
+                },
+                {
+                  "$ref": "#/$defs/ContentOutcome"
+                },
+                {
+                  "$ref": "#/$defs/ClarificationOutcome"
+                }
+              ]
+            },
+            {
+              "$ref": "#/$defs/ValidateRevisionResult"
+            },
+            {
+              "$ref": "#/$defs/EvaluateProactiveResult"
+            },
+            {
+              "$ref": "#/$defs/PrepareContentResult"
+            },
+            {
+              "$ref": "#/$defs/RefineContentResult"
+            },
+            {
+              "$ref": "#/$defs/NearbySearchResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "jobId",
+        "status",
+        "progressEvents",
+        "nextCursor"
+      ],
+      "title": "JobSnapshot[Union[ParseRequirementsResult, PlanResult, Annotated[Union[RevisionOutcome, ContentOutcome, ClarificationOutcome], FieldInfo(annotation=NoneType, required=True, discriminator='kind')], ValidateRevisionResult, EvaluateProactiveResult, PrepareContentResult, RefineContentResult, NearbySearchResult]]",
+      "type": "object"
+    },
+    "JobSnapshotResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "minLength": 1,
+          "title": "Request Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "PARTIAL",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JobSnapshot_Union_ParseRequirementsResult__PlanResult__Annotated_Union_RevisionOutcome__ContentOutcome__ClarificationOutcome___FieldInfo_annotation_NoneType__required_True__discriminator__kind_____ValidateRevisionResult__EvaluateProactiveResult__PrepareContentResult__RefineContentResult__NearbySearchResult__"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "errors": {
+          "items": {
+            "$ref": "#/$defs/ApiError"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "trace_id": {
+          "minLength": 1,
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "status",
+        "data",
+        "errors",
+        "trace_id"
+      ],
+      "title": "ApiResponse[JobSnapshot[Union[ParseRequirementsResult, PlanResult, Annotated[Union[RevisionOutcome, ContentOutcome, ClarificationOutcome], FieldInfo(annotation=NoneType, required=True, discriminator='kind')], ValidateRevisionResult, EvaluateProactiveResult, PrepareContentResult, RefineContentResult, NearbySearchResult]]]",
+      "type": "object"
+    }
+  }
+}

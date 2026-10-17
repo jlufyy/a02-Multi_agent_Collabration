@@ -1,0 +1,20 @@
+name: Backend verification
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pip install -c apps/api/requirements-lock.txt './apps/api[test]'
+      - run: python -m pytest -q
+        working-directory: apps/api
+      - run: node --test packages/context-engine/test.mjs
+      - run: python packages/contracts/generate.py --app-openapi --check
+      - run: npm ci
+      - run: npm run typecheck

@@ -1,0 +1,9 @@
+{
+  "name": "@tripflow/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "types": "./generated/index.d.ts",
+  "exports": {".": {"types": "./generated/index.d.ts", "import": "./generated/index.mjs"}, "./schema.json": "./generated/schema.json", "./openapi.json": "./generated/openapi.json"},
+  "scripts": {"generate": "python generate.py", "check": "python generate.py --check"}
+}
