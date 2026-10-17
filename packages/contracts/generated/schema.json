@@ -249,6 +249,32 @@
       "title": "Fact[Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Ge(ge=0), AllowInfNan(allow_inf_nan=False)])]]",
       "type": "object"
     },
+    "Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "evidence"
+      ],
+      "title": "Fact[Annotated[str, FieldInfo(annotation=NoneType, required=True, metadata=[Strict(strict=True), MinLen(min_length=1)])]]",
+      "type": "object"
+    },
     "Fact_str_": {
       "additionalProperties": false,
       "properties": {
@@ -357,6 +383,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Fact_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parentPoiId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____"
             },
             {
               "type": "null"
@@ -2829,6 +2866,30 @@
           "minLength": 1,
           "title": "Scopenote",
           "type": "string"
+        },
+        "generationProvider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Generationprovider"
+        },
+        "generationModel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Generationmodel"
         }
       },
       "required": [
@@ -4588,6 +4649,17 @@
           "title": "Text",
           "type": "string"
         },
+        "requirements": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TripRequirements"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "selectedContext": {
           "anyOf": [
             {
@@ -4685,6 +4757,33 @@
             "$ref": "#/$defs/UncertainField"
           },
           "title": "Uncertainfields",
+          "type": "array"
+        },
+        "questions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2,
+          "title": "Questions",
+          "type": "array"
+        },
+        "fieldSources": {
+          "additionalProperties": {
+            "enum": [
+              "USER",
+              "INFERRED",
+              "SUGGESTED"
+            ],
+            "type": "string"
+          },
+          "title": "Fieldsources",
+          "type": "object"
+        },
+        "changedFields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changedfields",
           "type": "array"
         }
       },
@@ -4999,6 +5098,17 @@
         },
         "validation": {
           "$ref": "#/$defs/ValidationReport"
+        },
+        "replacementProposal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RevisionProposal"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [

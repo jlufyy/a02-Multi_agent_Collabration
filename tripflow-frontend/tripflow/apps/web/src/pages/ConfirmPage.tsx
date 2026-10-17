@@ -7,6 +7,7 @@ import { PlacePicker } from '../components/PlacePicker';
 import { Toggle } from '../components/ui';
 import { INTENT_LABEL, MODE_LABEL, dayCount, emptyRequirements, requirementProblems } from '../lib/requirements';
 import { uid } from '../lib/id';
+import { planTime } from '../lib/time';
 
 const toLocal = (iso?: string) => (iso ? new Date(Date.parse(iso) + 8 * 3600_000).toISOString().slice(0, 16) : '');
 const fromLocal = (v: string) => (v ? `${v}:00+08:00` : undefined);
@@ -162,7 +163,7 @@ export function ConfirmPage() {
                 <Companion key={c.id} c={c} onChange={(nc) => up('companions', r.companions.map((x, j) => (j === i ? nc : x)))} onRemove={() => up('companions', r.companions.filter((_, j) => j !== i))} />
               ))}
             </Section>
-            <Section title="固定安排 / 锁定时段" action={<button className="text-[13px] text-brand" onClick={() => up('fixedConstraints', [...r.fixedConstraints, { id: uid('fc'), startAt: r.startDate ? `${r.startDate}T12:00:00+08:00` : new Date().toISOString(), reason: '', locked: true }])}>+ 添加</button>}>
+            <Section title="固定安排 / 锁定时段" action={<button className="text-[13px] text-brand" onClick={() => up('fixedConstraints', [...r.fixedConstraints, { id: uid('fc'), startAt: r.startDate ? `${r.startDate}T12:00:00+08:00` : planTime(new Date()), reason: '', locked: true }])}>+ 添加</button>}>
               {r.fixedConstraints.length === 0 && <p className="text-[13px] text-ink-faint">如“周六 18:00 前必须到车站集合”。</p>}
               {r.fixedConstraints.map((f, i) => (
                 <Fixed key={f.id} f={f} openPicker={setPicker} onChange={(nf) => up('fixedConstraints', r.fixedConstraints.map((x, j) => (j === i ? nf : x)))} onRemove={() => up('fixedConstraints', r.fixedConstraints.filter((_, j) => j !== i))} />

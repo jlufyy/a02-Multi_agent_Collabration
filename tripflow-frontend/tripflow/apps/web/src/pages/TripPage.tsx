@@ -81,7 +81,7 @@ export function TripPage() {
   const cardLevel = travel.activeCard?.decision.card.level;
   useEffect(() => { if (cardLevel === 'L2' || cardLevel === 'L3') setSnap((s) => Math.min(s, SNAPS[0])); }, [cardLevel, travel.activeCard?.decision.card.cardId]);
   // 有待确认草稿时自动打开预览
-  useEffect(() => { if (pending && !flow.proposeJob.running) setPreviewOpen(true); }, [pending?.proposal.proposalId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (pending && !pending.directApply && !flow.proposeJob.running) setPreviewOpen(true); }, [pending?.proposal.proposalId, pending?.directApply]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!pending && !flow.proposeJob.running) setTempOrder(undefined); }, [pending, flow.proposeJob.running]);
 
   const days = useMemo(() => (plan ? daysOf(plan) : []), [plan]);

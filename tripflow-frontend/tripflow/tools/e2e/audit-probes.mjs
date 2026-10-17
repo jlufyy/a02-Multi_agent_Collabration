@@ -1,4 +1,4 @@
-// Deterministic SYNTHETIC defect reproduction against unchanged frontend code.
+// Deterministic SYNTHETIC regression probes against the current frontend adapter.
 import { build } from 'esbuild';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -24,9 +24,11 @@ const queue={decision:{decisionId:'decision',eventId:'e',tripId:'audit',baseRevi
   eventSource:'SIMULATED',demoRunId:'audit-demo',arrivalId:'a',enqueuedAt:at(0)};
 const stale=E.checkShow(queue,[],{enableL1:true,enableL2:true,enableL3:true,paused:false,cooldownMinutes:15},
   {now:new Date(at(3600)),uiBusy:false,currentRevision:2,activityExists:()=>true});
-const result={evidenceType:'SYNTHETIC_UNCHANGED_FRONTEND',applicationModified:false,policy,
+const result={evidenceType:'SYNTHETIC_CURRENT_FRONTEND',policy,
   duplicateSample:{uniqueSamples:2,expected:'No ARRIVE before three unique samples',actual:duplicate,defectReproduced:duplicate.events.some(e=>e.type==='ARRIVE')},
   lowAccuracyGap:{expected:'Reset dwell at low-accuracy sample; no arrival at t=90',actual:lowAccuracy,defectReproduced:lowAccuracy.events.some(e=>e.type==='ARRIVE')},
   staleQueuedCard:{queuedBaseRevision:1,currentRevision:2,queuedAgeSeconds:3600,expected:'Suppress stale card',actual:stale,defectReproduced:stale.ok}};
 writeFileSync(process.argv[3],JSON.stringify(result,null,2));
 console.log(JSON.stringify(result));
+
+if ([duplicate.events,lowAccuracy.events].some(events=>events.some(e=>e.type==='ARRIVE')) || stale.ok) process.exitCode=1;

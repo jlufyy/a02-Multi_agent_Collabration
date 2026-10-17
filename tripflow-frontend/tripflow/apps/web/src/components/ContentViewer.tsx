@@ -22,6 +22,7 @@ export function ContentCard({ c, stale }: { c: PreparedContent; stale?: boolean 
       {/* 纯文本渲染，不执行任何 HTML/脚本 */}
       <div className="mt-2 whitespace-pre-wrap text-[14.5px] leading-relaxed">{c.body}</div>
       <p className="mt-3 text-[12px] text-ink-faint">v{c.version} · 生成于 {fmtDateTime(c.generatedAt)} · {c.scopeNote}</p>
+      {c.generationProvider && <p className="mt-1 text-[12px] text-ink-faint">生成服务：{c.generationProvider} / {c.generationModel ?? '型号未返回'}</p>}
       <button className="mt-1 text-[12.5px] text-brand" onClick={() => setMore(!more)}>{more ? '收起来源' : `查看来源（${c.evidence.length}）`}</button>
       {more && <div className="mt-2"><EvidenceList items={c.evidence} /></div>}
     </article>

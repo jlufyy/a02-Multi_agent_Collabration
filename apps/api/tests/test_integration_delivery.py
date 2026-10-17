@@ -28,7 +28,7 @@ def test_deepseek_routes_and_explicit_override(monkeypatch):
     monkeypatch.setenv("AIPING_API_KEY", "synthetic-aggregator-key")
     settings = Settings.from_env()
     assert settings.role_routes["A1"] == "deepseek"
-    assert settings.role_routes["A7"]["provider"] == "aiping"
+    assert settings.role_routes["A7"] == "deepseek"
     assert settings.provider_configs["deepseek"]["base_url"] == "https://api.deepseek.com"
     app = create_app(settings)
     with TestClient(app) as client:
@@ -36,7 +36,7 @@ def test_deepseek_routes_and_explicit_override(monkeypatch):
         assert "synthetic-direct-key" not in response.text
         assert "synthetic-aggregator-key" not in response.text
         routes = {r["agentId"]: r["provider"] for r in response.json()["data"]["modelRoutes"]}
-        assert routes == {"A1": "deepseek", "A7": "aiping"}
+        assert routes == {"A1": "deepseek", "A7": "deepseek"}
     monkeypatch.setenv("MODEL_ROUTES", '{"A1":"aiping","A7":"deepseek"}')
     assert Settings.from_env().role_routes == {"A1": "aiping", "A7": "deepseek"}
     monkeypatch.delenv("MODEL_ROUTES")

@@ -86,9 +86,10 @@ export function SettingsPage() {
           )}
         </Group>
         <Group title="服务状态">
+          <p className="px-4 text-[12px] text-ink-faint">以下显示配置是否就绪。实际请求可能超时或失败，请以本次请求结果为准。</p>
           {!caps && <Item title="规划服务" hint={capErr ?? '正在读取…'} />}
           {caps?.tools.map((t) => <Item key={t.name} title={t.name} hint={t.reason} right={<span className={`h-2 w-2 rounded-full ${t.available ? 'bg-ok' : 'bg-danger'}`} />} />)}
-          {caps?.modelRoutes.map((m) => <Item key={m.agentId} title={`${AGENT_NAME[m.agentId]} Agent`} hint={`${m.provider} / ${m.model}`} right={!m.available ? <span className="text-[12px] text-danger">不可用</span> : undefined} />)}
+          {caps?.modelRoutes.map((m) => <Item key={m.agentId} title={`${AGENT_NAME[m.agentId]} Agent`} hint={`${m.provider} / ${m.model}`} right={<span className={`text-[12px] ${m.available ? 'text-ink-faint' : 'text-danger'}`}>{m.available ? '已配置' : '未配置'}</span>} />)}
         </Group>
         <Group title="数据">
           {trip.demo && <Item title="清除演示/模拟记录" onClick={async () => { await stopDemo(tripId); toast('模拟记录已清除'); }} />}

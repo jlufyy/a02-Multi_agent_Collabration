@@ -6,7 +6,7 @@ export interface GeoEngineState {
   states: Record<string, GeoRuntimeState>;
   tracker: {seenSampleIds:string[]; counts:Record<string,{inside:number;outside:number}>;
     arrivals:Record<string,number>;departed:Record<string,boolean>;
-    lastSample?:{timestamp:string;location:GeoPoint};needsFresh?:boolean};
+    lastSample?:{timestamp:string;location:GeoPoint};lastObservedAt?:string;needsFresh?:boolean};
 }
 export interface Diagnostic {code:string;activityId?:string;distanceMeters?:number;originalLocation?:GeoPoint;
   normalizedLocation?:GeoPoint;conversion?:string;policyVersion?:string;calculatedSpeedMetersPerSecond?:number}

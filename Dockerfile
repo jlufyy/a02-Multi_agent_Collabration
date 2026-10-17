@@ -1,5 +1,7 @@
 FROM node:22-slim AS web
-WORKDIR /web
+WORKDIR /app/tripflow-frontend/tripflow
+COPY packages/context-engine /app/packages/context-engine
+COPY packages/contracts /app/packages/contracts
 COPY tripflow-frontend/tripflow/package*.json ./
 COPY tripflow-frontend/tripflow/packages ./packages
 COPY tripflow-frontend/tripflow/apps/web ./apps/web
@@ -14,7 +16,7 @@ COPY apps/api/requirements-lock.txt /app/apps/api/requirements-lock.txt
 RUN pip install --no-cache-dir -c /app/apps/api/requirements-lock.txt /app/apps/api
 COPY packages/context-engine/geo-policy.json /app/packages/context-engine/geo-policy.json
 COPY apps/api/serve.py /app/apps/api/serve.py
-COPY --from=web /web/apps/web/dist /app/tripflow-frontend/tripflow/apps/web/dist
+COPY --from=web /app/tripflow-frontend/tripflow/apps/web/dist /app/tripflow-frontend/tripflow/apps/web/dist
 RUN useradd --create-home --uid 10001 tripflow
 USER tripflow
 EXPOSE 8000

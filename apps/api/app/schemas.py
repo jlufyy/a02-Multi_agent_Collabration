@@ -120,6 +120,7 @@ class Place(ContractModel):
     queueMinutes: Fact[NonNegative] | None = None
     rating: Fact[NonNegative] | None = None
     bookingNote: Fact[str] | None = None
+    parentPoiId: Fact[Id] | None = None
 
 
 class CompanionPreference(ContractModel):
@@ -496,6 +497,8 @@ class PreparedContent(ContractModel):
     generatedAt: Timestamp
     evidence: list[Evidence]
     scopeNote: Id
+    generationProvider: str | None = None
+    generationModel: str | None = None
 
 
 class SelectedContext(ContractModel):
@@ -809,6 +812,7 @@ class NearbyCandidate(ContractModel):
 
 class ParseRequirementsRequest(RequestContext):
     text: Id
+    requirements: TripRequirements | None = None
     selectedContext: SelectedContext | None = None
     conversation: list[ConversationMessage] | None = None
 
@@ -830,6 +834,9 @@ class ParseRequirementsResult(ContractModel):
     intents: list[TravelIntent]
     missingFields: list[str]
     uncertainFields: list[UncertainField]
+    questions: list[str] = Field(default_factory=list, max_length=2)
+    fieldSources: dict[str, Literal['USER', 'INFERRED', 'SUGGESTED']] = Field(default_factory=dict)
+    changedFields: list[str] = Field(default_factory=list)
 
     @model_validator(mode='after')
     def intents_match(self):
@@ -902,6 +909,7 @@ class ValidateRevisionResult(ContractModel):
     proposalId: Id
     baseRevision: NonNegativeInt
     validation: ValidationReport
+    replacementProposal: RevisionProposal | None = None
 
 
 class SearchPlacesRequest(ExecutionContext):

@@ -1,5 +1,11 @@
 .env
 .env.*
+*.env*
+**/*.env*
+.DS_Store
+**/.DS_Store
+._*
+**/._*
 .venv
 **/__pycache__
 **/.pytest_cache

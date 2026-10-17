@@ -195,6 +195,8 @@ class AmapProvider:
         place = {"poiId": pid, "name": raw["name"], "location": point, "evidence": [evidence]}
         if isinstance(raw.get("address"), str) and raw["address"]:
             place["address"] = raw["address"]
+        if isinstance(raw.get("parent"), str) and raw["parent"] and raw["parent"] != pid:
+            place["parentPoiId"] = {"value": raw["parent"], "evidence": self._evidence(pid, fetched, "Field: parent; provider-supplied parent POI; " + cache_note)}
         unknown = "Provider endpoint does not establish this field; not zero/free/open"
         for field in ("openingHours", "ticketPriceCny", "queueMinutes", "bookingNote"):
             place[field] = {"evidence": self._evidence(pid, fetched, f"Field: {field}; {unknown}; {cache_note}", "UNKNOWN")}

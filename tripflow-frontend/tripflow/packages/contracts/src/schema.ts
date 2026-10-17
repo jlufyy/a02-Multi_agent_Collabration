@@ -34,6 +34,9 @@ export const apiResponse = <T extends z.ZodTypeAny>(data: T) => z.object({
   request_id: z.string(), status: JobStatus, data: data.nullable(), errors: z.array(ApiError), trace_id: z.string(),
 });
 
+export const PlanTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?\+08:00$/, '行程时间必须使用 +08:00')
+  .refine((v) => Number.isFinite(Date.parse(v)), '行程时间无效');
+
 export const GeoPoint = z.object({ lat: z.number(), lng: z.number(), coordinateSystem: z.enum(['GCJ02', 'WGS84']) });
 export const Evidence = z.object({
   provider: z.string(), externalId: z.string().optional(), fetchedAt: z.string().optional(),
@@ -45,6 +48,7 @@ export const Place = z.object({
   poiId: z.string(), name: z.string(), address: z.string().optional(), location: GeoPoint, evidence: z.array(Evidence),
   openingHours: fact(z.string()).optional(), ticketPriceCny: fact(z.number()).optional(),
   queueMinutes: fact(z.number()).optional(), rating: fact(z.number()).optional(), bookingNote: fact(z.string()).optional(),
+  parentPoiId: fact(z.string()).optional(),
 });
 export const CompanionPreference = z.object({
   id: z.string(), label: z.string(), interests: z.array(z.string()),
@@ -58,7 +62,7 @@ export const TravelIntent = z.object({
 export const PlaceReference = z.object({ query: z.string(), place: Place.optional() });
 export const FixedConstraint = z.object({
   id: z.string(), activityId: z.string().optional(), place: PlaceReference.optional(),
-  startAt: z.string(), endAt: z.string().optional(), reason: z.string(), locked: z.boolean(),
+  startAt: PlanTime, endAt: PlanTime.optional(), reason: z.string(), locked: z.boolean(),
 });
 export const TripRequirements = z.object({
   requirementsId: z.string(), version: z.number().int(), confirmed: z.boolean(),
@@ -66,7 +70,7 @@ export const TripRequirements = z.object({
   timezone: z.literal('Asia/Shanghai'),
   travelerCount: z.number().int().optional(), budgetCny: z.number().optional(), budgetScope: BudgetScope.optional(),
   budgetIsHardLimit: z.boolean(), includesAccommodation: z.boolean().optional(), includesIntercityTransport: z.boolean().optional(),
-  arrivalAt: z.string().optional(), departureAt: z.string().optional(),
+  arrivalAt: PlanTime.optional(), departureAt: PlanTime.optional(),
   startPoint: PlaceReference.optional(), endPoint: PlaceReference.optional(),
   transportModes: z.array(TravelMode), mustVisit: z.array(PlaceReference), avoidPlaces: z.array(PlaceReference),
   preferences: z.array(z.string()), companions: z.array(CompanionPreference),
@@ -92,7 +96,7 @@ export const BoundarySegment = z.object({
 });
 export const ItineraryActivity = z.object({
   id: z.string(), place: Place, dayIndex: z.number().int().min(0), orderIndex: z.number().int().min(0),
-  startAt: z.string(), endAt: z.string(),
+  startAt: PlanTime, endAt: PlanTime,
   estimatedCostCny: z.number().optional(), costStatus: DataStatus, locked: z.boolean(), mandatory: z.boolean(),
   progress: ActivityProgress, intentIds: z.array(z.string()),
   bookingStatus: z.enum(['UNSPECIFIED', 'REQUIRED', 'BOOKED']).optional(), bookingEvidence: Evidence.optional(),
@@ -135,7 +139,7 @@ const opBase = {
   REMOVE: z.object({ type: z.literal('REMOVE'), activityId: z.string() }),
   REPLACE: z.object({ type: z.literal('REPLACE'), activityId: z.string(), candidatePlaceId: z.string(), candidatePlace: Place }),
   MOVE: z.object({ type: z.literal('MOVE'), activityId: z.string(), dayIndex: z.number().int(), orderIndex: z.number().int() }),
-  UPDATE_TIME: z.object({ type: z.literal('UPDATE_TIME'), activityId: z.string(), startAt: z.string() }),
+  UPDATE_TIME: z.object({ type: z.literal('UPDATE_TIME'), activityId: z.string(), startAt: PlanTime }),
   UPDATE_DURATION: z.object({ type: z.literal('UPDATE_DURATION'), activityId: z.string(), durationMin: z.number().positive() }),
 };
 export const UpdateConstraintOp = z.intersection(z.object({ type: z.literal('UPDATE_CONSTRAINT') }), ConstraintChange);
@@ -162,6 +166,7 @@ export const PreparedContent = z.object({
   contentId: z.string(), tripId: z.string(), baseRevision: z.number().int(), activityId: z.string().optional(), intentId: z.string().optional(),
   placeId: z.string(), module: ServiceModule, title: z.string(), body: z.string(),
   version: z.number().int(), generatedAt: z.string(), evidence: z.array(Evidence), scopeNote: z.string(),
+  generationProvider: z.string().optional(), generationModel: z.string().optional(),
 });
 export const SelectedContext = z.object({
   tripId: z.string(), planRevision: z.number().int(), mode: TripMode,
@@ -250,8 +255,11 @@ export const NearbyCandidate = z.object({
 export const ParseResult = z.object({
   requirements: TripRequirements, intents: z.array(TravelIntent), missingFields: z.array(z.string()),
   uncertainFields: z.array(z.object({ fieldPath: z.string(), reason: z.string(), candidates: z.array(Place).optional() })),
+  questions: z.array(z.string()).max(2).default([]),
+  fieldSources: z.record(z.string(), z.enum(['USER', 'INFERRED', 'SUGGESTED'])).default({}),
+  changedFields: z.array(z.string()).default([]),
 });
-export const ValidateResult = z.object({ proposalId: z.string(), baseRevision: z.number().int(), validation: ValidationReport });
+export const ValidateResult = z.object({ proposalId: z.string(), baseRevision: z.number().int(), validation: ValidationReport, replacementProposal: RevisionProposal.optional() });
 export const EvaluateResult = z.object({ decision: ProactiveDecision, contents: z.array(PreparedContent) });
 export const ContentsResult = z.object({ contents: z.array(PreparedContent) });
 export const ContentResult = z.object({ content: PreparedContent });

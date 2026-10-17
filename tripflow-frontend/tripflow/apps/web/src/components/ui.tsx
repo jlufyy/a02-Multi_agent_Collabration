@@ -119,7 +119,7 @@ export const fmtTime = (iso: string) => new Intl.DateTimeFormat('zh-CN', { timeZ
 export const fmtDateTime = (iso: string) => new Intl.DateTimeFormat('zh-CN', { timeZone: TZ, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 export const fmtDay = (date: string) => new Intl.DateTimeFormat('zh-CN', { timeZone: TZ, month: 'numeric', day: 'numeric', weekday: 'short' }).format(new Date(date + 'T12:00:00+08:00'));
 export const minutesBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 60000);
-export const fmtMin = (m?: number) => (m === undefined ? '—' : m >= 60 ? `${Math.floor(m / 60)}小时${m % 60 ? (m % 60) + '分' : ''}` : `${m}分钟`);
+export { displayMinutes as fmtMin } from '../lib/time';
 export const fmtCny = (v?: number) => (v === undefined ? '未知' : `¥${v.toLocaleString('zh-CN')}`);
 export const todayInTz = () => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date());
 export const describeTime = (s?: string, e?: string) => (s ? `${fmtTime(s)}${e ? '–' + fmtTime(e) : ''}` : '—');

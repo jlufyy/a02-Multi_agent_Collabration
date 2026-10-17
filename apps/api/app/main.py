@@ -30,6 +30,7 @@ def create_app(settings=None, maps=None, gateway=None):
                                 cache_authorized=settings.amap_cache_authorized)
     gateway = gateway or ModelGateway(settings.provider_configs, settings.role_routes,
                                       timeout_seconds=settings.model_timeout_seconds,
+                                      role_limits={"A7": {"timeout_seconds": settings.content_timeout_seconds, "max_tokens": settings.content_max_tokens}},
                                       max_calls_per_job=settings.max_model_calls_per_job,
                                       daily_budget_cny=settings.daily_budget_cny)
     jobs = JobManager(settings, gateway=gateway)

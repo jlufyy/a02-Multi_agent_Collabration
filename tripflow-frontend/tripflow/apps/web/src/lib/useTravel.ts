@@ -3,7 +3,7 @@ import type {
   NormalizedLocationEvent, ProactiveEvent, NotificationRecord, EventLogEntry, GeoPoint, TripState, NotificationAction, Evidence,
 } from '@tripflow/contracts';
 import {
-  stepGeo, initialEngineState, INTERIM_GEO_POLICY, checkShow, sortQueue, relevantRecords, type EngineState, type QueuedCard,
+  stepLocations, initialEngineState, activityGeoKey, INTERIM_GEO_POLICY, checkShow, checkCardContext, sortQueue, relevantRecords, type EngineState, type QueuedCard,
 } from '@tripflow/context-engine';
 import { useTrips, activeWs, execCtx } from '../store/tripStore';
 import { projectPlan } from '../store/planOps';
@@ -62,8 +62,9 @@ export function useTravel(tripId: string, travelDay: number) {
         recentNotifications: relevantRecords(recs, { arrivalId: ev.arrivalId, intentIds: act?.intentIds ?? [], now: new Date(), cooldownMinutes: pol.cooldownMinutes }),
       }, { limits: caps?.limits });
       const out = await h.promise;
-      const cur = activeWs(useTrips.getState().trips[tripId])?.plan;
-      if (!out.result || !cur || cur.revision !== p.revision) return; // 计划已变：丢弃旧决策
+      const currentTrip = useTrips.getState().trips[tripId];
+      const cur = activeWs(currentTrip)?.plan;
+      if (!out.result || !cur || cur.revision !== p.revision || currentTrip.demo?.demoRunId !== ev.demoRunId || (currentTrip.demo ? 'SIMULATED' : 'REAL') !== ev.source) return;
       const { decision, contents } = out.result;
       if (decision.tripId !== tripId || decision.eventId !== ev.eventId) return;
       if (contents.length) await useTrips.getState().putContents(tripId, contents).catch(() => undefined);
@@ -108,21 +109,10 @@ export function useTravel(tripId: string, travelDay: number) {
     const live = day.filter((a) => a.progress !== 'INFERRED_COMPLETE');
     const inProgress = day.filter((a) => ['ARRIVED', 'VISITING', 'LOCATION_UNKNOWN'].includes(a.progress));
     const targets = [...new Map([...inProgress, ...live.slice(0, 2)].map((a) => [a.id, a])).values()];
-    const geo = [...w.geo];
-    const out: Omit<ProactiveEvent, 'eventId' | 'revision'>[] = [];
-    const notes: string[] = [];
-    for (const a of targets) {
-      const i = geo.findIndex((g) => g.activityId === a.id && g.source === sample.source && g.demoRunId === sample.demoRunId);
-      const prev: EngineState = i >= 0 ? geo[i] : initialEngineState(tripId, a.id, sample.source, sample.demoRunId);
-      const r = stepGeo(prev, sample, { activityId: a.id, location: a.place.location }, policy, () => uid('arr'));
-      if (i >= 0) geo[i] = r.state; else geo.push(r.state);
-      out.push(...r.events); if (r.note) notes.push(r.note);
-    }
-    // 同一时刻若多个候选同时“到达”，只保留顺序靠前的那个（重叠围栏）
-    const arrivals = out.filter((e) => e.type === 'ARRIVE');
-    const keep = arrivals.length > 1 ? new Set([arrivals[0]]) : null;
-    const events = keep ? out.filter((e) => e.type !== 'ARRIVE' || keep.has(e)) : out;
-    useTrips.getState().setGeo(tripId, geo);
+    if (sample.tripId !== tripId || sample.source !== (t.demo ? 'SIMULATED' : 'REAL') || sample.demoRunId !== t.demo?.demoRunId) return { notes: ['SOURCE_MISMATCH'] };
+    const r = stepLocations(w.geo, sample, targets, policy);
+    const { notes, events } = r;
+    useTrips.getState().setGeo(tripId, r.states);
     setMe({ location: sample.location, accuracy: sample.accuracyMeters, simulated: sample.source === 'SIMULATED' });
     handleEvents(events, p);
     return { notes, events };
@@ -197,7 +187,22 @@ export function useTravel(tripId: string, travelDay: number) {
   const [tick, setTick] = useState(0);
   useEffect(() => { const h = setInterval(() => setTick((x) => x + 1), 15000); return () => clearInterval(h); }, []);
   useEffect(() => {
-    if (activeCard || !queue.length || !plan) return;
+    if (!plan) return;
+    const context = { now: new Date(), uiBusy: busyRef.current, currentRevision: plan.revision,
+      tripId, executionMode: demoRunId ? 'DEMO' as const : 'REAL' as const, demoRunId,
+      activityExists: (id?: string) => !!plan.activities.find((a) => a.id === id),
+      intentApplicable: (id: string, aid?: string) => plan.intents.some((i) => i.id === id && i.confirmed && i.status !== 'CANCELLED' && i.activityId === aid),
+      arrivalCurrent: (id?: string, arrivalId?: string) => !!arrivalId && !!ws?.geo.some((g) => {
+        const a = plan.activities.find((a) => a.id === id);
+        const age = Date.parse(demo?.simClock ?? nowIso()) - Date.parse(g.lastValidSampleAt ?? '');
+        return a && g.targetKey === activityGeoKey(a) && g.activityId === id && g.arrivalId === arrivalId && ['ARRIVED', 'VISITING'].includes(g.progress) && age >= 0 && age <= policy.maxSampleGapSeconds * 1000;
+      }),
+    };
+    if (activeCard) {
+      if (!checkCardContext(activeCard, context).ok || !traveling) useTrips.getState().setQueue(tripId, queue, undefined);
+      return;
+    }
+    if (!queue.length) return;
     const recs = notificationRecords(ws?.eventLog ?? []);
     const sorted = sortQueue(queue);
     const keep: QueuedCard[] = [];
@@ -205,7 +210,7 @@ export function useTravel(tripId: string, travelDay: number) {
     const logs: EventLogEntry[] = [];
     for (const q of sorted) {
       if (show) { keep.push(q); continue; }
-      const r = checkShow(q, recs, plan.notificationPolicy, { now: new Date(), uiBusy: busyRef.current, currentRevision: plan.revision, activityExists: (id) => !!plan.activities.find((a) => a.id === id) });
+      const r = checkShow(q, recs, plan.notificationPolicy, context);
       if (r.ok) { show = q; continue; }
       if (r.defer) { keep.push(q); continue; }
       const c = q.decision.card;
@@ -221,7 +226,7 @@ export function useTravel(tripId: string, travelDay: number) {
     }
     if (logs.length) useTrips.getState().appendLog(tripId, logs);
     useTrips.getState().setQueue(tripId, keep, show);
-  }, [queue, activeCard, plan, ws?.eventLog, tick, busyTick, tripId]);
+  }, [queue, activeCard, plan, ws?.eventLog, ws?.geo, tick, busyTick, tripId, demoRunId, traveling, demo?.simClock, policy.maxSampleGapSeconds]);
 
   const respond = useCallback((action: NotificationAction, snoozeMinutes?: number) => {
     const q = useTrips.getState().active[tripId];
@@ -243,11 +248,19 @@ export function useTravel(tripId: string, travelDay: number) {
     const t = useTrips.getState().trips[tripId]; const w = activeWs(t);
     if (!t || !w?.plan) return;
     const source = t.demo ? 'SIMULATED' as const : 'REAL' as const;
-    const geo = [...w.geo];
+    const previousCore = w.geo.find((g) => g.core)?.core;
+    const correctedCore = previousCore && structuredClone(previousCore);
+    const geo: EngineState[] = w.geo.map((g) => ({ ...g, core: undefined }));
     const i = geo.findIndex((g) => g.activityId === activityId && g.demoRunId === t.demo?.demoRunId);
     const prev = i >= 0 ? geo[i] : initialEngineState(tripId, activityId, source, t.demo?.demoRunId);
-    const ns: EngineState = { ...prev, progress: next, candidateSince: undefined, outsideSince: undefined, insideSamples: 0, outsideSamples: 0 };
+    const activity = w.plan.activities.find((a) => a.id === activityId);
+    const ns: EngineState = { ...prev, progress: next, targetKey: activity && activityGeoKey(activity), arrivalId: ['ARRIVED', 'VISITING'].includes(next) ? prev.arrivalId ?? uid('arr') : undefined, candidateSince: undefined, outsideSince: undefined, insideSamples: 0, outsideSamples: 0 };
     if (i >= 0) geo[i] = ns; else geo.push(ns);
+    if (correctedCore && geo.length) {
+      correctedCore.tracker.counts[activityId] = { inside: 0, outside: 0 };
+      correctedCore.tracker.departed[activityId] = next === 'INFERRED_COMPLETE';
+      geo[0].core = correctedCore;
+    }
     useTrips.getState().setGeo(tripId, geo);
     useTrips.getState().appendLog(tripId, [{ logId: uid('log'), tripId, tripRevision: w.plan.revision, source: 'USER_CORRECTION', demoRunId: t.demo?.demoRunId, occurredAt: nowIso(),
       correction: { activityId, previous: prev.progress, next, reason: '用户手动纠正' } }]);

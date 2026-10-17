@@ -2,7 +2,7 @@
 
 React/TypeScript 前端 + FastAPI 后端。前端源码保留在 `tripflow-frontend/tripflow/apps/web`，后端在 `apps/api`。构建后由 FastAPI 同时提供页面与 `/api/v1`，通过一个地址使用，无需运行契约测试桩。
 
-**2026-10-17：已完成整合及真实联调，仍有阻塞性缺陷，按要求仅记录、没有修复。不能据此宣称全功能验收通过。** 详见 [整合测试与问题建议](docs/TripFlow_整合测试与问题建议_2026-10-17.md)。
+**2026-10-17 修复更新：已修复保存/编辑、跨日排程、北京时间、定位去重和驻留、提醒过期等问题，并加入多轮需求对话、摘要确认、局部路线复用和内容持久化。** 修复及验收范围见 [修复记录](docs/TripFlow_修复与验证_2026-10-17.md)。[原整合报告](docs/TripFlow_整合测试与问题建议_2026-10-17.md)保留为历史基线；真机 GPS、HTTPS 和容器部署仍需单独验收。
 
 ## 本机使用
 
@@ -43,14 +43,14 @@ npm --prefix tripflow-frontend/tripflow ci --cache .npm-cache --no-audit --no-fu
 
 克隆仓库后，先复制根目录 `.env.example` 为 `.env` 并自行填写服务密钥；前端公开 JS Key 参考其独立 `.env.example`。真实 `.env` 不随仓库分发，只供后端读取。支持 `AMAP_API_KEY` / `AMAP_WEB_SERVICE_KEY`、`AIPING_API_KEY` / `AIPING_BASE_URL`、`DEEPSEEK_API_KEY`。
 
-同时配置两个模型入口时，缺省路由：
+配置 DeepSeek 时，缺省路由如下（显式 `MODEL_ROUTES` 始终优先）：
 
 | Agent | 入口 | 默认模型 |
 |---|---|---|
 | A1 需求解析、编辑理解 | DeepSeek 直连 | `deepseek-flash` |
-| A7 内容生成 | AIPing | `Qwen3.8-27B` |
+| A7 内容生成 | DeepSeek 直连 | 与 `DEEPSEEK_MODEL` 一致，默认 `deepseek-flash` |
 
-`DEEPSEEK_BASE_URL` 默认 `https://api.deepseek.com`；`DEEPSEEK_MODEL` 可指定已核实可用的型号。显式 `MODEL_ROUTES` 优先于默认路由。仅配置 DeepSeek 时，A1/A7 均可使用它。`capabilities.available` 表示配置就绪，不代表每次调用都成功。单价未配置时费用仍是 UNKNOWN；进程内每日预留预算不是外部账单封顶。本轮 DeepSeek 已成功调用，AIPing 内容生成出现超时，详见报告。
+`DEEPSEEK_BASE_URL` 默认 `https://api.deepseek.com`；`DEEPSEEK_MODEL` 可指定已核实可用的型号。显式 `MODEL_ROUTES` 优先于默认路由。未配置 DeepSeek 时保留已有 AIPing/独立供应商路由。可用 `MODEL_ROUTES={"A1":"deepseek","A7":{"provider":"aiping","model":"Qwen3.8-27B"}}` 明确选用 AIPing。`capabilities.available` 表示配置就绪，不代表每次调用都成功。单价未配置时费用仍是 UNKNOWN；进程内每日预留预算不是外部账单封顶。本次真实测试中 DeepSeek 的讲解、讲稿、清单、内容完善均成功；AIPing 仍超时。A7 的 `TRIPFLOW_CONTENT_TIMEOUT_SECONDS=45` 为覆盖重试与结构修复的模型总时限，`TRIPFLOW_CONTENT_MAX_TOKENS=1600` 限制输出；地点检索耗时另计，整体仍受任务时限限制。不会静默切换供应商或生成测试正文。
 
 高德 **Web Service Key 只用于后端地点和路线服务**。网页地图需要独立的 JS API 配置，填入 `tripflow-frontend/tripflow/apps/web/.env.local`（参考同目录 `.env.example`），随后重新构建：
 
@@ -59,7 +59,7 @@ VITE_AMAP_KEY=<高德 JS API 的公开 Key>
 VITE_AMAP_SERVICE_HOST=<已配置的高德安全代理地址>
 ```
 
-没有安全代理时，可按高德账户允许的方式配置 `VITE_AMAP_SECURITY_CODE`。不要把后端 Web Service Key、模型 Key 或根目录 `.env` 内容填入 `VITE_*` 变量。目前仅提供了 Web Service Key，网页显示“地图未配置”，保留可观察降级。
+没有安全代理时，可按高德账户允许的方式配置 `VITE_AMAP_SECURITY_CODE`。不要把后端 Web Service Key、模型 Key 或根目录 `.env` 内容填入 `VITE_*` 变量。未提供 JS Key 时显示“地图未配置”；加载超时或失败可重试。当前本机的独立 JS Key 已在浏览器验证底图和标记，不能据此推断其它域名或生产环境已获授权。
 
 同源运行时 `VITE_API_BASE_URL` 留空。开发代理默认指向 8000，由整合开发启动脚本自动改为所选后端端口。
 

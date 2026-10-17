@@ -61,7 +61,9 @@ describe('撤销 / 重做', () => {
   it('事实日志不随撤销回滚，进度重新投影', () => {
     const w = withPending(ws());
     const c = commitProposal(w, w.pending!.proposal, { acceptUnknown: false });
-    const withFacts: Workspace = { ...c, geo: [{ tripId: 'trip_t', activityId: 'a', source: 'REAL', progress: 'ARRIVED', arrivalId: 'arr1', insideSamples: 0, outsideSamples: 0, anomalies: 0 }] };
+    const target = c.plan!.activities.find((a) => a.id === 'a')!;
+    const targetKey = JSON.stringify([target.id, target.place.poiId, target.place.location, target.dayIndex, target.startAt.slice(0, 10)]);
+    const withFacts: Workspace = { ...c, geo: [{ tripId: 'trip_t', activityId: 'a', source: 'REAL', progress: 'ARRIVED', arrivalId: 'arr1', targetKey, insideSamples: 0, outsideSamples: 0, anomalies: 0 }] };
     const u = undoPlan(withFacts);
     expect(u.geo).toHaveLength(1);
     expect(projectPlan(u.plan!, u).activities.find((a) => a.id === 'a')!.progress).toBe('ARRIVED');

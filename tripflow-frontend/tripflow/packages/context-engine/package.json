@@ -5,5 +5,5 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "dependencies": { "@tripflow/contracts": "1.0.0" }
+  "dependencies": { "@tripflow/contracts": "1.0.0", "@tripflow/geo-core": "file:../../../../packages/context-engine" }
 }

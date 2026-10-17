@@ -12,11 +12,12 @@ export function PreviewPanel({ pending, current, flow, onClosed }: {
 }) {
   const p = pending.proposal;
   const v = pending.finalValidation ?? p.validation;
-  const [accept, setAccept] = useState(false);
+  const [acceptedProposal, setAcceptedProposal] = useState<string>();
+  const accept = acceptedProposal === p.proposalId;
   const stale = p.baseRevision !== current.revision;
   const blocked = stale || !v.committable || v.status === 'INFEASIBLE' || v.hardViolations.length > 0;
   const needAccept = v.status === 'PARTIALLY_VERIFIED' || v.unknownChecks.length > 0;
-  const busy = flow.validateJob.running;
+  const busy = flow.validateJob.running || flow.proposeJob.running;
   const name = (id: string) => p.candidate.activities.find((a) => a.id === id)?.place.name ?? current.activities.find((a) => a.id === id)?.place.name ?? id;
   const close = () => { if (!busy) { flow.discard(); onClosed(); } };
 
@@ -98,7 +99,7 @@ export function PreviewPanel({ pending, current, flow, onClosed }: {
       <footer className="space-y-2 px-5 pb-[calc(14px+var(--safe-b))] pt-2">
         {needAccept && !blocked && (
           <label className="flex items-start gap-2 pb-1 text-[13px] text-ink-soft">
-            <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#2F7CF6]" checked={accept} onChange={(e) => setAccept(e.target.checked)} />
+            <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#2F7CF6]" checked={accept} onChange={(e) => setAcceptedProposal(e.target.checked ? p.proposalId : undefined)} />
             我了解上方“未核验”的内容不保证准确，仍要应用此修改
           </label>
         )}
@@ -107,6 +108,7 @@ export function PreviewPanel({ pending, current, flow, onClosed }: {
           {busy ? <><Spinner /> 正在最终复核…</> : blocked ? '无法应用（存在冲突）' : '确认修改'}
         </button>
         <button className="h-11 w-full rounded-full bg-[#F2F4F7] text-[15px] text-ink-soft" disabled={busy} onClick={close}>取消</button>
+        {blocked && pending.finalValidation?.unknownChecks.some((x) => x.startsWith('REPROPOSE_REQUIRED')) && <button className="btn-soft w-full" disabled={busy} onClick={() => flow.propose({ operations: p.operations, origin: pending.origin })}>按最新资料重新计算此修改</button>}
       </footer>
     </div>
   );

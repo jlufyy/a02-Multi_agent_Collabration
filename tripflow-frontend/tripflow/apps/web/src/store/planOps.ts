@@ -7,6 +7,20 @@
 import type { TripState, RevisionProposal } from '@tripflow/contracts';
 import { UNDO_LIMIT, type Workspace } from './types';
 import { nowIso } from '../lib/id';
+import { schemas } from '@tripflow/contracts';
+import { activityGeoKey } from '@tripflow/context-engine';
+
+function canonical(plan: TripState): TripState {
+  schemas.TripState.parse(plan);
+  for (const key of ['destinationCity', 'startDate', 'endDate', 'travelerCount', 'budgetCny', 'budgetScope', 'companions', 'preferences', 'intents'] as const) {
+    if (JSON.stringify(plan[key]) !== JSON.stringify(plan.requirements[key])) throw new NotCommittableError(`需求投影不一致：${key}`);
+  }
+  for (const i of plan.intents.filter((i) => i.status !== 'CANCELLED')) {
+    const a = plan.activities.find((a) => a.id === i.activityId);
+    if (!a || a.place.poiId !== i.placeId || !a.intentIds.includes(i.id)) throw new NotCommittableError('地点任务绑定不一致');
+  }
+  return plan;
+}
 
 export class StaleRevisionError extends Error {
   code = 'STALE_REVISION';
@@ -21,7 +35,7 @@ export function landInitialPlan(ws: Workspace, plan: TripState, tripId: string):
   if (plan.tripId !== tripId) throw new StaleRevisionError('规划结果的 tripId 不匹配，已丢弃');
   if (ws.plan) throw new StaleRevisionError('已存在正式计划，旧规划结果被丢弃');
   const p: TripState = { ...plan, revision: 1, mode: 'PLANNING', lifecycle: 'PLAN_READY', updatedAt: nowIso() };
-  return { ...ws, plan: p, undo: [], redo: [], pending: undefined };
+  return { ...ws, plan: canonical(p), undo: [], redo: [], pending: undefined };
 }
 
 /** 用户确认后的原子提交（CAS）。 */
@@ -43,7 +57,7 @@ export function commitProposal(ws: Workspace, proposal: RevisionProposal, opts: 
   };
   return {
     ...ws,
-    plan: next,
+    plan: canonical(next),
     undo: [...ws.undo, cur].slice(-UNDO_LIMIT),
     redo: [],
     pending: undefined,
@@ -82,10 +96,11 @@ export function updateSettings(ws: Workspace, patch: Partial<Pick<TripState, 'mo
 export function projectPlan(plan: TripState, ws: Pick<Workspace, 'geo' | 'eventLog'>): TripState {
   const geoBy = new Map(ws.geo.map((g) => [g.activityId, g]));
   const triggered = new Set(ws.eventLog.filter((e) => e.notification?.shownAt && e.notification.intentId).map((e) => e.notification!.intentId!));
+  const intents = plan.intents.map((i) => (triggered.has(i.id) && i.status !== 'CANCELLED' ? { ...i, status: 'TRIGGERED' as const } : i));
   return {
     ...plan,
-    activities: plan.activities.map((a) => ({ ...a, progress: geoBy.get(a.id)?.progress ?? a.progress })),
-    intents: plan.intents.map((i) => (triggered.has(i.id) && i.status !== 'CANCELLED' ? { ...i, status: 'TRIGGERED' as const } : i)),
+    activities: plan.activities.map((a) => ({ ...a, progress: geoBy.get(a.id)?.targetKey === activityGeoKey(a) ? geoBy.get(a.id)!.progress : a.progress })),
+    intents, requirements: { ...plan.requirements, intents },
   };
 }
 

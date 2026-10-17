@@ -19,6 +19,7 @@ export type PendingProposal = {
   origin: 'DRAG' | 'AI' | 'DETAIL' | 'NEARBY';
   createdAt: string;
   finalValidation?: ValidationReport;
+  directApply?: boolean;
 };
 
 export type LocalTrip = {
@@ -28,7 +29,8 @@ export type LocalTrip = {
   draft: {
     text: string;
     requirements?: TripRequirements;
-    parse?: Pick<ParseResult, 'missingFields' | 'uncertainFields'>;
+    parse?: Pick<ParseResult, 'missingFields' | 'uncertainFields'> & Partial<Pick<ParseResult, 'questions' | 'fieldSources'>>;
+    conversation?: { role: 'user' | 'assistant'; content: string }[];
   };
   real: Workspace;
   demo?: Workspace & { demoRunId: string; startedAt: string; simClock: string };

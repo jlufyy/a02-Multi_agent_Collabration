@@ -47,10 +47,11 @@ class ModelGateway:
                  client: httpx.AsyncClient | None = None, timeout_seconds: float = 30,
                  max_retries: int = 1, max_calls_per_job: int = 18,
                  daily_budget_cny: float = 20, reservation_cny: float = 1,
-                 max_input_bytes: int = 120_000, max_job_counters: int = 512):
+                 max_input_bytes: int = 120_000, max_job_counters: int = 512, role_limits: dict | None = None):
         self.providers = {name: value if isinstance(value, ProviderConfig) else ProviderConfig(**value)
                           for name, value in (provider_configs or {}).items()}
         self.routes = role_routes or {}
+        self.role_limits = role_limits or {}
         self._client = client or httpx.AsyncClient(follow_redirects=False, trust_env=False)
         self._owns_client = client is None
         self.timeout = timeout_seconds
@@ -105,6 +106,10 @@ class ModelGateway:
         if isinstance(route, dict) and route.get("model"):
             from dataclasses import replace
             config = replace(config, model=route["model"])
+        token_limit = self.role_limits.get(role, {}).get("max_tokens")
+        if token_limit:
+            from dataclasses import replace
+            config = replace(config, max_tokens=min(config.max_tokens, token_limit))
         if not config.api_key or not config.model:
             raise ProviderError("API_UNAVAILABLE", "模型供应商密钥或模型尚未配置", http_status=503)
         return name, config
@@ -227,16 +232,20 @@ class ModelGateway:
         return data, prompt, completion, model
 
     async def _generate(self, role: str, payload: Any, schema: dict | None, job_id: str,
-                        repair: bool = False) -> GatewayResult:
+                        repair: bool = False, deadline: float | None = None) -> GatewayResult:
         provider, config = self._route(role)
         path, body, headers = self._body(role, config, payload, schema, repair)
         reserved = self._reserve_amount(config, body)
         started = time.monotonic()
         for attempt in range(self.retries + 1):
+            remaining = deadline - time.monotonic() if deadline is not None else self.timeout
+            if remaining <= 0:
+                raise ProviderError("LLM_TIMEOUT", "内容生成已达总时限，请稍后重试；行程已保留。", True, 504)
             day = await self._reserve(job_id, reserved)
             try:
-                response = await self._client.post(config.base_url.rstrip("/")+path, json=body,
-                                                   headers=headers, timeout=self.timeout)
+                async with asyncio.timeout(min(self.timeout, remaining)):
+                    response = await self._client.post(config.base_url.rstrip("/")+path, json=body,
+                                                       headers=headers, timeout=min(self.timeout, remaining))
                 if response.status_code != 200:
                     transient = response.status_code in {408, 429} or response.status_code >= 500
                     raise ProviderError("API_UNAVAILABLE", "模型供应商请求失败", transient)
@@ -261,7 +270,7 @@ class ModelGateway:
                 if isinstance(raw.get("provider"), str):
                     metadata["upstreamProvider"] = raw["provider"]
                 return GatewayResult(data, metadata)
-            except httpx.TimeoutException:
+            except (httpx.TimeoutException, TimeoutError):
                 error = ProviderError("LLM_TIMEOUT", "模型请求超时", True, 504)
             except httpx.RequestError:
                 error = ProviderError("API_UNAVAILABLE", "模型网络请求失败", True)
@@ -269,19 +278,27 @@ class ModelGateway:
                 error = exc
             except (TypeError, ValueError, KeyError):
                 error = ProviderError("INVALID_MODEL_OUTPUT", "模型响应结构不合法")
+            import logging
+            logging.getLogger("tripflow").info(json.dumps({"event": "model_attempt_failed", "role": role,
+                "provider": provider, "model": config.model, "attempt": attempt+1, "code": error.code,
+                "latencyMs": round((time.monotonic()-started)*1000)}))
             if not error.retryable or attempt >= self.retries:
                 raise error from None
-            await asyncio.sleep(min(.2 * 2**attempt, 1))
+            if deadline is not None and time.monotonic() >= deadline:
+                raise error from None
+            await asyncio.sleep(min(.2 * 2**attempt, 1, max(0, deadline-time.monotonic()) if deadline else 1))
         raise AssertionError("unreachable")
 
     async def generate_structured(self, role: str, schema: type[BaseModel] | dict, payload: Any,
                                   job_id: str = "default") -> GatewayResult:
         schema_dict = schema if isinstance(schema, dict) else schema.model_json_schema()
         prior_usage: list[dict] = []
+        budget = self.role_limits.get(role, {}).get("timeout_seconds")
+        deadline = time.monotonic() + budget if budget else None
         current_payload = payload
         for repair in (False, True):
             try:
-                result = await self._generate(role, current_payload, schema_dict, job_id, repair)
+                result = await self._generate(role, current_payload, schema_dict, job_id, repair, deadline)
                 prior_usage.append(result.usage)
                 try:
                     if isinstance(schema, dict):

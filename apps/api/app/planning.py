@@ -113,7 +113,27 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
     # Keep a small number per day to leave actual travel/meal/rest capacity.
     required_count = len(required_places)
     capacity = max(required_count, days * (2 if low_walking else 3))
-    selected = selected[:capacity]
+    def family(place):
+        seen = set()
+        while place["poiId"] not in seen:
+            seen.add(place["poiId"])
+            parent = place.get("parentPoiId") or {}
+            if not parent.get("value") or not verified(parent.get("evidence")):
+                return place["poiId"]
+            if parent["value"] not in candidates:
+                return parent["value"]
+            place = candidates[parent["value"]]
+        return min(seen)
+    protected_families = {family(p) for p in selected if p["poiId"] in required_places}
+    used_families = set(protected_families)
+    grouped = []
+    for place in selected:
+        group = family(place)
+        if place["poiId"] not in required_places and group in used_families:
+            continue
+        grouped.append(place)
+        used_families.add(group)
+    selected = grouped[:capacity]
     per_day = max(1, math.ceil(len(selected) / days))
     activities = []
     day_counts: dict[int, int] = {}
@@ -121,12 +141,17 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
     for index, place in enumerate(selected):
         fixed = next((c for c in r["fixedConstraints"] if c.get("place", {}).get("place", {}).get("poiId") == place["poiId"]), None)
         day_index = (moment(fixed["startAt"]).date() - first).days if fixed else min(index // per_day, days - 1)
+        if not 0 <= day_index < days:
+            raise PlanningError("TIME_WINDOW_VIOLATION", "固定安排的日期超出本次行程，请调整日期或固定条件。")
         calendar = first + timedelta(days=day_index)
         start = cursor_by_day.get(day_index, _clock(calendar, r.get("dailyStartTime") or "09:00"))
         if day_index == 0 and r.get("arrivalAt"):
             start = max(start, moment(r["arrivalAt"]))
         if fixed:
             start = moment(fixed["startAt"])
+        elif start.date() != calendar:
+            # Keep a schema-valid draft for A5 to explain, never wrap into tomorrow.
+            start = _clock(calendar, r.get("dailyStartTime") or "09:00")
         end = moment(fixed["endAt"]) if fixed and fixed.get("endAt") else start + timedelta(minutes=slot_minutes)
         cursor_by_day[day_index] = end
         cost, status = _known_price(place, r["travelerCount"])
@@ -143,6 +168,8 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
             activity = copy.deepcopy(source)
             start = moment(fixed["startAt"])
             day_index = (start.date() - first).days
+            if not 0 <= day_index < days:
+                raise PlanningError("TIME_WINDOW_VIOLATION", "固定安排的日期超出本次行程，请调整日期或固定条件。")
             end = moment(fixed["endAt"]) if fixed.get("endAt") else start + timedelta(minutes=slot_minutes)
             activity.update(id=fixed.get("activityId") or _stable_id(trip_id, place_id, occurrence), dayIndex=day_index, orderIndex=day_counts.get(day_index, 0), startAt=_iso(start), endAt=_iso(end), locked=bool(fixed.get("locked")))
             activities.append(activity)
@@ -169,6 +196,8 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
 
 
 def _anchor(activity: dict, req: dict, pinned: set[str]) -> bool:
+    if activity.get("progress") in ("ARRIVED", "VISITING", "INFERRED_COMPLETE"):
+        return True
     return activity["id"] in pinned or activity.get("locked", False) or activity.get("bookingStatus") == "BOOKED" or any(c.get("activityId") == activity["id"] or c.get("place", {}).get("place", {}).get("poiId") == activity["place"]["poiId"] for c in req["fixedConstraints"]) or any(i.get("locked") and i.get("activityId") == activity["id"] for i in req["intents"])
 
 
@@ -213,7 +242,14 @@ def reschedule(plan: Any, preserve_activity_ids: Iterable[str] = ()) -> TripStat
                     if available + duration <= midnight + timedelta(minutes=upper):
                         start = available
                         break
-            activity["startAt"], activity["endAt"] = _iso(start), _iso(start + duration)
+            upper = _clock(calendar, req.get("dailyEndTime") or "23:59")
+            if req.get("departureAt"):
+                upper = min(upper, moment(req["departureAt"]))
+            if start + duration <= upper and start.date() == calendar:
+                activity["startAt"], activity["endAt"] = _iso(start), _iso(start + duration)
+            # Otherwise retain the original same-day slot. A5 reports the real
+            # transit/window conflict; bounded repair may remove optional stops.
+            # Do not clamp duration or create a next-day activity with this dayIndex.
         previous = activity
     p["updatedAt"] = _now()
     return TripState.model_validate(p)
@@ -226,7 +262,7 @@ def _prune_routes(p: dict, before: dict) -> None:
     def unchanged(aid: str) -> bool:
         return aid in old and aid in new and old[aid]["place"] == new[aid]["place"] and old[aid]["dayIndex"] == new[aid]["dayIndex"] and old[aid]["startAt"][:10] == new[aid]["startAt"][:10]
     edges = expected_edges(p)
-    p["segments"] = [s for s in p["segments"] if (s["fromActivityId"], s["toActivityId"]) in edges and unchanged(s["fromActivityId"]) and unchanged(s["toActivityId"]) and s["mode"] in p["requirements"]["transportModes"]]
+    p["segments"] = [s for s in p["segments"] if (s["fromActivityId"], s["toActivityId"]) in edges and unchanged(s["fromActivityId"]) and unchanged(s["toActivityId"]) and old[s["fromActivityId"]]["endAt"] == new[s["fromActivityId"]]["endAt"] and s["mode"] in p["requirements"]["transportModes"]]
     activities = ordered_activities(p)
     boundaries = []
     for segment in p["boundarySegments"]:
@@ -236,7 +272,8 @@ def _prune_routes(p: dict, before: dict) -> None:
         reference = p["requirements"].get(kind_key) or {}
         boundary_endpoint = segment["from"] if start else segment["to"]
         last = activities[0] if start and activities else activities[-1] if activities else None
-        if last and endpoint.get("activityId") == last["id"] and unchanged(last["id"]) and reference.get("place") == boundary_endpoint.get("place") and segment["mode"] in p["requirements"]["transportModes"]:
+        departure_same = (p["requirements"].get("arrivalAt") == before["requirements"].get("arrivalAt")) if start else (last and old.get(last["id"], {}).get("endAt") == last["endAt"])
+        if departure_same and last and endpoint.get("activityId") == last["id"] and unchanged(last["id"]) and reference.get("place") == boundary_endpoint.get("place") and segment["mode"] in p["requirements"]["transportModes"]:
             boundaries.append(segment)
     p["boundarySegments"] = boundaries
 
@@ -254,6 +291,8 @@ def apply_operations(plan: Any, operations: Iterable[Any]) -> TripState:
         if kind not in {"ADD", "UPDATE_CONSTRAINT"} and activity is None:
             raise PlanningError("ACTIVITY_NOT_FOUND", "操作引用的稳定活动ID不存在。", [op["activityId"]])
         if activity is not None:
+            if activity.get("progress") in ("ARRIVED", "VISITING", "INFERRED_COMPLETE"):
+                raise PlanningError("ACTIVITY_PROGRESS_PROTECTED", "进行中或已完成的活动不能自动重排，请先明确纠正状态。", [activity["id"]])
             if activity.get("locked"):
                 raise PlanningError("LOCKED_ACTIVITY_CHANGED", "请先明确解锁活动，再执行编辑。", [activity["id"]])
             if any(i.get("locked") and (i.get("activityId") == activity["id"] or i["id"] in activity["intentIds"]) for i in req["intents"]):
@@ -383,6 +422,10 @@ def apply_operations(plan: Any, operations: Iterable[Any]) -> TripState:
     _reindex(p)
     _prune_routes(p, original)
     p["updatedAt"] = _now()
+    for activity in p["activities"]:
+        calendar = date.fromisoformat(p["startDate"]) + timedelta(days=activity["dayIndex"])
+        if not 0 <= activity["dayIndex"] <= last_day or moment(activity["startAt"]).date() != calendar or moment(activity["endAt"]).date() != calendar:
+            raise PlanningError("TIME_WINDOW_VIOLATION", "本次修改使活动跨日，请调整日期或时长。", [activity["id"]])
     return TripState.model_validate(p)
 
 

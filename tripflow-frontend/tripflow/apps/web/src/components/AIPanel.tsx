@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { TripState, SelectedContext, PreparedContent, Place, NearbyCandidate, GeoPoint, ConversationMessage, ItineraryActivity, ContentsResultLike } from './aiTypes';
 import { jobs } from '../api/client';
 import { useJob } from '../lib/useJob';
-import { useTrips, execCtx } from '../store/tripStore';
+import { useTrips, execCtx, activeWs } from '../store/tripStore';
 import type { useEditFlow } from '../lib/useEditFlow';
 import { AgentProgress } from './AgentProgress';
 import { ErrorBox } from './ui';
@@ -10,6 +10,7 @@ import { Logo, PlaceThumb } from './Illustrations';
 import { Icon } from './Icon';
 import { ContentCard } from './ContentViewer';
 import { uid } from '../lib/id';
+import { planTime, planDate } from '../lib/time';
 
 type Msg =
   | { id: string; role: 'user'; text: string }
@@ -31,7 +32,8 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
   const trip = useTrips((s) => s.trips[tripId]);
   const scroller = useRef<HTMLDivElement>(null);
   const selected = plan.activities.find((a) => a.id === ctx.selectedActivityId);
-  const running = flow.proposeJob.running || contentJob.running || nearbyJob.running;
+  const savedContents = (activeWs(trip)?.contents ?? []).filter((c) => !selected || c.activityId === selected.id).slice(-6);
+  const running = flow.proposeJob.running || flow.validateJob.running || contentJob.running || nearbyJob.running;
   const lastSeed = useRef<typeof seed>();
 
   useEffect(() => { scroller.current?.scrollTo({ top: 1e6, behavior: 'smooth' }); }, [msgs, running]);
@@ -55,9 +57,16 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
     const r = await flow.propose({ userRequest: q, origin: 'AI', selectedContext: ctx, conversation: conversation() });
     if (!r) return;
     if (r.kind === 'REVISION') {
+      if (activeWs(useTrips.getState().trips[tripId])?.pending?.directApply) {
+        if (await flow.confirm(false)) {
+          push({ id: uid('m'), role: 'assistant', text: '已按你的明确要求调整时长，校验通过。可在行程页整体撤销本次调整。' });
+          return;
+        }
+      }
       push({ id: uid('m'), role: 'assistant', text: `已生成修改方案（${r.proposal.operations.length} 项操作），请在预览中确认。在确认前，正式行程不会改变。` });
       onPreview();
     } else if (r.kind === 'CONTENT') {
+      await useTrips.getState().putContents(tripId, [r.content]);
       push({ id: uid('m'), role: 'content', content: r.content });
     } else {
       push({ id: uid('m'), role: 'clarify', questions: r.questions, candidates: r.candidates });
@@ -69,7 +78,10 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
     push({ id: uid('m'), role: 'user', text: `讲解这里：${selected.place.name}` });
     const t = useTrips.getState().trips[tripId];
     const out = await contentJob.run((h) => jobs.refineContent({ ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, userRequest: '讲解这里', context: ctx }, h));
-    if (out?.result) push({ id: uid('m'), role: 'content', content: out.result.content });
+    if (out?.result) {
+      await useTrips.getState().putContents(tripId, [out.result.content]);
+      push({ id: uid('m'), role: 'content', content: out.result.content });
+    }
   }
 
   async function nearby(category: 'FOOD' | 'REST' | 'PHOTO') {
@@ -88,8 +100,8 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
   async function addNearby(c: NearbyCandidate) {
     const day = plan.activities.filter((a) => a.dayIndex === ctx.activeDay).sort((a, b) => a.orderIndex - b.orderIndex);
     const anchor = selected && selected.dayIndex === ctx.activeDay ? selected : day[day.length - 1];
-    const start = anchor ? anchor.endAt : `${plan.startDate}T12:00:00+08:00`;
-    const end = new Date(Date.parse(start) + 60 * 60_000).toISOString();
+    const start = anchor ? anchor.endAt : `${planDate(plan.startDate, ctx.activeDay)}T12:00:00+08:00`;
+    const end = planTime(Date.parse(start) + 60 * 60_000);
     const activity: ItineraryActivity = {
       id: uid('act'), place: c.place, dayIndex: ctx.activeDay, orderIndex: anchor ? anchor.orderIndex + 1 : 0,
       startAt: start, endAt: end, estimatedCostCny: c.estimatedCostCny, costStatus: c.costStatus,
@@ -132,9 +144,10 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
               <button key={s.label} disabled={running} onClick={s.run}
                 className="block w-fit max-w-full rounded-[16px] bg-[#F3F5F8] px-4 py-2.5 text-left text-[14px] text-ink-soft">{s.label}</button>
             ))}
-            <p className="pt-2 text-[12.5px] leading-relaxed text-ink-faint">可以一句话批量修改，比如“明天下午不想走太多路，删掉景山，换成附近咖啡馆，预算不能增加”。所有修改都会先预览，确认后才生效。</p>
+            <p className="pt-2 text-[12.5px] leading-relaxed text-ink-faint">可以一句话批量修改。明确、可行且只影响本站的小幅时长调整会直接应用并支持撤销；其他变动统一预览后确认一次。</p>
           </div>
         )}
+        {msgs.length === 0 && savedContents.length > 0 && <section className="space-y-3" aria-label="已保存材料"><p className="text-[13px] text-ink-faint">已保存在本机的材料</p>{savedContents.map((c) => <ContentCard key={c.contentId} c={c} stale={c.baseRevision !== plan.revision} />)}</section>}
         {msgs.map((m) => <Bubble key={m.id} m={m} onPick={(p) => send(`用「${p.name}」`)} onAdd={addNearby} busy={running} />)}
         {running && <AgentProgress events={[...flow.proposeJob.progress, ...contentJob.progress, ...nearbyJob.progress]} running />}
         {err != null && <ErrorBox error={err} compact />}
@@ -153,7 +166,7 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
             className="max-h-28 min-h-[36px] flex-1 resize-none bg-transparent py-1.5 text-[15px] outline-none placeholder:text-ink-faint" />
         </div>
         {running
-          ? <button type="button" className="h-11 shrink-0 rounded-full bg-[#F2F4F7] px-4 text-[14px]" onClick={() => { flow.proposeJob.cancel(); contentJob.cancel(); nearbyJob.cancel(); }}>停止</button>
+          ? <button type="button" className="h-11 shrink-0 rounded-full bg-[#F2F4F7] px-4 text-[14px]" onClick={() => { flow.proposeJob.cancel(); flow.validateJob.cancel(); contentJob.cancel(); nearbyJob.cancel(); }}>停止</button>
           : <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-white disabled:opacity-40" disabled={!text.trim()} aria-label="发送"><Icon name="send" size={18} /></button>}
       </form>
     </div>

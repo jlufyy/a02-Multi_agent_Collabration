@@ -110,6 +110,8 @@ export type Fact<T = unknown> = { "value"?: (T | null); "evidence": Evidence; };
 
 export type Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ = { "value"?: (number | null); "evidence": Evidence; };
 
+export type Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____ = { "value"?: (string | null); "evidence": Evidence; };
+
 export type Fact_str_ = { "value"?: (string | null); "evidence": Evidence; };
 
 export type FixedConstraint = { "id": string; "activityId"?: (string | null); "place"?: (PlaceReference | null); "startAt": string; "endAt"?: (string | null); "reason": string; "locked": boolean; };
@@ -164,11 +166,11 @@ export type NotificationPolicy = { "enableL1": boolean; "enableL2": boolean; "en
 
 export type NotificationRecord = { "notificationId": string; "eventId": string; "tripRevision": number; "source": "REAL" | "SIMULATED" | "USER_CORRECTION"; "demoRunId"?: (string | null); "arrivalId"?: (string | null); "activityId"?: (string | null); "intentId"?: (string | null); "riskCode"?: (string | null); "contentId"?: (string | null); "level": "L1" | "L2" | "L3"; "decision": string; "suppressionReason"?: (string | null); "shownAt"?: (string | null); "actionTaken"?: ("VIEW_CONTENT" | "VIEW_SCRIPT" | "VIEW_SHOOTING_CHECKLIST" | "REMIND_LATER" | "IGNORE" | "VIEW_REVISION" | "VIEW_NEARBY" | "ADD_TO_PLAN" | null); "actionAt"?: (string | null); "snoozeUntil"?: (string | null); };
 
-export type ParseRequirementsRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; "text": string; "selectedContext"?: (SelectedContext | null); "conversation"?: (Array<ConversationMessage> | null); };
+export type ParseRequirementsRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; "text": string; "requirements"?: (TripRequirements | null); "selectedContext"?: (SelectedContext | null); "conversation"?: (Array<ConversationMessage> | null); };
 
-export type ParseRequirementsResult = { "requirements": TripRequirements; "intents": Array<TravelIntent>; "missingFields": Array<string>; "uncertainFields": Array<UncertainField>; };
+export type ParseRequirementsResult = { "requirements": TripRequirements; "intents": Array<TravelIntent>; "missingFields": Array<string>; "uncertainFields": Array<UncertainField>; "questions"?: Array<string>; "fieldSources"?: { [key: string]: "USER" | "INFERRED" | "SUGGESTED"; }; "changedFields"?: Array<string>; };
 
-export type Place = { "poiId": string; "name": string; "address"?: (string | null); "location": GeoPoint; "evidence": Array<Evidence>; "openingHours"?: (Fact_str_ | null); "ticketPriceCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "queueMinutes"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "rating"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "bookingNote"?: (Fact_str_ | null); };
+export type Place = { "poiId": string; "name": string; "address"?: (string | null); "location": GeoPoint; "evidence": Array<Evidence>; "openingHours"?: (Fact_str_ | null); "ticketPriceCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "queueMinutes"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "rating"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "bookingNote"?: (Fact_str_ | null); "parentPoiId"?: (Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____ | null); };
 
 export type PlaceReference = { "query": string; "place"?: (Place | null); };
 
@@ -178,7 +180,7 @@ export type PrepareContentRequest = { "executionMode": "REAL" | "DEMO"; "demoRun
 
 export type PrepareContentResult = { "contents": Array<PreparedContent>; };
 
-export type PreparedContent = { "contentId": string; "tripId": string; "baseRevision": number; "activityId"?: (string | null); "intentId"?: (string | null); "placeId": string; "module": "KNOWLEDGE" | "PERSONAL_GOAL" | "TRIP_RISK" | "NEARBY"; "title": string; "body": string; "version": number; "generatedAt": string; "evidence": Array<Evidence>; "scopeNote": string; };
+export type PreparedContent = { "contentId": string; "tripId": string; "baseRevision": number; "activityId"?: (string | null); "intentId"?: (string | null); "placeId": string; "module": "KNOWLEDGE" | "PERSONAL_GOAL" | "TRIP_RISK" | "NEARBY"; "title": string; "body": string; "version": number; "generatedAt": string; "evidence": Array<Evidence>; "scopeNote": string; "generationProvider"?: (string | null); "generationModel"?: (string | null); };
 
 export type ProactiveDecision = { "decisionId": string; "eventId": string; "tripId": string; "baseRevision": number; "shouldNotify": boolean; "reasonCode": string; "suppressionReason"?: (string | null); "card"?: (NotificationCard | null); };
 
@@ -298,7 +300,7 @@ export type UpdateTimeOperation = { "type": "UPDATE_TIME"; "activityId": string;
 
 export type ValidateRevisionRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; "tripState": TripState; "proposal": RevisionProposal; };
 
-export type ValidateRevisionResult = { "proposalId": string; "baseRevision": number; "validation": ValidationReport; };
+export type ValidateRevisionResult = { "proposalId": string; "baseRevision": number; "validation": ValidationReport; "replacementProposal"?: (RevisionProposal | null); };
 
 export type ValidationReport = { "status": "FEASIBLE" | "PARTIALLY_VERIFIED" | "INFEASIBLE"; "hardViolations": Array<Violation>; "unknownChecks": Array<string>; "warnings": Array<string>; "committable": boolean; };
 

@@ -40,7 +40,7 @@ describe('GeoStateMachine（AC-08 / E06 / E07）', () => {
   it('600m 精度与数公里跳点被丢弃', () => {
     const inside = offsetPoint(target, 40, 0);
     const r = run([[inside, 0], [inside, 30, { accuracyMeters: 600 }], [offsetPoint(target, 5000, 0), 40], [inside, 60]]);
-    expect(r.notes).toEqual(['LOW_ACCURACY', 'JUMP_DISCARDED']);
+    expect(r.notes).toEqual(['ACCURACY_UNKNOWN', 'SPEED_JUMP']);
     expect(r.events).not.toContain('ARRIVE');
   });
   it('页面隐藏 → LOCATION_UNKNOWN，不补造轨迹；恢复后核验仍在景点 → VISITING', () => {

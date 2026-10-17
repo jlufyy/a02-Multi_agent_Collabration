@@ -8,7 +8,6 @@ import { PlanSteps } from '../components/AgentProgress';
 import { PavilionScene } from '../components/Illustrations';
 import { ErrorBox, ValidationBadge, toast } from '../components/ui';
 import { Icon } from '../components/Icon';
-import { projectRequirements } from '../lib/requirements';
 
 export function PlanningPage() {
   const { tripId = '' } = useParams();
@@ -45,7 +44,7 @@ export function PlanningPage() {
   async function land(r: PlanResult) {
     if (!r.plan || !req) return;
     try {
-      await landPlan(tripId, projectRequirements(r.plan, req), r.preparedContents, req);
+      await landPlan(tripId, r.plan, r.preparedContents, req);
       toast('行程已保存到本机', 'ok');
       nav(`/trip/${tripId}`, { replace: true });
     } catch (e) { setSaveErr(e); }

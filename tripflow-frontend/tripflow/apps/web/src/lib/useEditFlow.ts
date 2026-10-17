@@ -3,9 +3,12 @@ import type { EditOperation, RevisionResult, SelectedContext, ConversationMessag
 import { useTrips, activeWs, execCtx } from '../store/tripStore';
 import { jobs } from '../api/client';
 import { useJob } from './useJob';
-import { StaleRevisionError, NotCommittableError } from '../store/planOps';
+import { StaleRevisionError, NotCommittableError, projectPlan } from '../store/planOps';
 import type { PendingProposal } from '../store/types';
 import { toast } from '../components/ui';
+import { canDirectApply } from './smallChange';
+import { schemas } from '@tripflow/contracts';
+import { planDate } from './time';
 
 /**
  * propose → preview → validate → 原子提交（附录 A.7）。
@@ -20,7 +23,7 @@ export function useEditFlow(tripId: string) {
     const t = useTrips.getState().trips[tripId];
     const ws = activeWs(t);
     if (!t || !ws?.plan) throw new Error('行程不存在');
-    return { t, ws, plan: ws.plan };
+    return { t, ws, plan: projectPlan(ws.plan, ws) };
   }, [tripId]);
 
   const propose = useCallback(async (input:
@@ -29,6 +32,13 @@ export function useEditFlow(tripId: string) {
   ): Promise<RevisionResult | undefined> => {
     setCommitError(undefined);
     const { t, plan } = snapshot();
+    if ('operations' in input) {
+      const parsed = schemas.EditOperation.array().safeParse(input.operations);
+      if (!parsed.success) { proposeJob.setError(new Error(parsed.error.issues.map((i) => i.message).join('；'))); return undefined; }
+      if (input.operations.some((op) => op.type === 'ADD' && (op.activity.startAt.slice(0, 10) !== planDate(plan.startDate, op.activity.dayIndex) || op.activity.endAt.slice(0, 10) !== op.activity.startAt.slice(0, 10)))) {
+        proposeJob.setError(new Error('新增活动不能跨日，请选择当日较早的时间。')); return undefined;
+      }
+    }
     // 一次只允许一个待确认草稿：调用方已征得用户同意替换
     if (activeWs(t)?.pending) await useTrips.getState().setPending(tripId, undefined);
     const base = { ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, selectedContext: input.selectedContext };
@@ -46,7 +56,10 @@ export function useEditFlow(tripId: string) {
         proposeJob.setError(new StaleRevisionError('行程在计算期间已更新，旧方案已丢弃，请重新发起'));
         return undefined;
       }
-      await useTrips.getState().setPending(tripId, { proposal: r.proposal, origin: input.origin, createdAt: new Date().toISOString() });
+      const ws = snapshot().ws;
+      const protectedProgress = ws.geo.some((g) => r.proposal.operations.some((op) => 'activityId' in op && op.activityId === g.activityId) && g.progress !== 'NOT_STARTED');
+      const directApply = 'userRequest' in input && !protectedProgress && canDirectApply(cur, r.proposal, input.userRequest);
+      await useTrips.getState().setPending(tripId, { proposal: r.proposal, origin: input.origin, createdAt: new Date().toISOString(), directApply });
     }
     return r;
   }, [tripId, proposeJob, snapshot]);
@@ -74,7 +87,14 @@ export function useEditFlow(tripId: string) {
       setCommitError(new StaleRevisionError());
       return false;
     }
-    await useTrips.getState().setPending(tripId, { ...pend, finalValidation: v.validation });
+    if (v.replacementProposal) {
+      const next = v.replacementProposal;
+      if (next.tripId !== tripId || next.baseRevision !== now.plan.revision) { setCommitError(new StaleRevisionError()); return false; }
+      await useTrips.getState().setPending(tripId, { ...pend, proposal: next, directApply: false, finalValidation: undefined });
+      setCommitError(new NotCommittableError('路线已更新，请查看新的影响摘要。确认后将再次核验。'));
+      return false;
+    }
+    await useTrips.getState().setPending(tripId, { ...pend, finalValidation: v.validation, directApply: pend.directApply && v.validation.status === 'FEASIBLE' && v.validation.committable });
     if (!v.validation.committable) {
       setCommitError(new NotCommittableError('最终复核未通过，需要重新生成预览'));
       return false;

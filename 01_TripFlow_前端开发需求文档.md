@@ -626,7 +626,7 @@ CI：前端类型校验/ESLint、后端pytest、schema与Fixture双端解析、�
 
 ---
 
-来源文件：`C:\Users\Administrator\Downloads\多 Agent 情境感知智能旅行助手 — 产品需求文档（PRD）.md`  
+来源文件：`多 Agent 情境感知智能旅行助手 — 产品需求文档（PRD）.md`\
 来源 SHA-256：`d434eb91df1a37f7b3dd560cba19b30ad4d33fbd4559719c8d185897f7e4a3ac`  
 共享附录 A SHA-256：`464866e45e3f7f8be5df99b459cd237783cf5c90a938ddd75db2e68439d6ca27`  
 本次仅拆分和对齐研发文档，未开发、部署或执行产品验收。

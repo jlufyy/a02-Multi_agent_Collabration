@@ -73,7 +73,7 @@ export const useTrips = create<State & Actions>((set, get) => {
     if (latest && latest.savedSeq !== t.savedSeq) {
       // 期间有事实类写入（定位/日志）：在最新状态上重放同一变更，避免丢失事实记录
       let merged: LocalTrip;
-      try { merged = { ...fn(latest), savedSeq: latest.savedSeq + 1 }; } catch { merged = { ...next, savedSeq: latest.savedSeq + 1 }; }
+      try { merged = { ...fn(latest), savedSeq: latest.savedSeq + 1 }; } catch (e) { await persist(latest); throw e; }
       set((s) => ({ trips: { ...s.trips, [id]: merged }, saveError: undefined }));
       persist(merged).catch((e) => set({ saveError: `保存失败：${(e as Error).message}` }));
       return;
@@ -111,8 +111,8 @@ export const useTrips = create<State & Actions>((set, get) => {
     saveDraft: (id, d) => durable(id, (t) => ({ ...t, draft: { ...t.draft, ...d } })),
     async landPlan(id, plan, contents, requirements) {
       await durable(id, (t) => {
-        const ws = landInitialPlan(t.real, { ...plan, requirements }, id);
-        return { ...t, draft: { ...t.draft, requirements }, real: { ...ws, contents } };
+        const ws = landInitialPlan(t.real, plan, id);
+        return { ...t, draft: { ...t.draft, requirements }, real: { ...ws, contents: contents.map((c) => ({ ...c, baseRevision: ws.plan!.revision })) } };
       });
       get().bumpGen(id);
     },
@@ -124,10 +124,17 @@ export const useTrips = create<State & Actions>((set, get) => {
     async undo(id) { await durable(id, (t) => onWs(t, undoPlan)); get().bumpGen(id); },
     async redo(id) { await durable(id, (t) => onWs(t, redoPlan)); get().bumpGen(id); },
     async settings(id, patch) { await durable(id, (t) => onWs(t, (w) => updateSettings(w, patch))); get().bumpGen(id); },
-    putContents: (id, c) => durable(id, (t) => onWs(t, (w) => {
-      const ids = new Set(c.map((x) => x.contentId));
-      return { ...w, contents: [...w.contents.filter((x) => !ids.has(x.contentId)), ...c] };
-    })),
+    putContents: (id, c) => {
+      const expectedDemo = get().trips[id]?.demo?.demoRunId;
+      return durable(id, (t) => {
+        if (t.demo?.demoRunId !== expectedDemo) throw new Error('工作区已切换，旧内容已丢弃');
+        return onWs(t, (w) => {
+          if (c.some((x) => x.tripId !== id || x.baseRevision !== w.plan?.revision || !w.plan.activities.some((a) => a.id === x.activityId && a.place.poiId === x.placeId))) throw new Error('行程已更新，旧内容已丢弃');
+          const ids = new Set(c.map((x) => x.contentId));
+          return { ...w, contents: [...w.contents.filter((x) => !ids.has(x.contentId)), ...c] };
+        });
+      });
+    },
     appendLog: (id, entries) => record(id, (t) => onWs(t, (w) => ({ ...w, eventLog: [...w.eventLog, ...entries].slice(-500) }))),
     setGeo: (id, g) => record(id, (t) => onWs(t, (w) => ({ ...w, geo: g }))),
     async startDemo(id) {

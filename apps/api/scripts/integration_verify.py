@@ -21,8 +21,9 @@ def main():
     parser.add_argument("--url", default="http://127.0.0.1:8010")
     parser.add_argument("--fallback-plan-job", help="Continue remaining checks from an already successful real plan/proposal job")
     parser.add_argument("--reuse-parse-job", help="Reuse a completed real parse job from this running instance")
+    parser.add_argument("--output", type=Path, default=ROOT / "output/integration", help="Evidence directory; choose a new directory to preserve earlier runs")
     args = parser.parse_args()
-    output = ROOT / "output/integration"
+    output = args.output
     output.mkdir(parents=True, exist_ok=True)
     cases, samples = [], []
     report = {"timestamp": datetime.now(timezone(timedelta(hours=8))).isoformat(),
@@ -142,7 +143,7 @@ def main():
             record("final-validation-committable", bool(final and final["validation"]["committable"]))
         job("live-nearby", "/api/v1/nearby/search", {**ctx, "tripState": plan,
             "location": plan["activities"][0]["place"]["location"], "category": "FOOD", "preferences": [], "selectedContext": selected}, "NearbyResult")
-        content = job("aiping-content", "/api/v1/content/refine", {**ctx, "tripState": plan, "context": selected,
+        content = job("configured-a7-content", "/api/v1/content/refine", {**ctx, "tripState": plan, "context": selected,
             "userRequest": "用中文写80字的游览提示，仅依据已有地点信息，不编造历史或营业政策。"}, "ContentResult")
         job("empty-content-prepare", "/api/v1/content/prepare", {**ctx, "tripState": plan, "intents": []}, "ContentsResult")
         # DEMO input is explicitly simulated; it is never evidence of actual arrival.
@@ -158,11 +159,11 @@ def main():
         bad = request("/api/v1/revisions/propose", {**ctx, "baseRevision": 99, "tripState": plan,
             "operations": [{"type": "REMOVE", "activityId": plan["activities"][0]["id"]}]})
         record("stale-revision-rejected", bad.status_code == 409, http=bad.status_code)
-        # Reproduce frontend nearby ADD serialization without modifying the application.
+        # Negative contract check: UTC is invalid for plan times even after the frontend fix.
         added = copy.deepcopy(plan["activities"][0])
         added.update(id="audit-added", orderIndex=3, startAt="2026-10-20T15:00:00+08:00", endAt="2026-10-20T08:00:00.000Z")
         bad = request("/api/v1/revisions/propose", {**ctx, "tripState": plan, "operations": [{"type": "ADD", "activity": added}]})
-        record("known-defect-nearby-z-time-reproduced", bad.status_code == 422, http=bad.status_code, errors=bad.json().get("errors"))
+        record("reject-utc-plan-time", bad.status_code == 422, http=bad.status_code, errors=bad.json().get("errors"))
         cancel_body = {**ctx, "tripState": plan, "context": selected, "userRequest": "写一段简短提示。"}
         accepted = request("/api/v1/content/refine", cancel_body)
         if accepted.status_code == 202:

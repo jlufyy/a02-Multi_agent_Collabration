@@ -7,7 +7,7 @@ const ev = { provider: 'synthetic-test', status: 'UNKNOWN' as const, note: '单�
 export function act(id: string, order: number, lat: number, lng: number): ItineraryActivity {
   return {
     id, dayIndex: 0, orderIndex: order,
-    startAt: `2026-10-20T0${9 + order}:00:00+08:00`, endAt: `2026-10-20T0${9 + order}:50:00+08:00`,
+    startAt: `2026-10-20T${String(9 + order).padStart(2, '0')}:00:00+08:00`, endAt: `2026-10-20T${String(9 + order).padStart(2, '0')}:50:00+08:00`,
     place: { poiId: 'poi_' + id, name: 'P' + id, location: { lat, lng, coordinateSystem: 'GCJ02' }, evidence: [ev] },
     costStatus: 'UNKNOWN', locked: false, mandatory: false, progress: 'NOT_STARTED', intentIds: [],
   };
@@ -16,7 +16,7 @@ export function trip(rev = 1): TripState {
   return {
     schemaVersion: 1, tripId: 'trip_t', revision: rev, title: 't', destinationCity: '测试城', startDate: '2026-10-20', endDate: '2026-10-21',
     travelerCount: 2, companions: [], preferences: [], mode: 'PLANNING', lifecycle: 'PLAN_READY',
-    requirements: { requirementsId: 'r', version: 1, confirmed: true, timezone: 'Asia/Shanghai', budgetIsHardLimit: false, transportModes: ['WALK'],
+    requirements: { requirementsId: 'r', version: 1, confirmed: true, destinationCity: '测试城', startDate: '2026-10-20', endDate: '2026-10-21', travelerCount: 2, timezone: 'Asia/Shanghai', budgetIsHardLimit: false, transportModes: ['WALK'],
       mustVisit: [], avoidPlaces: [], preferences: [], companions: [], specialNeeds: [], fixedConstraints: [], intents: [] },
     activities: [act('a', 0, 39.88, 116.41), act('b', 1, 39.90, 116.39)], segments: [], boundarySegments: [], intents: [],
     notificationPolicy: { enableL1: true, enableL2: true, enableL3: true, paused: false, cooldownMinutes: 15 }, updatedAt: '2026-10-16T00:00:00Z',

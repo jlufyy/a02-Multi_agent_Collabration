@@ -14,6 +14,8 @@ class Settings:
     max_body_bytes: int = 524288
     request_timeout_seconds: int = 45
     model_timeout_seconds: int = 60
+    content_timeout_seconds: int = 45
+    content_max_tokens: int = 1600
     max_job_seconds: int = 180
     job_ttl_seconds: int = 1800
     max_jobs: int = 128
@@ -30,7 +32,7 @@ class Settings:
     web_dist: str | None = None
 
     def __post_init__(self):
-        for key in ("max_body_bytes", "request_timeout_seconds", "model_timeout_seconds", "max_job_seconds", "job_ttl_seconds",
+        for key in ("max_body_bytes", "request_timeout_seconds", "model_timeout_seconds", "content_timeout_seconds", "content_max_tokens", "max_job_seconds", "job_ttl_seconds",
                     "max_jobs", "max_concurrent_jobs", "rate_limit_per_minute", "max_model_calls_per_job", "max_tokens"):
             if getattr(self, key) <= 0:
                 raise ValueError(f"{key} must be positive")
@@ -74,13 +76,12 @@ class Settings:
                 "input_cost_per_million": float(os.environ["DEEPSEEK_INPUT_CNY_PER_MILLION"]) if os.getenv("DEEPSEEK_INPUT_CNY_PER_MILLION") else None,
                 "output_cost_per_million": float(os.environ["DEEPSEEK_OUTPUT_CNY_PER_MILLION"]) if os.getenv("DEEPSEEK_OUTPUT_CNY_PER_MILLION") else None,
             }
-            # Use independent suppliers when both keys exist; explicit MODEL_ROUTES still wins.
+            # Default to the measured direct route; explicit MODEL_ROUTES still wins.
             default_routes["A1"] = "deepseek"
-            if "aiping" not in providers and "secondary" not in providers:
-                default_routes["A7"] = "deepseek"
+            default_routes["A7"] = "deepseek"
         values = {"provider_configs": providers, "amap_key": os.getenv("AMAP_WEB_SERVICE_KEY") or os.getenv("AMAP_API_KEY", ""),
                   "role_routes": json.loads(os.getenv("MODEL_ROUTES", json.dumps(default_routes)))}
-        for name in ("max_body_bytes", "request_timeout_seconds", "model_timeout_seconds", "max_job_seconds", "job_ttl_seconds", "max_jobs",
+        for name in ("max_body_bytes", "request_timeout_seconds", "model_timeout_seconds", "content_timeout_seconds", "content_max_tokens", "max_job_seconds", "job_ttl_seconds", "max_jobs",
                      "max_concurrent_jobs", "rate_limit_per_minute", "max_model_calls_per_job", "max_tokens", "map_cache_ttl_seconds"):
             if f"TRIPFLOW_{name.upper()}" in os.environ:
                 values[name] = int(os.environ[f"TRIPFLOW_{name.upper()}"])

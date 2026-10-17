@@ -118,7 +118,8 @@ export function processLocation({sample, activities, state, revision, policy}) {
   if (next.tracker.seenSampleIds.includes(sample.sampleId)) { diagnostics.push({code:'DUPLICATE_SAMPLE'}); return result(); }
   next.tracker.seenSampleIds=[...next.tracker.seenSampleIds,sample.sampleId].slice(-512);
   const now=stamp(sample.timestamp), last=next.tracker.lastSample;
-  if (last && now <= stamp(last.timestamp)) { diagnostics.push({code:'OUT_OF_ORDER_SAMPLE'}); return result(); }
+  if (next.tracker.lastObservedAt && now <= stamp(next.tracker.lastObservedAt)) { diagnostics.push({code:'OUT_OF_ORDER_SAMPLE'}); return result(); }
+  next.tracker.lastObservedAt=sample.timestamp;
   if (!sample.pageVisible || !Number.isFinite(sample.accuracyMeters) || sample.accuracyMeters < 0 || sample.accuracyMeters > policy.maxAccuracyMeters) {
     markUnknown(next); diagnostics.push({code:sample.pageVisible ? 'ACCURACY_UNKNOWN':'PAGE_HIDDEN'}); return result();
   }
@@ -158,7 +159,10 @@ export function processLocation({sample, activities, state, revision, policy}) {
         if ((now-stamp(s.outsideSince))/1000 >= policy.departureDwellSeconds && counts.outside>=policy.minValidSamples) {
           s.progress='INFERRED_COMPLETE'; events.push(event('LEAVE',a,s)); next.tracker.departed[a.id]=true; clearCandidate(s); counts.outside=0;
         } else s.progress='VISITING';
-      } else { delete s.outsideSince; counts.outside=0; s.progress='VISITING'; }
+      } else {
+        if (s.progress==='LOCATION_UNKNOWN') events.push(event('RESUME',a,s));
+        delete s.outsideSince; counts.outside=0; s.progress='VISITING';
+      }
       continue;
     }
     if (winner?.id !== a.id || d > policy.arrivalRadiusMeters) {

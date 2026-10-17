@@ -1,7 +1,9 @@
-.env
-.env.*
+# Local credentials, including downloaded/renamed copies such as (1).env
+*.env*
 !.env.example
 !.env.*.example
+.DS_Store
+._*
 .venv/
 __pycache__/
 .pytest_cache/
@@ -14,8 +16,6 @@ coverage.xml
 .coverage
 
 # Publication hygiene
-**/.env
-**/.env.*
 !**/.env.example
 !**/.env.*.example
 **/dist/

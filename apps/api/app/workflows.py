@@ -1,7 +1,8 @@
 """Explicit dependency graph for P1/P2/P3. No cloud commit or plan database."""
 import logging
 import json
-from datetime import date, datetime, timedelta
+import copy
+from datetime import date, datetime, timedelta, timezone
 from uuid import uuid4
 from typing import Literal
 
@@ -50,6 +51,9 @@ class ExtractionDraft(s.ContractModel):
     requirements: s.TripRequirements
     missingFields: list[str] = Field(default_factory=list)
     uncertainFields: list[s.UncertainField] = Field(default_factory=list)
+    changedFields: list[str] = Field(default_factory=list)
+    fieldSources: dict[str, Literal['USER', 'INFERRED', 'SUGGESTED']] = Field(default_factory=dict)
+    questions: list[str] = Field(default_factory=list)
 
 
 class ResolvedEdits(s.ContractModel):
@@ -66,6 +70,7 @@ class Workflows:
     async def model(self, ctx, schema, payload):
         result = await ctx.tool("model_structured", self.gateway.generate_structured,
                                 ctx.agent_id, schema, payload, job_id=ctx.job.job_id)
+        ctx.model_usage = result.usage
         logger.info(json.dumps({"event": "model_usage", "trace_id": ctx.job.trace_id,
                                "agent_id": ctx.agent_id, **result.usage}))
         return schema.model_validate(result.data)
@@ -74,24 +79,75 @@ class Workflows:
         runner = AgentRunner(job)
         async def interpret(ctx):
             result = await self.model(ctx, ExtractionDraft, {
-                "task": "提取旅行需求，不能确认用户未确认的信息。confirmed=false，包括所有intent。未知字段省略，missingFields用字段路径。不要猜日期/地点ID/票价。地点仅placeQuery/query。",
-                "today": datetime.now().astimezone().isoformat(), "input": dump(req),
+                "task": "你是主旅行助手A1。结合当前结构化草稿与多轮上下文理解本轮补充或纠正，一次吸收所有条件，保留未修改字段及稳定ID。changedFields仅列本轮确实修改的顶层字段；修改日期要同时维护起止日期及原天数，冲突先用uncertainFields和简短问题澄清。fieldSources按字段标注USER(用户明确表达)、INFERRED(推断)、SUGGESTED(建议)，推断和建议必须标记uncertainFields待整体确认。confirmed=false，包括所有intent。未知字段省略，不猜日期/人数/预算/地点ID/票价。相对日期按today的北京时间解析；有歧义先问。未指定交通可建议TRANSIT/WALK但必须标SUGGESTED。推荐景点仅作为preferences，不能加入mustVisit硬条件。地点仅placeQuery/query。每轮questions最多两个，只问影响规划的关键缺失/歧义；已回答的不再问，预算未指定不阻塞。不要用可选问题阻塞规划。",
+                "today": datetime.now(timezone(timedelta(hours=8))).isoformat(), "input": dump(req),
             })
             data = dump(result)
-            data["requirements"]["confirmed"] = False
-            for intent in data["requirements"]["intents"]:
+            previous = dump(req.requirements) if req.requirements else None
+            extracted = data["requirements"]
+            if previous:
+                allowed = set(s.TripRequirements.model_fields) - {"requirementsId", "version", "confirmed", "timezone"}
+                changed = set(data["changedFields"]) & allowed
+                extracted = {**previous, **{k: extracted.get(k) for k in changed}}
+                extracted["version"] = previous["version"] + 1
+                data["changedFields"] = sorted(changed)
+                data["fieldSources"] = {k: v for k, v in data["fieldSources"].items() if k in changed}
+                data["uncertainFields"] = [u for u in data["uncertainFields"] if u["fieldPath"].split('.')[0] in changed]
+            extracted["confirmed"] = False
+            extracted["timezone"] = "Asia/Shanghai"
+            extracted = copy.deepcopy(extracted)
+            data["requirements"] = extracted
+            for intent in extracted["intents"]:
+                old = next((i for i in (previous or {}).get("intents", []) if i["id"] == intent["id"] and i.get("placeQuery") == intent.get("placeQuery")), {})
                 intent.update(confirmed=False, status="PENDING", preparedContentIds=[])
                 intent.pop("placeId", None)
                 intent.pop("activityId", None)
-            data["intents"] = data["requirements"]["intents"]
+                if old.get("placeId"):
+                    intent["placeId"] = old["placeId"]
+            data["intents"] = extracted["intents"]
             for name in ("mustVisit", "avoidPlaces"):
-                for ref in data["requirements"][name]:
+                for ref in extracted[name]:
                     ref.pop("place", None)
+                    old = next((r for r in (previous or {}).get(name, []) if r["query"] == ref["query"]), {})
+                    if old.get("place"):
+                        ref["place"] = old["place"]
             for name in ("startPoint", "endPoint"):
-                if data["requirements"].get(name):
-                    data["requirements"][name].pop("place", None)
-            missing = [k for k in ("destinationCity", "startDate", "endDate", "travelerCount") if not data["requirements"].get(k)]
-            data["missingFields"] = sorted(set(data["missingFields"] + missing))
+                if extracted.get(name):
+                    extracted[name].pop("place", None)
+                    old = (previous or {}).get(name) or {}
+                    if old.get("query") == extracted[name]["query"] and old.get("place"):
+                        extracted[name]["place"] = old["place"]
+            for fixed in extracted["fixedConstraints"]:
+                if fixed.get("place"):
+                    fixed["place"].pop("place", None)
+                    old = next((f for f in (previous or {}).get("fixedConstraints", []) if f["id"] == fixed["id"]), {}).get("place") or {}
+                    if old.get("query") == fixed["place"]["query"] and old.get("place"):
+                        fixed["place"]["place"] = old["place"]
+            missing = [k for k in ("destinationCity", "startDate", "endDate", "travelerCount", "transportModes") if not extracted.get(k)]
+            if extracted.get("budgetCny") is not None and not extracted.get("budgetScope"):
+                missing.append("budgetScope")
+            data["missingFields"] = missing
+            for key, source in data["fieldSources"].items():
+                if source != "USER" and not any(u["fieldPath"] == key for u in data["uncertainFields"]):
+                    data["uncertainFields"].append({"fieldPath": key, "reason": "AI建议，请在摘要中核对。"})
+            prompts = {"destinationCity": "想去哪个城市？", "startDate": "准备哪天出发？", "endDate": "一共安排几天（1–3天）？", "travelerCount": "你们一共几个人？", "transportModes": "想步行、公共交通还是打车？", "budgetScope": "预算是人均还是总额？"}
+            data["questions"] = ([prompts[k] for k in missing] + data["questions"])[:2]
+            # Resolve only user-requested POIs; recommendations never become hard stops.
+            refs = [(f"mustVisit.{i}", ref, "place") for i, ref in enumerate(extracted["mustVisit"])]
+            refs += [(f"intents.{i}", intent, "placeId") for i, intent in enumerate(extracted["intents"]) if intent["status"] != "CANCELLED"]
+            for path, ref, binding in refs:
+                query = ref.get("query") or ref.get("placeQuery")
+                if not query or ref.get(binding) or not extracted.get("destinationCity"):
+                    continue
+                try:
+                    found = await ctx.tool("poi_search", self.maps.search_pois, query, city=extracted["destinationCity"])
+                    exact = [p for p in found if p["name"].strip() == query.strip()]
+                    if len(exact) == 1:
+                        ref[binding] = exact[0] if binding == "place" else exact[0]["poiId"]
+                    else:
+                        data["uncertainFields"].append({"fieldPath": path, "reason": f"请选择“{query}”对应的地点。", "candidates": found})
+                except ProviderError:
+                    data["uncertainFields"].append({"fieldPath": path, "reason": f"“{query}”暂未匹配，请重试地点检索。"})
             return data
         result = await runner.run("A1", req, s.ParseRequirementsResult, interpret)
         return result, False
@@ -150,11 +206,12 @@ class Workflows:
         # A2 has its own typed output; unlike free-form retrieval it cannot mutate scheduling rules.
         return await runner.run("A2", requirements, ResearchResult, investigate)
 
-    async def route_segments(self, requirements, activities, mode, runner=None):
+    async def route_segments(self, requirements, activities, mode, runner=None, reusable=()):
         async def compute(ctx=None):
             req = dump(requirements)
             ordered = sorted([dump(a) for a in activities], key=lambda a: (a["dayIndex"], a["orderIndex"]))
             segments, boundaries, warnings = [], [], []
+            cached = {(s.fromActivityId, s.toActivityId): dump(s) for s in reusable if s.evidence.status == "VERIFIED" and s.mode in req["transportModes"]}
             async def query(origin, destination, departure_at=None):
                 try:
                     candidate_modes = [mode] + ([m for m in req["transportModes"] if m != mode] if ctx else [])
@@ -174,6 +231,9 @@ class Workflows:
                     return {"mode": mode, "evidence": {"provider": "amap", "status": "FAILED", "fetchedAt": now_iso(), "note": exc.code}}
             for before, after in zip(ordered, ordered[1:]):
                 if before["dayIndex"] == after["dayIndex"]:
+                    if (before["id"], after["id"]) in cached:
+                        segments.append(cached[(before["id"], after["id"])])
+                        continue
                     segment = await query(before["place"]["location"], after["place"]["location"], before["endAt"])
                     segments.append({"fromActivityId": before["id"], "toActivityId": after["id"], **segment})
             if ordered:
@@ -204,7 +264,7 @@ class Workflows:
         modes = plan.requirements.transportModes
         if not modes:
             raise AppError("TRANSPORT_MODE_MISSING", "请选择交通方式后再生成方案。")
-        routes = await self.route_segments(plan.requirements, plan.activities, modes[0], runner)
+        routes = await self.route_segments(plan.requirements, plan.activities, modes[0], runner, reusable=plan.segments)
         data = dump(plan)
         data.update(segments=[dump(x) for x in routes.segments], boundarySegments=[dump(x) for x in routes.boundarySegments])
         plan = s.TripState.model_validate(data)
@@ -217,7 +277,12 @@ class Workflows:
         research = await self.research(req.requirements, runner)
         async def arrange(ctx):
             return await ctx.tool("schedule", build_plan, req.tripId, research.requirements, research.places, req.mode)
-        plan = await runner.run("A4", research, s.TripState, arrange)
+        try:
+            plan = await runner.run("A4", research, s.TripState, arrange)
+        except PlanningError as exc:
+            report = s.ValidationReport(status="INFEASIBLE", committable=False, unknownChecks=[], warnings=[],
+                hardViolations=[s.Violation(code=exc.code, message=exc.message, activityIds=exc.activity_ids)])
+            return s.PlanResult(validation=report, preparedContents=[]), True
         plan = await self.attach_routes(plan, runner)
         validation = await self.audit(plan, runner)
         # Bounded repair can remove optional stops; required visits, appointments and intents remain protected.
@@ -302,6 +367,7 @@ class Workflows:
                     "title": draft.title, "body": body, "version": previous.version + 1 if previous else 1,
                     "generatedAt": now_iso(), "evidence": [dump(facts[i]) for i in draft.usedEvidenceIndices],
                     "scopeNote": "仅适用于本行程版本和地点。创作辅助；地点来源不等于历史知识或管理政策来源，营业、票价和拍摄许可未核实。"}
+            data.update(generationProvider=ctx.model_usage.get("provider"), generationModel=ctx.model_usage.get("model"))
             if intent:
                 data["intentId"] = intent.id
             return data
@@ -473,6 +539,14 @@ class Workflows:
             validation.unknownChecks.append("REPROPOSE_REQUIRED: 路线发生变化或无法重新核验，请重新预览。")
             if validation.status == "FEASIBLE":
                 validation.status = "PARTIALLY_VERIFIED"
+            # Preserve the request and return one updated impact summary.
+            if not routes.warnings and not any(x.startswith('REPROPOSE_REQUIRED') for x in validation.unknownChecks[:-1]):
+                fresh = dump(apply_operations(req.tripState, req.proposal.operations))
+                fresh.update(segments=[dump(x) for x in routes.segments], boundarySegments=[dump(x) for x in routes.boundarySegments])
+                fresh = reschedule(s.TripState.model_validate(fresh), preserve_activity_ids=[o.activityId for o in req.proposal.operations if o.type == 'UPDATE_TIME'])
+                replacement = build_proposal(req.tripState, fresh, req.proposal.operations)
+                return s.ValidateRevisionResult(proposalId=req.proposal.proposalId, baseRevision=req.baseRevision,
+                    validation=validation, replacementProposal=replacement), True
         result = s.ValidateRevisionResult(proposalId=req.proposal.proposalId, baseRevision=req.baseRevision, validation=validation)
         return result, validation.status != "FEASIBLE" or not validation.committable
 

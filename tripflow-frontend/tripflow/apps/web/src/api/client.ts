@@ -38,7 +38,7 @@ export function describeError(e: unknown): { title: string; detail: string; trac
       JOB_NOT_FOUND: '后端任务已过期或服务重启，请重新发起',
       RATE_LIMITED: '请求过于频繁，已被限流',
       BUDGET_LIMIT: '今日 AI 调用额度已用尽',
-      LLM_TIMEOUT: 'AI 规划暂时超时',
+      LLM_TIMEOUT: 'AI 服务请求超时，可重试',
       API_UNAVAILABLE: '外部数据服务暂不可用',
       INVALID_MODEL_OUTPUT: '模型输出未通过校验',
       VALIDATION_ERROR: '请求字段不合法',
@@ -155,7 +155,7 @@ export function startJob<T extends z.ZodTypeAny>(
 
 type H = Parameters<typeof startJob>[3];
 export const jobs = {
-  parseRequirements: (b: RequestContext & { text: string; selectedContext?: SelectedContext; conversation?: ConversationMessage[] }, h?: H) =>
+  parseRequirements: (b: RequestContext & { text: string; requirements?: TripRequirements; selectedContext?: SelectedContext; conversation?: ConversationMessage[] }, h?: H) =>
     startJob('/requirements/parse', b, S.ParseResult, h),
   generatePlan: (b: RequestContext & { requirements: TripRequirements; mode: 'PLANNING' }, h?: H) =>
     startJob('/plans/generate', b, S.PlanResult, h),

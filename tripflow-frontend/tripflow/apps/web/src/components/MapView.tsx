@@ -16,7 +16,10 @@ function loadAMap(): Promise<any> {
     const code = import.meta.env.VITE_AMAP_SECURITY_CODE as string | undefined;
     if (host) (window as any)._AMapSecurityConfig = { serviceHost: host };
     else if (code) (window as any)._AMapSecurityConfig = { securityJsCode: code };
-    loaderPromise = AMapLoader.load({ key: KEY, version: '2.0', plugins: ['AMap.Scale'] }).catch((e: unknown) => { loaderPromise = null; throw e; });
+    loaderPromise = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('地图加载超时，请检查网络与地图授权配置后重试')), 20000);
+      AMapLoader.load({ key: KEY, version: '2.0', plugins: ['AMap.Scale'] }).then(resolve, reject).finally(() => clearTimeout(timer));
+    }).catch((e: unknown) => { loaderPromise = null; throw e; });
   }
   return loaderPromise;
 }
@@ -45,10 +48,12 @@ export function MapView(p: MapProps) {
   const meLayer = useRef<any[]>([]);
   const [state, setState] = useState<MapLoad>(KEY ? 'loading' : 'unconfigured');
   const [err, setErr] = useState<string>();
+  const [attempt, setAttempt] = useState(0);
   const onSelect = useRef(p.onSelect); onSelect.current = p.onSelect;
 
   useEffect(() => {
     if (!KEY) return;
+    setState('loading');
     let dead = false;
     loadAMap().then((AMap) => {
       if (dead || !el.current) return;
@@ -58,7 +63,7 @@ export function MapView(p: MapProps) {
       setState('ready');
     }).catch((e: unknown) => { if (!dead) { setState('failed'); setErr(String((e as Error)?.message ?? e)); } });
     return () => { dead = true; map.current?.destroy?.(); map.current = null; };
-  }, []);
+  }, [attempt]);
 
   // 标记与路线
   useEffect(() => {
@@ -137,12 +142,13 @@ export function MapView(p: MapProps) {
       )}
       {state !== 'ready' && (
         <div className="pointer-events-none absolute inset-x-0 top-[calc(66px+var(--safe-t))] flex justify-center px-16">
-          <div className="glass flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] text-ink-soft" role="status"
+          <div className="glass pointer-events-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] text-ink-soft" role="status"
             title={state === 'failed' ? err : undefined}>
             <Icon name="map" size={14} className={state === 'loading' ? 'text-ink-faint' : 'text-warn'} />
             {state === 'loading' && '地图加载中…'}
             {state === 'unconfigured' && '地图未配置 · 行程仍可编辑'}
             {state === 'failed' && '地图加载失败 · 行程仍可编辑'}
+            {state === 'failed' && <button className="ml-1 text-brand" onClick={() => setAttempt((n) => n + 1)}>重试</button>}
           </div>
         </div>
       )}

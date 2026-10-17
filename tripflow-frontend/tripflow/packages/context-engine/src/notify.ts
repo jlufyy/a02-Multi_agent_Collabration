@@ -22,13 +22,38 @@ export function dedupeKey(x: { demoRunId?: string; activityId?: string; arrivalI
 }
 
 export type ShowCheck = { ok: true } | { ok: false; defer: boolean; reason: string };
+export type ShowContext = {
+  now: Date; uiBusy: boolean; currentRevision: number; activityExists: (id?: string) => boolean;
+  tripId?: string; executionMode?: 'REAL' | 'DEMO'; demoRunId?: string;
+  arrivalCurrent?: (activityId?: string, arrivalId?: string) => boolean;
+  intentApplicable?: (intentId: string, activityId?: string) => boolean;
+};
+
+export function checkCardContext(q: QueuedCard, ctx: ShowContext): ShowCheck {
+  const c = q.decision.card;
+  const reject = (reason: string): ShowCheck => ({ ok: false, defer: false, reason });
+  if (q.decision.baseRevision !== ctx.currentRevision) return reject('STALE_REVISION');
+  if (ctx.tripId && q.decision.tripId !== ctx.tripId) return reject('TRIP_MISMATCH');
+  if (ctx.executionMode && (q.eventSource !== (ctx.executionMode === 'DEMO' ? 'SIMULATED' : 'REAL') || q.demoRunId !== ctx.demoRunId)) return reject('SOURCE_MISMATCH');
+  if (c.evidence.source !== q.eventSource || c.evidence.eventId !== q.decision.eventId) return reject('EVENT_MISMATCH');
+  const age = ctx.now.getTime() - Date.parse(q.enqueuedAt);
+  const ttl = 10 * 60_000;
+  const deadline = Math.min(Date.parse(q.enqueuedAt) + 3600_000, Math.max(Date.parse(q.enqueuedAt), Date.parse(q.snoozeUntil ?? q.enqueuedAt)) + ttl);
+  if (!Number.isFinite(age) || age < 0 || ctx.now.getTime() > deadline) return reject('EXPIRED');
+  if (c.activityId && !ctx.activityExists(c.activityId)) return reject('ACTIVITY_REMOVED');
+  if (c.intentId && ctx.intentApplicable && !ctx.intentApplicable(c.intentId, c.activityId)) return reject('INTENT_CHANGED');
+  if (c.level !== 'L3' && ctx.arrivalCurrent && !ctx.arrivalCurrent(c.activityId, q.arrivalId)) return reject('ARRIVAL_ENDED');
+  return { ok: true };
+}
 
 /** 显示前的最终检查。records = 当前工作区的通知事实记录（含已展示/忽略/稍后）。 */
 export function checkShow(
   q: QueuedCard, records: NotificationRecord[], policy: NotificationPolicy,
-  ctx: { now: Date; uiBusy: boolean; currentRevision: number; activityExists: (id?: string) => boolean },
+  ctx: ShowContext,
 ): ShowCheck {
   const c = q.decision.card;
+  const applicable = checkCardContext(q, ctx);
+  if (!applicable.ok) return applicable;
   if (c.level === 'L3') {
     if (!policy.enableL3) return { ok: false, defer: false, reason: 'L3_DISABLED' };
   } else {

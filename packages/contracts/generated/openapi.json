@@ -1705,6 +1705,31 @@
         ],
         "title": "Fact[Annotated[float, FieldInfo(annotation=NoneType, required=True, metadata=[Ge(ge=0), AllowInfNan(allow_inf_nan=False)])]]"
       },
+      "Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence"
+        ],
+        "title": "Fact[Annotated[str, FieldInfo(annotation=NoneType, required=True, metadata=[Strict(strict=True), MinLen(min_length=1)])]]"
+      },
       "Fact_str_": {
         "properties": {
           "value": {
@@ -2849,6 +2874,16 @@
             "minLength": 1,
             "title": "Text"
           },
+          "requirements": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TripRequirements"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "selectedContext": {
             "anyOf": [
               {
@@ -2909,6 +2944,33 @@
             },
             "type": "array",
             "title": "Uncertainfields"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Questions"
+          },
+          "fieldSources": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "USER",
+                "INFERRED",
+                "SUGGESTED"
+              ]
+            },
+            "type": "object",
+            "title": "Fieldsources"
+          },
+          "changedFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changedfields"
           }
         },
         "additionalProperties": false,
@@ -2998,6 +3060,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parentPoiId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____"
               },
               {
                 "type": "null"
@@ -3238,6 +3310,28 @@
             "type": "string",
             "minLength": 1,
             "title": "Scopenote"
+          },
+          "generationProvider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generationprovider"
+          },
+          "generationModel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generationmodel"
           }
         },
         "additionalProperties": false,
@@ -5777,6 +5871,16 @@
           },
           "validation": {
             "$ref": "#/components/schemas/ValidationReport"
+          },
+          "replacementProposal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RevisionProposal"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
