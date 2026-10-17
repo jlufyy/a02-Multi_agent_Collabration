@@ -1,114 +1,205 @@
-# TripFlow 完整应用
+# TripFlow · 多 Agent 智能出行助手
 
-Android 私人安装包的构建与真机验证见 [android/README.md](android/README.md)。React 页面和 Python 后端均可在手机内运行；本地 ENV、签名和个人 APK 不提交到 GitHub。已增加真实餐馆检索、参考人均消费、自动午餐/晚餐安排及行程页“找美食”。
+把“想去哪里、想做什么”变成可检查、可修改的旅行行程，并在出行过程中提供地点讲解、任务提醒和附近美食推荐。
 
-React/TypeScript 前端 + FastAPI 后端。前端源码保留在 `tripflow-frontend/tripflow/apps/web`，后端在 `apps/api`。构建后由 FastAPI 同时提供页面与 `/api/v1`，通过一个地址使用，无需运行契约测试桩。
+TripFlow 使用 React / TypeScript 构建界面，FastAPI 提供业务接口，通过总调度器与 7 个专业 Agent 协作完成需求理解、地点研究、路线查询、行程编排和约束核验。支持浏览器使用，也支持将页面与 Python 后端一起封装到 Android 手机内运行。
 
-**2026-10-17 修复更新：已修复保存/编辑、跨日排程、北京时间、定位去重和驻留、提醒过期等问题，并加入多轮需求对话、摘要确认、局部路线复用和内容持久化。** 修复及验收范围见 [修复记录](docs/TripFlow_修复与验证_2026-10-17.md)。[原整合报告](docs/TripFlow_整合测试与问题建议_2026-10-17.md)保留为历史基线；真机 GPS、HTTPS 和容器部署仍需单独验收。
+**当前 Android 版本：1.0.2（versionCode 3）** · 更新日期：2026-10-17
 
-**本次体验优化**：保留 AI 对话分析需求为默认入口，新增冲突预览内编辑、真实景点照片、按日期解析营业政策、官方门票核验，以及按区域分天和比较允许交通方式。说明与验收见 [体验优化记录](docs/TripFlow_体验优化_2026-10-17.md)。
+## 能做什么
 
-## 本机使用
+- **聊天规划**：通过多轮对话补充或纠正城市、日期、人数、预算、交通方式和偏好，确认摘要后规划国内城市 1–3 天的行程。
+- **地点自动匹配**：统一检查必去、避开、起点、终点、固定安排和任务地点；兼容括号、城市前缀及明确的公园简称。有歧义时在规划前确认，已有草稿也可自动补匹配。
+- **真实地图与交通**：查询高德 POI、地址、照片及路线，比较允许的交通方式，显示服务返回的实际道路轨迹。
+- **可预览的行程修改**：增加、删除、移动地点或调整停留时间后，先计算交通、时间和约束影响，预览并确认后再保存；支持撤销与重做。
+- **到了再选餐馆**：围绕当前位置或行程地点，根据口味、半径、最长步行时间和人均参考预算推荐餐馆，显示具体分店位置、步行路线、高德评分与公开评价来源。
+- **有来源的资料与内容**：查询营业时间、门票和预约资料；准备讲解、讲稿、拍摄清单等内容，并保留来源与未核验提示。
+- **出行情境服务**：结合前台定位、到达与停留状态触发地点内容或任务提醒；Android 支持系统中文语音播报。
 
-本机默认访问地址：<http://127.0.0.1:8010/>；接口文档：<http://127.0.0.1:8010/docs>。
+地图没有返回的路线、缺失的评价、未核实的票价和营业信息会明确标注，不用模拟数据填补。公开点评摘要可查看原文，不等同于平台完整评论列表。
 
-首次克隆请先完成下方“首次安装”步骤。安装完成后，在项目根目录 PowerShell 运行：
+## 应用内 Agent 分工
 
-```powershell
-.\start-tripflow.ps1
-# 或：npm start
+| 角色 | 职责 |
+| --- | --- |
+| 总调度器 | 路由请求、组织依赖、管理任务进度、失败与取消 |
+| A1 需求理解 | 解析多轮对话、旅行条件与修改意图 |
+| A2 地点与资料研究 | 检索、匹配真实 POI，核验地点并查询公开资料 |
+| A3 交通研究 | 查询真实路线、出行时长与路程 |
+| A4 行程规划 | 编排活动顺序、时间与候选修改方案 |
+| A5 约束审核 | 检查时间、预算、锁定安排及距离等条件 |
+| A6 主动服务 | 评估到达、停留等事件是否需要提醒 |
+| A7 个性化内容 | 准备内容并整理带来源的展示结果 |
+
+各 Agent 使用受限工具、结构化输入输出和真实进度事件。按任务组合规则计算、地图工具、搜索与模型调用，不会为每个步骤都调用一次大模型。
+
+例如附近美食推荐的执行顺序：
+
+```mermaid
+flowchart LR
+  A2[A2 检索餐馆] --> A3[A3 查询步行路线]
+  A3 --> A5[A5 筛选距离与预算]
+  A5 --> R[A2 搜索评价来源]
+  R --> A7[A7 整理推荐结果]
+  A7 --> U[用户查看位置与评价]
+  U --> P[预览加入行程的影响]
+  P --> C[用户确认后保存]
 ```
 
-默认先构建前端，再启动同源服务，端口为 8010。Ctrl+C 结束。已有实例运行时不要重复启动。可指定 `-Port 8012`。已构建且源码无变化时：
+## 本地运行
+
+准备 Python 3.12、Node.js 22 和 PowerShell。以下命令均在仓库根目录执行。
+
+### 1. 安装依赖
 
 ```powershell
-.\start-tripflow.ps1 -SkipBuild
-```
+git clone https://github.com/jlufyy/a02-Multi_agent_Collabration.git
+cd a02-Multi_agent_Collabration
 
-首次安装（Python 3.12、Node.js 22）：
-
-```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -c apps/api/requirements-lock.txt -e './apps/api[test]'
-npm ci --cache .npm-cache --no-audit --no-fund
-npm --prefix tripflow-frontend/tripflow ci --cache .npm-cache --no-audit --no-fund
-.\start-tripflow.ps1
+npm ci --no-audit --no-fund
+npm --prefix tripflow-frontend/tripflow ci --no-audit --no-fund
 ```
 
-开发模式同时启动后端与 Vite，浏览器使用 5173：
+### 2. 配置服务
+
+```powershell
+Copy-Item .env.example .env
+```
+
+在本机 `.env` 中填写服务配置。仓库只提供空值模板，不包含可用密钥。
+
+| 配置 | 用途 |
+| --- | --- |
+| `AMAP_WEB_SERVICE_KEY` 或 `AMAP_API_KEY` | 后端地点检索与交通路线 |
+| `DEEPSEEK_API_KEY` | 需求理解和内容生成；也可按模板配置 AIPing 或其他供应商 |
+| `DEEPSEEK_MODEL` | 指定模型；应使用账户实际可调用的型号 |
+| `MODEL_ROUTES` | 可选，显式指定 A1 / A7 的供应商或模型路由 |
+| `TENCENTCLOUD_WSA_APIKEY` | 腾讯云 WSA 联网资料搜索 |
+| `TAVILY_API_KEY` / `BOCHA_API_KEY` | 可选的其他搜索服务 |
+| `TRIPFLOW_SEARCH_PROVIDER` | 配置多个搜索服务时，选择 `tencent_wsa`、`tavily` 或 `bocha` |
+
+配置 DeepSeek 后，默认用于 A1 和 A7；显式 `MODEL_ROUTES` 优先。模型服务和联网搜索是独立配置，只有模型 Key 不代表已启用搜索。更多选项见 [.env.example](.env.example)。
+
+网页底图需要**独立的高德 JS API Key**。可复制前端模板后填写：
+
+```powershell
+Copy-Item tripflow-frontend/tripflow/apps/web/.env.example tripflow-frontend/tripflow/apps/web/.env.local
+```
+
+```dotenv
+VITE_AMAP_KEY=你的高德JS公开Key
+VITE_AMAP_SERVICE_HOST=你的高德安全代理地址
+```
+
+未使用安全代理时，可按账户配置方式填写 `VITE_AMAP_SECURITY_CODE`。同源运行时 `VITE_API_BASE_URL` 留空。也支持在根目录 `.env` 中配置这三项 `VITE_AMAP_*`；修改后需重新构建。
+
+后端地图、模型和搜索密钥不能填入 `VITE_*`。没有配置 JS Key 时页面会提示地图未配置。
+
+### 3. 启动
+
+```powershell
+.\start-tripflow.ps1
+# 或 npm start
+```
+
+脚本构建前端后启动同源服务：
+
+- 应用：<http://127.0.0.1:8010/>
+- 接口文档：<http://127.0.0.1:8010/docs>
+
+Ctrl+C 停止。已有构建且源码未变化时可用 `-SkipBuild`；端口冲突时可用 `-Port 8012`。
+
+开发模式：
 
 ```powershell
 .\start-tripflow.ps1 -Dev -Port 8011
 ```
 
-**本地行程按浏览器和完整 origin 隔离**。`localhost`、`127.0.0.1`、不同端口及不同浏览器各自保存行程。切换地址后看不到旧行程，不能据此认定数据丢失。后端没有云端行程主库。
+浏览器访问 `http://127.0.0.1:5173`，Vite 自动代理到所选后端端口。
 
-## 服务配置
+## Android 构建与安装
 
-克隆仓库后，先复制根目录 `.env.example` 为 `.env` 并自行填写服务密钥；前端公开 JS Key 参考其独立 `.env.example`。真实 `.env` 不随仓库分发，只供后端读取。支持 `AMAP_API_KEY` / `AMAP_WEB_SERVICE_KEY`、`AIPING_API_KEY` / `AIPING_BASE_URL`、`DEEPSEEK_API_KEY`。
+Android 使用原生 WebView 加载 React 页面，通过 Chaquopy 在手机内启动原 FastAPI 后端，固定应用地址为 `http://127.0.0.1:18761`。
 
-配置 DeepSeek 时，缺省路由如下（显式 `MODEL_ROUTES` 始终优先）：
+**正常使用无需电脑、USB 隧道或桌面后端。** 地图、模型与搜索服务仍需联网。
 
-| Agent | 入口 | 默认模型 |
-|---|---|---|
-| A1 需求解析、编辑理解 | DeepSeek 直连 | `deepseek-flash` |
-| A7 内容生成 | DeepSeek 直连 | 与 `DEEPSEEK_MODEL` 一致，默认 `deepseek-flash` |
+| 项目 | 当前配置 |
+| --- | --- |
+| 包名 | `cn.tripflow.app` |
+| 版本 | `1.0.2` / `3` |
+| 架构 | ARM64 |
+| 最低系统 | Android 8.0 / API 26 |
+| 编译与目标 SDK | 35 |
+| 原生能力 | 前台定位授权、中文 TTS、返回键与键盘/系统边距处理 |
 
-`DEEPSEEK_BASE_URL` 默认 `https://api.deepseek.com`；`DEEPSEEK_MODEL` 可指定已核实可用的型号。显式 `MODEL_ROUTES` 优先于默认路由。未配置 DeepSeek 时保留已有 AIPing/独立供应商路由。可用 `MODEL_ROUTES={"A1":"deepseek","A7":{"provider":"aiping","model":"Qwen3.8-27B"}}` 明确选用 AIPing。`capabilities.available` 表示配置就绪，不代表每次调用都成功。单价未配置时费用仍是 UNKNOWN；进程内每日预留预算不是外部账单封顶。本次真实测试中 DeepSeek 的讲解、讲稿、清单、内容完善均成功；AIPing 仍超时。A7 的 `TRIPFLOW_CONTENT_TIMEOUT_SECONDS=45` 为覆盖重试与结构修复的模型总时限，`TRIPFLOW_CONTENT_MAX_TOKENS=1600` 限制输出；地点检索耗时另计，整体仍受任务时限限制。不会静默切换供应商或生成测试正文。
-
-高德 **Web Service Key 只用于后端地点和路线服务**。网页地图需要独立的 JS API 配置，填入 `tripflow-frontend/tripflow/apps/web/.env.local`（参考同目录 `.env.example`），随后重新构建：
-
-也支持将下列 `VITE_AMAP_*` 配置保存在仓库根目录 `.env`。构建显式读取这三项浏览器地图配置，应用目录的配置及进程环境变量优先；后端密钥不随之进入前端。修改后需重新构建并刷新页面。
-
-```dotenv
-VITE_AMAP_KEY=<高德 JS API 的公开 Key>
-VITE_AMAP_SERVICE_HOST=<已配置的高德安全代理地址>
-```
-
-没有安全代理时，可按高德账户允许的方式配置 `VITE_AMAP_SECURITY_CODE`。不要把后端 Web Service Key、模型 Key 或根目录 `.env` 内容填入 `VITE_*` 变量。未提供 JS Key 时显示“地图未配置”；加载超时或失败可重试。当前本机的独立 JS Key 已在浏览器验证底图和标记，不能据此推断其它域名或生产环境已获授权。
-
-同源运行时 `VITE_API_BASE_URL` 留空。开发代理默认指向 8000，由整合开发启动脚本自动改为所选后端端口。
-
-### 联网资料搜索
-
-搜索密钥放在根目录 `.env`，由后端读取。腾讯云 WSA 使用 `TENCENTCLOUD_WSA_APIKEY`，`TENCENTCLOUD_WSA_API_URL` 默认 `https://api.wsa.cloud.tencent.com/SearchPro`，遵循 [腾讯云服务 API KEY 接入文档](https://cloud.tencent.com/document/product/1806/130615)。同时支持 `TAVILY_API_KEY` 或 `BOCHA_API_KEY`；配置多个服务时用 `TRIPFLOW_SEARCH_PROVIDER=tencent_wsa` / `tavily` / `bocha` 选择，未指定时优先腾讯云。兼容代理可使用 `SEARCH_PROVIDER`、`SEARCH_API_KEY`、`SEARCH_BASE_URL`，接口地址必须是公开 HTTPS 地址。修改配置后重启后端；搜索密钥不能写进 `VITE_*`。其他接口依据 [Tavily Search 文档](https://docs.tavily.com/documentation/api-reference/endpoint/search) 和 [博查开放平台](https://open.bochaai.com/)。`(1).env` 不会自动加载，本次已将用户新保存的两项搜索配置同步到私密 `.env`；后续统一维护 `.env`。
-
-生成行程时自动查询所选景点的开放时间、门票与预约参考资料，结果随行程保存在本机；景点详情的“联网查资料 / 重新搜索”可手动查询已有行程（本次查询结果在详情面板显示，不修改已确认计划）。`POST /api/v1/places/research` 接收 `executionMode`、真实 `poiId`、`city`、`visitDate`。搜索最多并发 3 个请求，每个请求最多 8 秒，规划阶段最多查询 12 个不同景点、总计最多 25 秒，每个景点保留最多 3 条相关来源。不会将聊天内容、同行人资料或设备定位发送给搜索服务。
-
-普通搜索摘要只作为带来源的参考。营业政策读取高德实际返回的营业字段，并按游览日期解析周次和季节。门票优先读取已审核官方页面，匹配成人普通大门票及对应季节；仅对固定官方页面和固定条款解析器允许搜索索引补读，并明确标注索引来源。其他摘要、地图人均消费及模型生成的数字不能升级为已核验票价。缺来源、超时或有歧义的项目仍保留待确认。AI 内容准备复用规划中的联网资料，并保留实际引用来源。
-
-旧行程在行程页点击“重新核验营业时间与门票”，会生成更新预览，确认后写入本机。照片从高德返回的对应 POI 图片 URL 加载；旧行程可通过地点详情接口懒加载补图，无图或加载失败显示景观示意。DeepSeek 直连的 A1 需求/编辑解析默认使用非思考模式，避免内部推理耗尽 JSON 输出预算；可通过 `DEEPSEEK_A1_THINKING_MODE=enabled` 改回，其他角色保持原配置。
-
-## 测试与证据
+本地构建还需要 JDK 17、Android SDK 35 和对应 Build Tools：
 
 ```powershell
+.\android\build-android.ps1 -Variant Release
+```
+
+脚本读取本地 ENV，生成私人运行包与个人签名，执行检查并输出：
+
+```text
+output/android/TripFlow-1.0.2-personal-release-arm64.apk
+```
+
+覆盖安装并启动：
+
+```powershell
+adb devices -l
+adb -s <设备序列号> install --no-streaming -r output/android/TripFlow-1.0.2-personal-release-arm64.apk
+adb -s <设备序列号> shell am start -W -n cn.tripflow.app/.MainActivity
+```
+
+保留本机 `android/.local/` 中的签名文件，后续使用同一签名更新。`install -r` 保留应用数据。
+
+私人 APK 包含构建时配置，不随公开源码分发；ENV、签名、APK、手机数据和生成资源均排除在 Git 外。详细构建、原生依赖与设备检查见 [Android 说明](android/README.md)。
+
+## 数据与运行边界
+
+- **行程保存在本地 IndexedDB**，后端没有云端行程主库。浏览器、完整域名及端口不同，看到的行程也不同。
+- 正式修改遵循“提出方案 → 核验 → 预览 → 用户确认 → 本地原子保存”。任务成功不等于方案一定可保存，最终依据 `validation.committable`。
+- 后端任务、幂等记录与预算控制为进程内状态，部署时使用单 worker。服务重启后进行中的任务不会继续。
+- 定位服务面向前台使用，未添加 Android 后台 GPS 服务。户外实际到达、停留触发与长时间使用仍需实地验证。
+- 当前完成 Android 真机安装、启动和相关真实接口验证；Docker 配置文件不代表已完成容器或公网部署验收。
+
+## 开发检查
+
+```powershell
+# 后端与地点匹配回归
 .\.venv\Scripts\python.exe -m pytest -q -c apps/api/pyproject.toml apps/api/tests
+
+# 上下文引擎、前端与契约
 node --test packages/context-engine/test.mjs
-npm run typecheck
 npm run test:web
-npm --prefix tripflow-frontend/tripflow -w @tripflow/web run lint
+npm run typecheck
+npm --prefix tripflow-frontend/tripflow/apps/web run lint
 npm run build
 .\.venv\Scripts\python.exe packages/contracts/generate.py --app-openapi --check
 ```
 
-真实接口审计会调用已配置的付费地图/模型服务：
+1.0.2 的地点匹配修复已通过 10 项相关后端回归、48 项前端测试及手机接口冒烟测试。测试夹具明确标注为合成数据，不作为真实用户评价或户外定位证据。
 
-```powershell
-.\.venv\Scripts\python.exe apps/api/scripts/integration_verify.py --url http://127.0.0.1:8010
-node tripflow-frontend/tripflow/tools/e2e/verify-live-contracts.mjs output/integration/contract-samples.json output/integration/live-contracts.json
-node tripflow-frontend/tripflow/tools/e2e/audit-probes.mjs packages/context-engine/geo-policy.json output/integration/synthetic-probes.json
+## 目录与文档
+
+```text
+apps/api/                       FastAPI、Agent 工作流、供应商适配与测试
+tripflow-frontend/tripflow/      React 前端及前端契约适配
+packages/contracts/             共享契约与生成产物
+packages/context-engine/        情境、定位与提醒状态逻辑
+android/                        Android 容器、构建脚本与原生依赖
+docs/                           架构、运行说明与历史验证记录
 ```
 
-审计遇到规划失败会记录失败后停止依赖该计划的用例。可用脚本 `--help` 中的已有真实任务参数继续检查；不得把继续测试用的输入调整视为产品修复。再次运行会更新审计输出；本轮首次失败另存 `output/integration/live-http-initial.json`。定位探针明确使用 SYNTHETIC 数据，不证明真机 GPS。
+- [Android 构建说明](android/README.md)
+- [架构说明](docs/architecture.md)
+- [运行手册](docs/runbook.md)
+- [供应商配置](docs/providers.md)
+- [Android 1.0.1 真机交付记录（历史）](docs/TripFlow_Android_真机交付_2026-10-17.md)
+- [应用修复记录](docs/TripFlow_修复与验证_2026-10-17.md)
+- [规划体验优化记录](docs/TripFlow_体验优化_2026-10-17.md)
 
-- 问题、修复建议及复测方案：`docs/TripFlow_整合测试与问题建议_2026-10-17.md`
-- 本轮 HTTP、契约、诊断与定位探针：`output/integration/`
-- 整合前备份只留在开发者本机，不上传；旧说明保留在 `docs/backend-README-before-integration.md`
-- 历史后端验收：`docs/acceptance.md`、`docs/live-verification.json`，不等于本轮整合验收
-- 前端测试桩：`tripflow-frontend/tripflow/tools/contract-stub/`，没有接入产品运行
-
-## 打包与边界
-
-`Dockerfile` 用 Node 构建前端，再把构建产物复制进 Python 镜像；`render.yaml` 改为该 Docker 入口。本轮没有执行容器构建或公网部署，文件配置不等于部署验收。
-
-生产仅运行一个 worker：任务、幂等记录及预算均为进程内临时状态。HTTPS、Android/iOS 真机定位、地图 JS 配置及供应商服务授权仍需单独验证。
+历史报告对应各自记录时的版本与测试条件，当前功能以代码及本 README 为准。

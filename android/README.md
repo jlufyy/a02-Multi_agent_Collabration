@@ -2,7 +2,7 @@
 
 Android app with the existing React UI and original FastAPI backend running **on the phone** through [Chaquopy](https://chaquo.com/chaquopy/doc/current/android.html). The fixed application origin is `http://127.0.0.1:18761`. No desktop server, USB reverse tunnel or hosted backend is needed for normal use. AI, map, search and POI services still require Internet access.
 
-Package: `cn.tripflow.app`; version `1.0.1` (2); ARM64; Android 8.0/API 26 or later. Target/compile SDK 35. The native shell handles keyboard/system insets, Android back, foreground location consent and Chinese Android TTS. Location is requested only when the travel flow asks for it. No background GPS service is added. Native TTS pause/resume replays the current short sentence.
+Package: `cn.tripflow.app`; version `1.0.2` (3); ARM64; Android 8.0/API 26 or later. Target/compile SDK 35. The native shell handles keyboard/system insets, Android back, foreground location consent and Chinese Android TTS. Location is requested only when the travel flow asks for it. No background GPS service is added. Native TTS pause/resume replays the current short sentence.
 
 ## Food recommendations during a trip
 
@@ -17,7 +17,7 @@ Cards distinguish straight-line distance from real road travel, show exact branc
 Install Python 3.12, Node 22+, JDK 17, Android SDK 35/build tools. Install the repository's backend dependencies as described in the root README, and create a local `.env` from `.env.example`.
 
 ```powershell
-.\android\build-android.ps1 -Variant Release -Python .\.venv\Scripts\python.exe
+.\android\build-android.ps1 -Variant Release
 # Optional: -EnvFile 'C:\private\tripflow.env' -GradleHome 'D:\Gradle\TripFlow'
 ```
 
