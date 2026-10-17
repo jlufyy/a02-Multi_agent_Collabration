@@ -88,7 +88,7 @@ export function SettingsPage() {
         <Group title="服务状态">
           <p className="px-4 text-[12px] text-ink-faint">以下显示配置是否就绪。实际请求可能超时或失败，请以本次请求结果为准。</p>
           {!caps && <Item title="规划服务" hint={capErr ?? '正在读取…'} />}
-          {caps?.tools.map((t) => <Item key={t.name} title={t.name} hint={t.reason} right={<span className={`h-2 w-2 rounded-full ${t.available ? 'bg-ok' : 'bg-danger'}`} />} />)}
+          {caps?.tools.map((t) => <Item key={t.name} title={{ amap: '地图与地点服务', model_gateway: 'AI 内容服务', web_search: '联网搜索' }[t.name] ?? '资料服务'} hint={t.reason} right={<span className={`h-2 w-2 rounded-full ${t.available ? 'bg-ok' : 'bg-danger'}`} />} />)}
           {caps?.modelRoutes.map((m) => <Item key={m.agentId} title={`${AGENT_NAME[m.agentId]} Agent`} hint={`${m.provider} / ${m.model}`} right={<span className={`text-[12px] ${m.available ? 'text-ink-faint' : 'text-danger'}`}>{m.available ? '已配置' : '未配置'}</span>} />)}
         </Group>
         <Group title="数据">

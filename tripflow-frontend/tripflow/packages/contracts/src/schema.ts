@@ -44,11 +44,18 @@ export const Evidence = z.object({
 });
 const fact = <T extends z.ZodTypeAny>(v: T) => z.object({ value: v.optional(), evidence: Evidence });
 
+export const WebReference = z.object({ title: z.string(), url: z.string(), snippet: z.string(), evidence: Evidence });
+export const WebResearch = z.object({
+  status: z.enum(['AVAILABLE', 'EMPTY', 'UNAVAILABLE', 'NOT_CONFIGURED']), query: z.string(), checkedAt: z.string(),
+  references: z.array(WebReference), message: z.string(),
+});
+
 export const Place = z.object({
   poiId: z.string(), name: z.string(), address: z.string().optional(), location: GeoPoint, evidence: z.array(Evidence),
   openingHours: fact(z.string()).optional(), ticketPriceCny: fact(z.number()).optional(),
   queueMinutes: fact(z.number()).optional(), rating: fact(z.number()).optional(), bookingNote: fact(z.string()).optional(),
   parentPoiId: fact(z.string()).optional(),
+  webResearch: WebResearch.optional(),
 });
 export const CompanionPreference = z.object({
   id: z.string(), label: z.string(), interests: z.array(z.string()),
@@ -167,6 +174,7 @@ export const PreparedContent = z.object({
   placeId: z.string(), module: ServiceModule, title: z.string(), body: z.string(),
   version: z.number().int(), generatedAt: z.string(), evidence: z.array(Evidence), scopeNote: z.string(),
   generationProvider: z.string().optional(), generationModel: z.string().optional(),
+  deliveryMode: z.enum(['GUIDE', 'DOCUMENT']).optional(),
 });
 export const SelectedContext = z.object({
   tripId: z.string(), planRevision: z.number().int(), mode: TripMode,

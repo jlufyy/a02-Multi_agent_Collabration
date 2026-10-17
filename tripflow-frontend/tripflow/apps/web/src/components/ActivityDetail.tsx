@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 import { PlaceHero } from './Illustrations';
 import { INTENT_LABEL, MODE_LABEL } from '../lib/requirements';
 import { PROGRESS_LABEL } from './Timeline';
+import { WebResearchPanel } from './WebResearchPanel';
 
 /** P06 活动详情（设计稿 06）。所有字段按来源状态显示；没有的数据写“未获取”，不编造。 */
 export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExplain, onShowOnMap, busy }: {
@@ -18,7 +19,7 @@ export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExpl
   const inSeg = plan.segments.find((s) => s.toActivityId === a.id);
   const outSeg = plan.segments.find((s) => s.fromActivityId === a.id);
   const its = plan.intents.filter((i) => a.intentIds.includes(i.id));
-  const nameOf = (id: string) => plan.activities.find((x) => x.id === id)?.place.name ?? id;
+  const nameOf = (id: string) => plan.activities.find((x) => x.id === id)?.place.name ?? '相关活动';
   const p = a.place;
   const rows: { icon: string; label: string; value?: string; status?: DataStatus }[] = [
     { icon: 'clock', label: '开放时间', value: p.openingHours?.value, status: p.openingHours?.evidence.status },
@@ -83,6 +84,7 @@ export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExpl
             <span className="relative rounded-full bg-white/90 px-2.5 py-1 font-mono text-[11px] text-ink-soft">{p.location.lat.toFixed(5)}, {p.location.lng.toFixed(5)} · {p.location.coordinateSystem}</span>
           </button>
 
+          <WebResearchPanel key={p.poiId} initial={p.webResearch} poiId={p.poiId} city={plan.destinationCity} visitDate={a.startAt.slice(0, 10)} />
           <button className="mt-4 text-[13px] text-brand" onClick={() => setShowSrc(!showSrc)}>{showSrc ? '收起数据来源' : '查看数据来源'}</button>
           {showSrc && <div className="mt-2 pb-2"><EvidenceList items={p.evidence} /></div>}
           <p className="mb-6 mt-2 text-[12px] text-ink-faint">地点真实存在不代表营业时间、门票已核实。顶部为示意插画，不是该地点实拍。</p>

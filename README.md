@@ -63,6 +63,14 @@ VITE_AMAP_SERVICE_HOST=<已配置的高德安全代理地址>
 
 同源运行时 `VITE_API_BASE_URL` 留空。开发代理默认指向 8000，由整合开发启动脚本自动改为所选后端端口。
 
+### 联网资料搜索
+
+搜索密钥放在根目录 `.env`，由后端读取。腾讯云 WSA 使用 `TENCENTCLOUD_WSA_APIKEY`，`TENCENTCLOUD_WSA_API_URL` 默认 `https://api.wsa.cloud.tencent.com/SearchPro`，遵循 [腾讯云服务 API KEY 接入文档](https://cloud.tencent.com/document/product/1806/130615)。同时支持 `TAVILY_API_KEY` 或 `BOCHA_API_KEY`；配置多个服务时用 `TRIPFLOW_SEARCH_PROVIDER=tencent_wsa` / `tavily` / `bocha` 选择，未指定时优先腾讯云。兼容代理可使用 `SEARCH_PROVIDER`、`SEARCH_API_KEY`、`SEARCH_BASE_URL`，接口地址必须是公开 HTTPS 地址。修改配置后重启后端；搜索密钥不能写进 `VITE_*`。其他接口依据 [Tavily Search 文档](https://docs.tavily.com/documentation/api-reference/endpoint/search) 和 [博查开放平台](https://open.bochaai.com/)。`(1).env` 不会自动加载，本次已将用户新保存的两项搜索配置同步到私密 `.env`；后续统一维护 `.env`。
+
+生成行程时自动查询所选景点的开放时间、门票与预约参考资料，结果随行程保存在本机；景点详情的“联网查资料 / 重新搜索”可手动查询已有行程（本次查询结果在详情面板显示，不修改已确认计划）。`POST /api/v1/places/research` 接收 `executionMode`、真实 `poiId`、`city`、`visitDate`。搜索最多并发 3 个请求，每个请求最多 8 秒，规划阶段最多查询 12 个不同景点、总计最多 25 秒，每个景点保留最多 3 条相关来源。不会将聊天内容、同行人资料或设备定位发送给搜索服务。
+
+搜索摘要仅作为带来源的待核实参考，不会覆盖已核实的 POI 事实或自动把开放时间、票价标为已核验。无配置、无匹配、超时或额度不足均显示中文提示，保留可用的行程。AI 内容准备复用规划中的联网资料，并保留实际引用来源。核验页按景点合并中文提示；诊断码、活动 ID、调用名称及追踪编号只保留在 API/开发记录中。
+
 ## 测试与证据
 
 ```powershell

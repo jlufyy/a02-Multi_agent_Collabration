@@ -170,7 +170,7 @@ export type ParseRequirementsRequest = { "executionMode": "REAL" | "DEMO"; "demo
 
 export type ParseRequirementsResult = { "requirements": TripRequirements; "intents": Array<TravelIntent>; "missingFields": Array<string>; "uncertainFields": Array<UncertainField>; "questions"?: Array<string>; "fieldSources"?: { [key: string]: "USER" | "INFERRED" | "SUGGESTED"; }; "changedFields"?: Array<string>; };
 
-export type Place = { "poiId": string; "name": string; "address"?: (string | null); "location": GeoPoint; "evidence": Array<Evidence>; "openingHours"?: (Fact_str_ | null); "ticketPriceCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "queueMinutes"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "rating"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "bookingNote"?: (Fact_str_ | null); "parentPoiId"?: (Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____ | null); };
+export type Place = { "poiId": string; "name": string; "address"?: (string | null); "location": GeoPoint; "evidence": Array<Evidence>; "openingHours"?: (Fact_str_ | null); "ticketPriceCny"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "queueMinutes"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "rating"?: (Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____ | null); "bookingNote"?: (Fact_str_ | null); "parentPoiId"?: (Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____ | null); "webResearch"?: (WebResearch | null); };
 
 export type PlaceReference = { "query": string; "place"?: (Place | null); };
 
@@ -180,7 +180,7 @@ export type PrepareContentRequest = { "executionMode": "REAL" | "DEMO"; "demoRun
 
 export type PrepareContentResult = { "contents": Array<PreparedContent>; };
 
-export type PreparedContent = { "contentId": string; "tripId": string; "baseRevision": number; "activityId"?: (string | null); "intentId"?: (string | null); "placeId": string; "module": "KNOWLEDGE" | "PERSONAL_GOAL" | "TRIP_RISK" | "NEARBY"; "title": string; "body": string; "version": number; "generatedAt": string; "evidence": Array<Evidence>; "scopeNote": string; "generationProvider"?: (string | null); "generationModel"?: (string | null); };
+export type PreparedContent = { "contentId": string; "tripId": string; "baseRevision": number; "activityId"?: (string | null); "intentId"?: (string | null); "placeId": string; "module": "KNOWLEDGE" | "PERSONAL_GOAL" | "TRIP_RISK" | "NEARBY"; "title": string; "body": string; "version": number; "generatedAt": string; "evidence": Array<Evidence>; "scopeNote": string; "generationProvider"?: (string | null); "generationModel"?: (string | null); "deliveryMode"?: ("GUIDE" | "DOCUMENT" | null); };
 
 export type ProactiveDecision = { "decisionId": string; "eventId": string; "tripId": string; "baseRevision": number; "shouldNotify": boolean; "reasonCode": string; "suppressionReason"?: (string | null); "card"?: (NotificationCard | null); };
 
@@ -201,6 +201,8 @@ export type RemoveOperation = { "type": "REMOVE"; "activityId": string; };
 export type ReplaceOperation = { "type": "REPLACE"; "activityId": string; "candidatePlaceId": string; "candidatePlace": Place; };
 
 export type RequestContext = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; };
+
+export type ResearchPlaceRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "poiId": string; "city": string; "visitDate": string; };
 
 export type RevisionDiff = { "added": Array<string>; "removed": Array<string>; "moved": Array<string>; };
 
@@ -307,3 +309,7 @@ export type ValidationReport = { "status": "FEASIBLE" | "PARTIALLY_VERIFIED" | "
 export type ValidationStatus = "FEASIBLE" | "PARTIALLY_VERIFIED" | "INFEASIBLE";
 
 export type Violation = { "code": string; "activityIds": Array<string>; "message": string; };
+
+export type WebReference = { "title": string; "url": string; "snippet": string; "evidence": Evidence; };
+
+export type WebResearch = { "status": "AVAILABLE" | "EMPTY" | "UNAVAILABLE" | "NOT_CONFIGURED"; "query": string; "checkedAt": string; "references": Array<WebReference>; "message": string; };

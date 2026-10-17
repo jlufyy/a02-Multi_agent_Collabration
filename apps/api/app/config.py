@@ -28,6 +28,9 @@ class Settings:
     amap_cache_authorized: bool = False
     enable_demo: bool = True
     enable_knowledge: bool = False
+    search_provider: str = ""
+    search_api_key: str = field(default="", repr=False)
+    search_base_url: str = ""
     # Built frontend is served on the API origin. Empty/absent builds keep API-only use working.
     web_dist: str | None = None
 
@@ -91,5 +94,16 @@ class Settings:
         values["enable_demo"] = os.getenv("TRIPFLOW_ENABLE_DEMO", "true").lower() == "true"
         values["amap_cache_authorized"] = os.getenv("TRIPFLOW_AMAP_CACHE_AUTHORIZED", "false").lower() == "true"
         values["enable_knowledge"] = os.getenv("TRIPFLOW_ENABLE_KNOWLEDGE", "true").lower() == "true"
+        search_provider = os.getenv("TRIPFLOW_SEARCH_PROVIDER", os.getenv("SEARCH_PROVIDER", "")).strip().lower()
+        search_provider = {"tencent": "tencent_wsa", "wsa": "tencent_wsa", "tencentcloud": "tencent_wsa"}.get(search_provider, search_provider)
+        if not search_provider:
+            search_provider = "tencent_wsa" if os.getenv("TENCENTCLOUD_WSA_APIKEY") else next((name for name in ("tavily", "bocha") if os.getenv(name.upper() + "_API_KEY")), "")
+        if search_provider not in ("", "tavily", "bocha", "tencent_wsa"):
+            raise ValueError("Unsupported search provider")
+        search_key_name = "TENCENTCLOUD_WSA_APIKEY" if search_provider == "tencent_wsa" else search_provider.upper() + "_API_KEY"
+        search_url_name = "TENCENTCLOUD_WSA_API_URL" if search_provider == "tencent_wsa" else search_provider.upper() + "_BASE_URL"
+        values.update(search_provider=search_provider,
+                      search_api_key=os.getenv(search_key_name, "") or os.getenv("SEARCH_API_KEY", ""),
+                      search_base_url=os.getenv(search_url_name, "") or os.getenv("SEARCH_BASE_URL", ""))
         values["web_dist"] = os.getenv("TRIPFLOW_WEB_DIST") or None
         return cls(**values)

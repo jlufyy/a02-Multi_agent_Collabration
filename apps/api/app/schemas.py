@@ -109,6 +109,21 @@ class Fact(ContractModel, Generic[T]):
         return self
 
 
+class WebReference(ContractModel):
+    title: Id
+    url: Id
+    snippet: str
+    evidence: Evidence
+
+
+class WebResearch(ContractModel):
+    status: Literal['AVAILABLE', 'EMPTY', 'UNAVAILABLE', 'NOT_CONFIGURED']
+    query: str
+    checkedAt: Timestamp
+    references: list[WebReference]
+    message: str
+
+
 class Place(ContractModel):
     poiId: Id
     name: Id
@@ -121,6 +136,7 @@ class Place(ContractModel):
     rating: Fact[NonNegative] | None = None
     bookingNote: Fact[str] | None = None
     parentPoiId: Fact[Id] | None = None
+    webResearch: WebResearch | None = None
 
 
 class CompanionPreference(ContractModel):
@@ -499,6 +515,7 @@ class PreparedContent(ContractModel):
     scopeNote: Id
     generationProvider: str | None = None
     generationModel: str | None = None
+    deliveryMode: Literal['GUIDE', 'DOCUMENT'] | None = None
 
 
 class SelectedContext(ContractModel):
@@ -920,6 +937,12 @@ class SearchPlacesRequest(ExecutionContext):
 
 class SearchPlacesResult(ContractModel):
     places: list[Place]
+
+
+class ResearchPlaceRequest(ExecutionContext):
+    poiId: Id
+    city: Annotated[str, Field(min_length=1, max_length=100)]
+    visitDate: DateString
 
 
 class RouteSegmentsRequest(RequestContext):

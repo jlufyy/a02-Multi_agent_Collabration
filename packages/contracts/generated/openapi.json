@@ -422,6 +422,44 @@
         }
       }
     },
+    "/api/v1/places/research": {
+      "post": {
+        "summary": "Research Place",
+        "operationId": "research_place_api_v1_places_research_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchPlaceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_WebResearch_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/jobs/{job_id}": {
       "get": {
         "summary": "Get Job",
@@ -1050,6 +1088,59 @@
           "trace_id"
         ],
         "title": "ApiResponse[SearchPlacesResult]"
+      },
+      "ApiResponse_WebResearch_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebResearch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[WebResearch]"
       },
       "BoundaryEndpoint": {
         "properties": {
@@ -3075,6 +3166,16 @@
                 "type": "null"
               }
             ]
+          },
+          "webResearch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebResearch"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -3332,6 +3433,21 @@
               }
             ],
             "title": "Generationmodel"
+          },
+          "deliveryMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "GUIDE",
+                  "DOCUMENT"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deliverymode"
           }
         },
         "additionalProperties": false,
@@ -3894,6 +4010,54 @@
           "candidatePlace"
         ],
         "title": "ReplaceOperation"
+      },
+      "ResearchPlaceRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "poiId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Poiid"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "City"
+          },
+          "visitDate": {
+            "type": "string",
+            "title": "Visitdate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "poiId",
+          "city",
+          "visitDate"
+        ],
+        "title": "ResearchPlaceRequest"
       },
       "RevisionDiff": {
         "properties": {
@@ -6009,6 +6173,79 @@
           "message"
         ],
         "title": "Violation"
+      },
+      "WebReference": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Url"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "snippet",
+          "evidence"
+        ],
+        "title": "WebReference"
+      },
+      "WebResearch": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "EMPTY",
+              "UNAVAILABLE",
+              "NOT_CONFIGURED"
+            ],
+            "title": "Status"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "checkedAt": {
+            "type": "string",
+            "title": "Checkedat"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/WebReference"
+            },
+            "type": "array",
+            "title": "References"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "query",
+          "checkedAt",
+          "references",
+          "message"
+        ],
+        "title": "WebResearch"
       }
     }
   }

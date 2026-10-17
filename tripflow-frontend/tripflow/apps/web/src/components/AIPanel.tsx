@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TripState, SelectedContext, PreparedContent, Place, NearbyCandidate, GeoPoint, ConversationMessage, ItineraryActivity, ContentsResultLike } from './aiTypes';
 import { jobs } from '../api/client';
 import { useJob } from '../lib/useJob';
@@ -11,6 +11,7 @@ import { Icon } from './Icon';
 import { ContentCard } from './ContentViewer';
 import { uid } from '../lib/id';
 import { planTime, planDate } from '../lib/time';
+import { useNarration } from '../lib/useNarration';
 
 type Msg =
   | { id: string; role: 'user'; text: string }
@@ -35,24 +36,54 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
   const savedContents = (activeWs(trip)?.contents ?? []).filter((c) => !selected || c.activityId === selected.id).slice(-6);
   const running = flow.proposeJob.running || flow.validateJob.running || contentJob.running || nearbyJob.running;
   const lastSeed = useRef<typeof seed>();
+  const voice = useNarration();
+  const [voiceOn, setVoiceOn] = useState(true);
+  const voiceEnabled = useRef(true);
+  const guideScope = useRef(0);
+  const cancelContent = contentJob.cancel;
+  const stopVoice = voice.stop;
+  const invalidateGuide = useCallback(() => {
+    guideScope.current++;
+    cancelContent(); stopVoice();
+  }, [cancelContent, stopVoice]);
+
+  useEffect(() => {
+    invalidateGuide();
+    return invalidateGuide;
+  }, [open, tripId, ctx.selectedActivityId, plan.revision, invalidateGuide]);
 
   useEffect(() => { scroller.current?.scrollTo({ top: 1e6, behavior: 'smooth' }); }, [msgs, running]);
   useEffect(() => {
     if (!open || !seed || seed === lastSeed.current) return;
-    lastSeed.current = seed;
-    if (seed.text) setText(seed.text);
-    if (seed.action === 'EXPLAIN') explain();
-    if (seed.action === 'NEARBY_FOOD') nearby('FOOD');
+    let disposed = false;
+    queueMicrotask(() => {
+      if (disposed || lastSeed.current === seed) return;
+      lastSeed.current = seed;
+      if (seed.text) setText(seed.text);
+      if (seed.action === 'EXPLAIN') explain();
+      if (seed.action === 'NEARBY_FOOD') nearby('FOOD');
+    });
+    return () => { disposed = true; };
   }, [open, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const push = (m: Msg) => setMsgs((x) => [...x, m]);
   const conversation = (): ConversationMessage[] => msgs.flatMap((m): ConversationMessage[] =>
-    m.role === 'user' ? [{ role: 'user', content: m.text }] : m.role === 'assistant' ? [{ role: 'assistant', content: m.text }] : []).slice(-10);
+    m.role === 'user' ? [{ role: 'user', content: m.text }] : m.role === 'assistant' ? [{ role: 'assistant', content: m.text }]
+      : m.role === 'content' ? [{ role: 'assistant', content: m.content.body.slice(0, 1800) }] : []).slice(-10);
+
+  async function showContent(c: PreparedContent, scope: number) {
+    if (scope !== guideScope.current) return;
+    push({ id: uid('m'), role: 'content', content: c });
+    if (c.deliveryMode === 'GUIDE' && voiceEnabled.current) voice.start(c.contentId, c.body);
+    await useTrips.getState().putContents(tripId, [c]).catch(() => contentJob.setError(new Error('讲解已生成，但未能保存到本机。')));
+  }
 
   async function send(raw?: string) {
     const q = (raw ?? text).trim();
     if (!q || running) return;
     setText('');
+    voice.stop();
+    const scope = guideScope.current;
     push({ id: uid('m'), role: 'user', text: q });
     const r = await flow.propose({ userRequest: q, origin: 'AI', selectedContext: ctx, conversation: conversation() });
     if (!r) return;
@@ -66,23 +97,25 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
       push({ id: uid('m'), role: 'assistant', text: `已生成修改方案（${r.proposal.operations.length} 项操作），请在预览中确认。在确认前，正式行程不会改变。` });
       onPreview();
     } else if (r.kind === 'CONTENT') {
-      await useTrips.getState().putContents(tripId, [r.content]);
-      push({ id: uid('m'), role: 'content', content: r.content });
+      await showContent(r.content, scope);
     } else {
       push({ id: uid('m'), role: 'clarify', questions: r.questions, candidates: r.candidates });
     }
   }
 
-  async function explain() {
+  async function askGuide(question: string, previous?: PreparedContent) {
+    if (running) return;
     if (!selected) { push({ id: uid('m'), role: 'assistant', text: '请先在地图或时间轴上选中一个地点，再让我讲解。' }); return; }
-    push({ id: uid('m'), role: 'user', text: `讲解这里：${selected.place.name}` });
+    voice.stop();
+    const scope = guideScope.current;
+    push({ id: uid('m'), role: 'user', text: previous ? question : `讲解这里：${selected.place.name}` });
     const t = useTrips.getState().trips[tripId];
-    const out = await contentJob.run((h) => jobs.refineContent({ ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, userRequest: '讲解这里', context: ctx }, h));
+    const out = await contentJob.run((h) => jobs.refineContent({ ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, userRequest: question, preparedContent: previous, context: ctx }, h));
     if (out?.result) {
-      await useTrips.getState().putContents(tripId, [out.result.content]);
-      push({ id: uid('m'), role: 'content', content: out.result.content });
+      await showContent(out.result.content, scope);
     }
   }
+  const explain = () => askGuide('讲解这里');
 
   async function nearby(category: 'FOOD' | 'REST' | 'PHOTO') {
     const anchor = selected ?? plan.activities.find((a) => a.dayIndex === ctx.activeDay);
@@ -136,6 +169,8 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
           <p className="text-[17px] font-semibold leading-tight">TripFlow AI</p>
           <p className="truncate text-[12px] text-ink-faint">你的旅行助手 · 第{ctx.activeDay + 1}天{selected ? ` · 选中：${selected.place.name}` : ''}{trip?.demo ? ' · 演示' : ''}</p>
         </div>
+        <button className="shrink-0 text-[12px] text-brand" aria-label={voiceOn ? '关闭自动语音讲解' : '开启自动语音讲解'} aria-pressed={voiceOn}
+          onClick={() => { voiceEnabled.current = !voiceOn; setVoiceOn(!voiceOn); if (voiceOn) voice.stop(); }}>{voiceOn ? '语音开' : '语音关'}</button>
       </header>
       <div ref={scroller} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
         {msgs.length === 0 && (
@@ -147,8 +182,13 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
             <p className="pt-2 text-[12.5px] leading-relaxed text-ink-faint">可以一句话批量修改。明确、可行且只影响本站的小幅时长调整会直接应用并支持撤销；其他变动统一预览后确认一次。</p>
           </div>
         )}
-        {msgs.length === 0 && savedContents.length > 0 && <section className="space-y-3" aria-label="已保存材料"><p className="text-[13px] text-ink-faint">已保存在本机的材料</p>{savedContents.map((c) => <ContentCard key={c.contentId} c={c} stale={c.baseRevision !== plan.revision} />)}</section>}
+        {msgs.length === 0 && savedContents.length > 0 && <details className="space-y-3" aria-label="已保存材料"><summary className="text-[13px] text-ink-faint">已保存内容（{savedContents.length}）</summary>{savedContents.map((c) => <ContentCard key={c.contentId} c={c} stale={c.baseRevision !== plan.revision} />)}</details>}
         {msgs.map((m) => <Bubble key={m.id} m={m} onPick={(p) => send(`用「${p.name}」`)} onAdd={addNearby} busy={running} />)}
+        {msgs.at(-1)?.role === 'content' && (() => {
+          const last = msgs.at(-1);
+          return last?.role === 'content' && last.content.deliveryMode === 'GUIDE' && last.content.activityId === selected?.id
+            ? <div className="flex flex-wrap gap-2 pl-7">{['多讲讲历史', '讲讲建筑细节', '再简短一点'].map((q) => <button key={q} disabled={running} className="chip bg-brand-mist !px-3 !py-2 text-brand" onClick={() => askGuide(q, last.content)}>{q}</button>)}</div> : null;
+        })()}
         {running && <AgentProgress events={[...flow.proposeJob.progress, ...contentJob.progress, ...nearbyJob.progress]} running />}
         {err != null && <ErrorBox error={err} compact />}
       </div>
@@ -161,12 +201,12 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
         <div className="flex flex-1 items-end gap-1 rounded-[24px] bg-[#F3F5F8] px-2 py-1.5">
           <button type="button" className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${showQuick ? 'rotate-45 text-brand' : 'text-ink-soft'}`}
             onClick={() => setShowQuick(!showQuick)} aria-label="快捷操作"><Icon name="plus" size={20} /></button>
-          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={1} placeholder="有什么想问的…" aria-label="说说要怎么改…"
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={1} placeholder="继续追问，或告诉我想怎么安排行程…" aria-label="向 AI 提问"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
             className="max-h-28 min-h-[36px] flex-1 resize-none bg-transparent py-1.5 text-[15px] outline-none placeholder:text-ink-faint" />
         </div>
         {running
-          ? <button type="button" className="h-11 shrink-0 rounded-full bg-[#F2F4F7] px-4 text-[14px]" onClick={() => { flow.proposeJob.cancel(); flow.validateJob.cancel(); contentJob.cancel(); nearbyJob.cancel(); }}>停止</button>
+          ? <button type="button" className="h-11 shrink-0 rounded-full bg-[#F2F4F7] px-4 text-[14px]" onClick={() => { guideScope.current++; voice.stop(); flow.proposeJob.cancel(); flow.validateJob.cancel(); contentJob.cancel(); nearbyJob.cancel(); }}>停止</button>
           : <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-white disabled:opacity-40" disabled={!text.trim()} aria-label="发送"><Icon name="send" size={18} /></button>}
       </form>
     </div>

@@ -8,6 +8,8 @@ import { PlanSteps } from '../components/AgentProgress';
 import { PavilionScene } from '../components/Illustrations';
 import { ErrorBox, ValidationBadge, toast } from '../components/ui';
 import { Icon } from '../components/Icon';
+import { validationMessages } from '../lib/validationMessages';
+import { WebResearchPanel } from '../components/WebResearchPanel';
 
 export function PlanningPage() {
   const { tripId = '' } = useParams();
@@ -54,6 +56,7 @@ export function PlanningPage() {
   if (trip.real.plan && !result) return <Navigate to={`/trip/${tripId}`} replace />;
   if (!req?.confirmed) return <Navigate to={`/trip/${tripId}/confirm`} replace />;
   const v = result?.validation;
+  const messages = v ? validationMessages(v, result?.plan?.activities) : undefined;
 
   return (
     <div className="flex h-full flex-col bg-white">
@@ -73,13 +76,20 @@ export function PlanningPage() {
             <div className="flex items-center gap-2"><span className="font-semibold">校验结果</span><ValidationBadge status={v.status} /></div>
             {v.hardViolations.length > 0 && (
               <div><p className="mb-1 text-[13px] font-medium text-danger">硬约束冲突</p>
-                <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{v.hardViolations.map((x, i) => <li key={i}><code className="text-[11px] text-danger">{x.code}</code> {x.message}</li>)}</ul></div>
+                <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{messages?.hard.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
             )}
             {v.unknownChecks.length > 0 && (
               <div><p className="mb-1 text-[13px] font-medium text-warn">尚未核验</p>
-                <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{v.unknownChecks.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
+                <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{messages?.unknown.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
             )}
-            {v.warnings.length > 0 && <ul className="list-disc space-y-1 pl-5 text-[13px] text-ink-faint">{v.warnings.map((x, i) => <li key={i}>{x}</li>)}</ul>}
+            {v.warnings.length > 0 && <ul className="list-disc space-y-1 pl-5 text-[13px] text-ink-faint">{messages?.warnings.map((x, i) => <li key={i}>{x}</li>)}</ul>}
+            {result?.plan && <details>
+              <summary className="cursor-pointer text-[13px] text-brand">查看景点联网资料</summary>
+              {result.plan.activities.filter((a, i, all) => all.findIndex((x) => x.place.poiId === a.place.poiId) === i).map((a) => <div key={a.id}>
+                <p className="mt-3 text-[13px] font-medium">{a.place.name}</p>
+                <WebResearchPanel initial={a.place.webResearch} poiId={a.place.poiId} city={req.destinationCity} visitDate={a.startAt.slice(0, 10)} />
+              </div>)}
+            </details>}
             {!result?.plan && <p className="text-[13.5px] text-ink-soft">当前条件下无法生成可执行方案。请返回放宽条件（例如减少必去地点、调整时间或预算）。</p>}
           </div>
         )}

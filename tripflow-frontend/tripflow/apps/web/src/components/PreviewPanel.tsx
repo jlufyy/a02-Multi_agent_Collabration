@@ -5,6 +5,7 @@ import { ValidationBadge, ErrorBox, Spinner, fmtMin, fmtCny, fmtTime } from './u
 import { Icon } from './Icon';
 import { AgentProgress } from './AgentProgress';
 import type { useEditFlow } from '../lib/useEditFlow';
+import { validationMessages } from '../lib/validationMessages';
 
 /** P07 变更预览（设计稿 07）：前后对比 + 影响说明；确认前不改正式计划。 */
 export function PreviewPanel({ pending, current, flow, onClosed }: {
@@ -18,7 +19,8 @@ export function PreviewPanel({ pending, current, flow, onClosed }: {
   const blocked = stale || !v.committable || v.status === 'INFEASIBLE' || v.hardViolations.length > 0;
   const needAccept = v.status === 'PARTIALLY_VERIFIED' || v.unknownChecks.length > 0;
   const busy = flow.validateJob.running || flow.proposeJob.running;
-  const name = (id: string) => p.candidate.activities.find((a) => a.id === id)?.place.name ?? current.activities.find((a) => a.id === id)?.place.name ?? id;
+  const name = (id: string) => p.candidate.activities.find((a) => a.id === id)?.place.name ?? current.activities.find((a) => a.id === id)?.place.name ?? '相关活动';
+  const messages = validationMessages(v, [...p.candidate.activities, ...current.activities]);
   const close = () => { if (!busy) { flow.discard(); onClosed(); } };
 
   // 只对比发生变化的日子
@@ -38,13 +40,13 @@ export function PreviewPanel({ pending, current, flow, onClosed }: {
   const t = p.estimatedChanges.travelMinutesDelta;
   const c = p.estimatedChanges.costCnyDelta;
   const impacts: { tone: 'ok' | 'warn' | 'bad'; text: string }[] = [
-    ...v.hardViolations.map((x) => ({ tone: 'bad' as const, text: `${x.message}（${x.code}）` })),
+    ...messages.hard.map((text) => ({ tone: 'bad' as const, text })),
     ...(t === undefined ? [{ tone: 'warn' as const, text: '交通时间变化不确定' }]
       : [{ tone: t <= 0 ? 'ok' as const : 'warn' as const, text: t === 0 ? '交通时间基本不变' : `预计交通时间${t < 0 ? '减少' : '增加'} ${fmtMin(Math.abs(t))}` }]),
     ...(c === undefined ? [{ tone: 'warn' as const, text: '费用变化不确定' }]
       : [{ tone: c <= 0 ? 'ok' as const : 'warn' as const, text: c === 0 ? '费用不变' : `预计费用${c < 0 ? '减少' : '增加'} ${fmtCny(Math.abs(c))}` }]),
-    ...v.unknownChecks.map((x) => ({ tone: 'warn' as const, text: `未核验：${x}` })),
-    ...v.warnings.map((x) => ({ tone: 'warn' as const, text: x })),
+    ...messages.unknown.map((text) => ({ tone: 'warn' as const, text })),
+    ...messages.warnings.map((text) => ({ tone: 'warn' as const, text })),
     ...(!blocked && v.status === 'FEASIBLE' ? [{ tone: 'ok' as const, text: '不影响其他已锁定安排' }] : []),
   ];
 

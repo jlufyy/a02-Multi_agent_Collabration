@@ -223,6 +223,79 @@
       "title": "Fact",
       "type": "object"
     },
+    "WebReference": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        },
+        "snippet": {
+          "title": "Snippet",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        }
+      },
+      "required": [
+        "title",
+        "url",
+        "snippet",
+        "evidence"
+      ],
+      "title": "WebReference",
+      "type": "object"
+    },
+    "WebResearch": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "AVAILABLE",
+            "EMPTY",
+            "UNAVAILABLE",
+            "NOT_CONFIGURED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "query": {
+          "title": "Query",
+          "type": "string"
+        },
+        "checkedAt": {
+          "title": "Checkedat",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/WebReference"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "query",
+        "checkedAt",
+        "references",
+        "message"
+      ],
+      "title": "WebResearch",
+      "type": "object"
+    },
     "Fact_Annotated_float__FieldInfo_annotation_NoneType__required_True__metadata__Ge_ge_0___AllowInfNan_allow_inf_nan_False_____": {
       "additionalProperties": false,
       "properties": {
@@ -394,6 +467,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Fact_Annotated_str__FieldInfo_annotation_NoneType__required_True__metadata__Strict_strict_True___MinLen_min_length_1_____"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "webResearch": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WebResearch"
             },
             {
               "type": "null"
@@ -2890,6 +2974,22 @@
           ],
           "default": null,
           "title": "Generationmodel"
+        },
+        "deliveryMode": {
+          "anyOf": [
+            {
+              "enum": [
+                "GUIDE",
+                "DOCUMENT"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deliverymode"
         }
       },
       "required": [
@@ -5188,6 +5288,55 @@
         "places"
       ],
       "title": "SearchPlacesResult",
+      "type": "object"
+    },
+    "ResearchPlaceRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "poiId": {
+          "minLength": 1,
+          "title": "Poiid",
+          "type": "string"
+        },
+        "city": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "City",
+          "type": "string"
+        },
+        "visitDate": {
+          "title": "Visitdate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "executionMode",
+        "poiId",
+        "city",
+        "visitDate"
+      ],
+      "title": "ResearchPlaceRequest",
       "type": "object"
     },
     "RouteSegmentsRequest": {

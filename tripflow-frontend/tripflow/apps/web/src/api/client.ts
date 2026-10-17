@@ -12,6 +12,7 @@ import type {
   ProactiveEvent, NotificationRecord, TravelIntent, PreparedContent, GeoPoint, ItineraryActivity, TravelMode,
 } from '@tripflow/contracts';
 import { uid } from '../lib/id';
+import { cleanMessage } from '../lib/validationMessages';
 
 const BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '') + '/api/v1';
 
@@ -44,10 +45,11 @@ export function describeError(e: unknown): { title: string; detail: string; trac
       VALIDATION_ERROR: '请求字段不合法',
     };
     const title = map[e.code] ?? (e.httpStatus === 504 ? '请求超时' : e.httpStatus && e.httpStatus >= 500 ? '服务暂不可用' : '请求失败');
-    const detail = e.errors.map((x) => x.message + (x.fieldPath ? `（${x.fieldPath}）` : '')).join('；') || e.message;
+    const detail = ['NETWORK', 'SCHEMA', 'VALIDATION_ERROR', 'INVALID_MODEL_OUTPUT'].includes(e.code) ? title
+      : e.errors.map((x) => cleanMessage(x.message, [], title)).join('；') || cleanMessage(e.message, [], title);
     return { title, detail, trace: e.traceId, retryable: e.retryable };
   }
-  return { title: '未知错误', detail: String((e as Error)?.message ?? e), retryable: true };
+  return { title: '暂时无法完成操作', detail: cleanMessage(String((e as Error)?.message ?? e)), retryable: true };
 }
 
 async function call<T extends z.ZodTypeAny>(
@@ -94,6 +96,8 @@ export const api = {
   capabilities: (signal?: AbortSignal) => call('GET', '/capabilities', S.CapabilitySet, { signal }),
   searchPlaces: (b: ExecutionContext & { city: string; keyword: string; location?: GeoPoint }, signal?: AbortSignal) =>
     call('POST', '/places/search', S.PlacesResult, { body: b, signal }),
+  researchPlace: (b: ExecutionContext & { poiId: string; city: string; visitDate: string }, signal?: AbortSignal) =>
+    call('POST', '/places/research', S.WebResearch, { body: b, signal }),
   routeSegments: (b: RequestContext & { requirements: TripRequirements; activities: ItineraryActivity[]; mode: TravelMode }, signal?: AbortSignal) =>
     call('POST', '/routes/segments', S.RoutesResult, { body: b, signal }),
   cancelJob: (jobId: string) => call('DELETE', `/jobs/${encodeURIComponent(jobId)}`, S.CancelResult),

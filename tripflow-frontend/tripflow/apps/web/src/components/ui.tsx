@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { DataStatus, Evidence, ValidationStatus } from '@tripflow/contracts';
 import { Icon } from './Icon';
 import { describeError } from '../api/client';
+import { cleanMessage, safeSourceUrl } from '../lib/validationMessages';
 
 export const DATA_LABEL: Record<DataStatus, string> = { VERIFIED: '已核验', ESTIMATED: '估算', UNKNOWN: '待核验', FAILED: '查询失败' };
 const DATA_CLS: Record<DataStatus, string> = {
@@ -23,11 +24,10 @@ export function EvidenceList({ items }: { items: Evidence[] }) {
       {items.map((e, i) => (
         <li key={i} className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-ink-soft">
           <DataBadge status={e.status} />
-          <span className="font-medium text-ink">{e.provider}</span>
-          {e.externalId && <span className="text-ink-faint">#{e.externalId}</span>}
+          <span className="font-medium text-ink">{{ amap: '高德地图', tavily: '联网搜索', bocha: '博查搜索', tencent_wsa: '腾讯云联网搜索', wikipedia: '维基百科' }[e.provider] ?? '资料来源'}</span>
           {e.fetchedAt && <span className="text-ink-faint">获取于 {fmtDateTime(e.fetchedAt)}</span>}
-          {e.sourceUrl && <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="text-brand underline">来源</a>}
-          {e.note && <span className="w-full text-ink-faint">{e.note}</span>}
+          {safeSourceUrl(e.sourceUrl) && <a href={safeSourceUrl(e.sourceUrl)} target="_blank" rel="noopener noreferrer" className="text-brand underline">来源</a>}
+          {e.note && <span className="w-full text-ink-faint">{cleanMessage(e.note)}</span>}
         </li>
       ))}
     </ul>
@@ -43,7 +43,6 @@ export function ErrorBox({ error, onRetry, compact }: { error: unknown; onRetry?
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-danger">{d.title}</p>
           <p className="mt-0.5 break-words text-ink-soft">{d.detail}</p>
-          {d.trace && <p className="mt-1 font-mono text-[11px] text-ink-faint">trace_id: {d.trace}</p>}
         </div>
       </div>
       {onRetry && d.retryable && <button className="btn-soft mt-3 w-full" onClick={onRetry}>重试</button>}

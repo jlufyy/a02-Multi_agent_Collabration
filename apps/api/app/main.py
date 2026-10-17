@@ -19,12 +19,13 @@ from .gateway import ModelGateway
 from .workflows import Workflows
 from .planning import PlanningError
 from .knowledge import KnowledgeProvider
+from .web_search import WebSearchProvider
 from .geo_policy import geo_policy
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def create_app(settings=None, maps=None, gateway=None):
+def create_app(settings=None, maps=None, gateway=None, search=None):
     settings = settings or Settings.from_env()
     maps = maps or AmapProvider(settings.amap_key, cache_ttl_seconds=settings.map_cache_ttl_seconds,
                                 cache_authorized=settings.amap_cache_authorized)
@@ -34,7 +35,8 @@ def create_app(settings=None, maps=None, gateway=None):
                                       max_calls_per_job=settings.max_model_calls_per_job,
                                       daily_budget_cny=settings.daily_budget_cny)
     jobs = JobManager(settings, gateway=gateway)
-    knowledge = KnowledgeProvider() if settings.enable_knowledge else None
+    search = search or WebSearchProvider(settings.search_provider, settings.search_api_key, settings.search_base_url)
+    knowledge = KnowledgeProvider(search=search, wikipedia_enabled=settings.enable_knowledge) if settings.enable_knowledge or search.configured else None
     workflows = Workflows(maps, gateway, knowledge)
 
     @asynccontextmanager
@@ -45,6 +47,7 @@ def create_app(settings=None, maps=None, gateway=None):
         await gateway.aclose()
         if knowledge:
             await knowledge.aclose()
+        await search.aclose()
 
     app = FastAPI(title="TripFlow Backend", version="1.0.0", lifespan=lifespan,
                   description="TripFlow-Split-v1. Browser owns confirmed plans; this API returns ephemeral proposals only.")
@@ -97,7 +100,8 @@ def create_app(settings=None, maps=None, gateway=None):
             "routes": ["WALK", "TRANSIT", "DRIVE"] if maps.configured else [], "content": content,
             "nearby": maps.configured, "demo": settings.enable_demo,
             "tools": [{"name": "amap", "available": maps.configured, "reason": "已配置，真实联调状态见交付记录" if maps.configured else "未配置高德 Web Service Key"},
-                      {"name": "model_gateway", "available": gateway.configured, "reason": "可用性表示配置就绪，不代表供应商连通性验收"}],
+                      {"name": "model_gateway", "available": gateway.configured, "reason": "可用性表示配置就绪，不代表供应商连通性验收"},
+                      {"name": "web_search", "available": search.configured, "reason": "联网搜索已配置" if search.configured else "联网搜索尚未配置"}],
             "modelRoutes": model_routes,
             "limits": {"pollIntervalMs": 1000, "maxPollIntervalMs": 10000, "jobTtlSeconds": settings.job_ttl_seconds,
                        "requestTimeoutSeconds": settings.request_timeout_seconds, "maxJobSeconds": settings.max_job_seconds,
@@ -167,6 +171,13 @@ def create_app(settings=None, maps=None, gateway=None):
         check_demo(body)
         data = await workflows.route_segments(body.requirements, body.activities, body.mode)
         return envelope(request, data, "PARTIAL" if data.warnings else "SUCCEEDED")
+
+    @app.post("/api/v1/places/research", response_model=s.ApiResponse[s.WebResearch], response_model_exclude_none=True)
+    async def research_place(request: Request, body: s.ResearchPlaceRequest):
+        check_demo(body)
+        place = await maps.poi_detail(body.poiId)
+        research = await search.research(place, city=body.city, visit_date=body.visitDate)
+        return envelope(request, research, "SUCCEEDED" if research["status"] == "AVAILABLE" else "PARTIAL")
 
     JobResult = s.ParseRequirementsResult | s.PlanResult | s.RevisionOutcome | s.ContentOutcome | s.ClarificationOutcome | s.ValidateRevisionResult | s.EvaluateProactiveResult | s.PrepareContentResult | s.RefineContentResult | s.NearbySearchResult
 

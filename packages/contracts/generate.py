@@ -77,6 +77,7 @@ def contract_openapi():
         ('post', '/revisions/propose', s.ProposeRevisionRequest, s.RevisionResult, True),
         ('post', '/revisions/validate', s.ValidateRevisionRequest, s.ValidateRevisionResult, True),
         ('post', '/places/search', s.SearchPlacesRequest, s.SearchPlacesResult, False),
+        ('post', '/places/research', s.ResearchPlaceRequest, s.WebResearch, False),
         ('post', '/routes/segments', s.RouteSegmentsRequest, s.RouteSegmentsResult, False),
         ('post', '/proactive/evaluate', s.EvaluateProactiveRequest, s.EvaluateProactiveResult, True),
         ('post', '/content/prepare', s.PrepareContentRequest, s.PrepareContentResult, True),

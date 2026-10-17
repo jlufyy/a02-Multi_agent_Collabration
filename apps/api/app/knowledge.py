@@ -6,17 +6,28 @@ from .proactive import distance
 
 
 class KnowledgeProvider:
-    def __init__(self, client=None, timeout_seconds=8):
+    def __init__(self, client=None, timeout_seconds=8, search=None, wikipedia_enabled=True):
         self.client = client or httpx.AsyncClient(follow_redirects=False, trust_env=False)
         self.owns_client = client is None
         self.timeout = timeout_seconds
+        self.search = search
+        self.wikipedia_enabled = wikipedia_enabled
 
     async def aclose(self):
         if self.owns_client:
             await self.client.aclose()
 
-    async def lookup(self, place):
+    async def lookup(self, place, *, city="", purpose="VISIT"):
         """No arbitrary client URL, fuzzy page binding, HTML, or remotely executable tools."""
+        research = None if purpose == "KNOWLEDGE" else place.get("webResearch")
+        if research is None and self.search and self.search.configured:
+            research = await self.search.research(place, city=city, purpose=purpose)
+        refs = (research or {}).get("references", [])
+        if refs:
+            return {"text": "\n\n".join(r["title"] + "\n" + r["snippet"] for r in refs),
+                    "evidence": refs[0]["evidence"], "additionalEvidence": [r["evidence"] for r in refs[1:]]}
+        if not self.wikipedia_enabled:
+            return None
         try:
             response = await self.client.get("https://zh.wikipedia.org/w/api.php", params={
                 "action": "query", "format": "json", "formatversion": 2, "prop": "extracts|coordinates|info",

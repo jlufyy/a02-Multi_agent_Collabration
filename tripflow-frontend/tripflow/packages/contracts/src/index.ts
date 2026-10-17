@@ -5,6 +5,7 @@ export * as schemas from './schema';
 export { CONTRACT_VERSION } from './schema';
 
 export type JobStatus = z.infer<typeof S.JobStatus>;
+export type WebResearch = z.infer<typeof S.WebResearch>;
 export type DataStatus = z.infer<typeof S.DataStatus>;
 export type ValidationStatus = z.infer<typeof S.ValidationStatus>;
 export type EventSource = z.infer<typeof S.EventSource>;
