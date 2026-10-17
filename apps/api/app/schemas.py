@@ -137,6 +137,7 @@ class Place(ContractModel):
     bookingNote: Fact[str] | None = None
     parentPoiId: Fact[Id] | None = None
     webResearch: WebResearch | None = None
+    photoUrls: list[str] | None = None
 
 
 class CompanionPreference(ContractModel):

@@ -39,7 +39,7 @@ export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExpl
     <div className="animate-rise fixed inset-0 z-[60] mx-auto flex max-w-[560px] flex-col bg-white" role="dialog" aria-modal="true" aria-label={`${p.name} 详情`}>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="relative">
-          <PlaceHero name={p.name} />
+          <PlaceHero name={p.name} place={p} />
           <button className="glass-btn absolute left-3 top-[calc(10px+var(--safe-t))]" onClick={onClose} aria-label="关闭"><Icon name="back" size={19} /></button>
         </div>
         <div className="-mt-4 rounded-t-[22px] bg-white px-5 pt-5">
@@ -86,8 +86,8 @@ export function ActivityDetail({ a, plan, onClose, onToggleLock, onAskAI, onExpl
 
           <WebResearchPanel key={p.poiId} initial={p.webResearch} poiId={p.poiId} city={plan.destinationCity} visitDate={a.startAt.slice(0, 10)} />
           <button className="mt-4 text-[13px] text-brand" onClick={() => setShowSrc(!showSrc)}>{showSrc ? '收起数据来源' : '查看数据来源'}</button>
-          {showSrc && <div className="mt-2 pb-2"><EvidenceList items={p.evidence} /></div>}
-          <p className="mb-6 mt-2 text-[12px] text-ink-faint">地点真实存在不代表营业时间、门票已核实。顶部为示意插画，不是该地点实拍。</p>
+          {showSrc && <div className="mt-2 pb-2"><EvidenceList items={[...p.evidence, ...[p.openingHours, p.ticketPriceCny, p.bookingNote].flatMap((f) => f ? [f.evidence] : [])]} /></div>}
+          <p className="mb-6 mt-2 text-[12px] text-ink-faint">门票按成人普通大门票核算，优惠票、园中园及索道另计。开放政策以到访日景区公告为准。</p>
         </div>
       </div>
       <div className="flex gap-2.5 border-t border-sand/70 px-5 pb-[calc(12px+var(--safe-b))] pt-3">

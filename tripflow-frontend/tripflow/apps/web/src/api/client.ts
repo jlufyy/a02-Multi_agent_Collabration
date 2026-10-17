@@ -92,6 +92,7 @@ async function call<T extends z.ZodTypeAny>(
 
 // ---------------- 同步端点 ----------------
 export const api = {
+  placeDetail: (poiId: string) => call('GET', `/places/${encodeURIComponent(poiId)}`, S.Place),
   health: (signal?: AbortSignal) => call('GET', '/health', S.HealthData, { signal }),
   capabilities: (signal?: AbortSignal) => call('GET', '/capabilities', S.CapabilitySet, { signal }),
   searchPlaces: (b: ExecutionContext & { city: string; keyword: string; location?: GeoPoint }, signal?: AbortSignal) =>

@@ -40,7 +40,10 @@ def test_search_detail_cache_field_facts_and_dedup():
     run(check())
 
 
-def test_cache_disabled_without_explicit_authorization_and_ttl_expiry():
+def test_cache_disabled_without_explicit_authorization_and_ttl_expiry(monkeypatch):
+    from types import SimpleNamespace
+    clock = [100.0]
+    monkeypatch.setattr("app.providers.time", SimpleNamespace(monotonic=lambda: clock[0]))
     async def check():
         calls = []
         def handler(request):
@@ -53,7 +56,7 @@ def test_cache_disabled_without_explicit_authorization_and_ttl_expiry():
             assert len(calls) == 2
             provider.ttl = .001
             await provider.search_pois("a")
-            await asyncio.sleep(.01)
+            clock[0] += .01
             await provider.search_pois("a")
             assert len(calls) == 4
     run(check())

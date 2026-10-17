@@ -283,6 +283,8 @@ export function TripPage() {
             </div>
           )}
           {flow.proposeJob.error != null && !aiOpen && <ErrorBox error={flow.proposeJob.error} compact />}
+          {!traveling && <button className="min-h-10 text-[12px] text-brand disabled:opacity-40" disabled={flow.proposeJob.running || flow.validateJob.running}
+            onClick={() => guarded(() => proposeOps([{ type: 'UPDATE_CONSTRAINT', key: 'preferences', value: plan.preferences }], 'DETAIL'))}>重新核验营业时间与门票</button>}
           {pending && !previewOpen && (
             <button className="flex w-full items-center gap-2 rounded-[14px] bg-accent-soft px-3.5 py-2.5 text-[13.5px] text-accent" onClick={() => setPreviewOpen(true)}>
               <Icon name="info" size={16} /> 有一个未确认的修改<span className="ml-auto text-ink-faint">查看</span>

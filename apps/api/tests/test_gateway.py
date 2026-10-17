@@ -50,6 +50,17 @@ def test_openai_protocol_schema_validation_and_actual_usage():
     run(check())
 
 
+def test_deepseek_a1_keeps_the_json_budget_without_changing_other_roles_or_hosts():
+    from app.gateway import ProviderConfig
+    gateway = ModelGateway()
+    direct = ProviderConfig(**config(base_url="https://api.deepseek.com", a1_thinking_mode="disabled"))
+    assert gateway._body("A1", direct, {}, {"type": "object"}, False)[1]["thinking"] == {"type": "disabled"}
+    assert "thinking" not in gateway._body("A7", direct, {}, {"type": "object"}, False)[1]
+    proxy = ProviderConfig(**config(a1_thinking_mode="disabled"))
+    assert "thinking" not in gateway._body("A1", proxy, {}, {"type": "object"}, False)[1]
+    run(gateway.aclose())
+
+
 def test_native_anthropic_forced_tool_and_text_role_route():
     calls = []
     def handler(request):

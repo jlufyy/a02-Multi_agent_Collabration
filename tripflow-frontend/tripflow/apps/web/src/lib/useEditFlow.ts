@@ -40,7 +40,8 @@ export function useEditFlow(tripId: string) {
       }
     }
     // 一次只允许一个待确认草稿：调用方已征得用户同意替换
-    if (activeWs(t)?.pending) await useTrips.getState().setPending(tripId, undefined);
+    // Keep the previous draft until a replacement succeeds, so failed repairs
+    // retain the user's pending additions and editable preview.
     const base = { ...execCtx(t), tripId, baseRevision: plan.revision, tripState: plan, selectedContext: input.selectedContext };
     const out = await proposeJob.run((h) => ('operations' in input
       ? jobs.propose({ ...base, operations: input.operations }, h)

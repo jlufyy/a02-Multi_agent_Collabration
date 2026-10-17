@@ -75,6 +75,7 @@ class Settings:
                 "kind": "openai-compatible", "api_key": os.environ["DEEPSEEK_API_KEY"],
                 "base_url": os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
                 "model": os.getenv("DEEPSEEK_MODEL", "deepseek-flash"),
+                "a1_thinking_mode": os.getenv("DEEPSEEK_A1_THINKING_MODE", "disabled"),
                 "max_tokens": int(os.getenv("TRIPFLOW_MAX_TOKENS", "4096")),
                 "input_cost_per_million": float(os.environ["DEEPSEEK_INPUT_CNY_PER_MILLION"]) if os.getenv("DEEPSEEK_INPUT_CNY_PER_MILLION") else None,
                 "output_cost_per_million": float(os.environ["DEEPSEEK_OUTPUT_CNY_PER_MILLION"]) if os.getenv("DEEPSEEK_OUTPUT_CNY_PER_MILLION") else None,

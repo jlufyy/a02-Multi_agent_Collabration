@@ -460,6 +460,45 @@
         }
       }
     },
+    "/api/v1/places/{poi_id}": {
+      "get": {
+        "summary": "Place Detail",
+        "operationId": "place_detail_api_v1_places__poi_id__get",
+        "parameters": [
+          {
+            "name": "poi_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Poi Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Place_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/jobs/{job_id}": {
       "get": {
         "summary": "Get Job",
@@ -982,6 +1021,59 @@
           "trace_id"
         ],
         "title": "ApiResponse[JobSnapshot[Union[ParseRequirementsResult, PlanResult, RevisionOutcome, ContentOutcome, ClarificationOutcome, ValidateRevisionResult, EvaluateProactiveResult, PrepareContentResult, RefineContentResult, NearbySearchResult]]]"
+      },
+      "ApiResponse_Place_": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "PARTIAL",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Place"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "data",
+          "errors",
+          "trace_id"
+        ],
+        "title": "ApiResponse[Place]"
       },
       "ApiResponse_RouteSegmentsResult_": {
         "properties": {
@@ -3176,6 +3268,20 @@
                 "type": "null"
               }
             ]
+          },
+          "photoUrls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photourls"
           }
         },
         "additionalProperties": false,

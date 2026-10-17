@@ -12,6 +12,45 @@ export function Logo({ size = 40 }: { size?: number }) {
   );
 }
 
+import { useEffect, useRef, useState } from 'react';
+import type { Place } from '@tripflow/contracts';
+import { api } from '../api/client';
+
+const photoRequests = new Map<string, Promise<string[]>>();
+let photoQueue = Promise.resolve();
+function requestPhotos(poiId: string) {
+  let request = photoRequests.get(poiId);
+  if (!request) {
+    request = photoQueue.then(() => api.placeDetail(poiId).then((r) => r.data?.photoUrls ?? []).catch(() => []));
+    photoQueue = request.then(() => undefined);
+    if (photoRequests.size >= 200) photoRequests.delete(photoRequests.keys().next().value!);
+    photoRequests.set(poiId, request);
+  }
+  return request;
+}
+
+function PlacePhoto({ place, size, rounded = 12, hero = false }: { place: Place; size?: number; rounded?: number; hero?: boolean }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [loaded, setLoaded] = useState<{ id: string; urls: string[] }>();
+  const [failed, setFailed] = useState<string[]>([]);
+  const urls = place.photoUrls?.length ? place.photoUrls : loaded?.id === place.poiId ? loaded.urls : [];
+  const src = urls.find((url) => !failed.includes(url));
+  useEffect(() => {
+    if (place.photoUrls?.length) return;
+    let active = true;
+    const load = () => requestPhotos(place.poiId).then((photos) => { if (active) setLoaded({ id: place.poiId, urls: photos }); });
+    if (!('IntersectionObserver' in window)) { void load(); return () => { active = false; }; }
+    const observer = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { observer.disconnect(); void load(); } }, { rootMargin: '100px' });
+    if (ref.current) observer.observe(ref.current);
+    return () => { active = false; observer.disconnect(); };
+  }, [place.poiId, place.photoUrls]);
+  return <span ref={ref} className={`relative block shrink-0 overflow-hidden bg-[#E7EEF5] ${hero ? 'h-[210px] w-full' : ''}`} style={hero ? undefined : { width: size, height: size, borderRadius: rounded }}>
+    {src ? <img src={src} alt={`${place.name} 景点照片`} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={() => setFailed((old) => [...old, src])} />
+      : <><PavilionScene className="h-full w-full opacity-75" />{hero && <span className="absolute bottom-3 left-4 rounded-full bg-white/85 px-2.5 py-1 text-[11px] text-ink-soft">暂未取得照片 · 景观示意</span>}</>}
+    {hero && src && <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2.5 py-1 text-[11px] text-white">高德地点照片 · {place.name}</span>}
+  </span>;
+}
+
 export function LandscapeHero({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden="true">
@@ -63,18 +102,20 @@ export function PavilionScene({ className = '' }: { className?: string }) {
 
 const THUMB_HUES = [['#DCE9FE', '#2F7CF6'], ['#E3F6EC', '#22A06B'], ['#FFF1E2', '#F08A24'], ['#EEE8FD', '#6D5BD0'], ['#FEE9E9', '#E05A5A']];
 /** 地点缩略图：契约中没有图片字段，因此用名称首字的色块，不伪造照片。 */
-export function PlaceThumb({ name, size = 56, rounded = 12 }: { name: string; size?: number; rounded?: number }) {
+export function PlaceThumb({ name, place, size = 56, rounded = 12 }: { name: string; place?: Place; size?: number; rounded?: number }) {
+  if (place) return <PlacePhoto key={place.poiId} place={place} size={size} rounded={rounded} />;
   let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const [bg, fg] = THUMB_HUES[h % THUMB_HUES.length];
   return (
     <span className="flex shrink-0 items-center justify-center font-semibold" aria-hidden="true"
       style={{ width: size, height: size, borderRadius: rounded, background: bg, color: fg, fontSize: size * 0.38 }}>
-      {name.slice(0, 1)}
+      <PavilionScene className="h-full w-full" />
     </span>
   );
 }
 
-export function PlaceHero({ name }: { name: string }) {
+export function PlaceHero({ name, place }: { name: string; place?: Place }) {
+  if (place) return <PlacePhoto key={place.poiId} place={place} hero />;
   return (
     <div className="relative h-[210px] w-full overflow-hidden bg-gradient-to-b from-[#DCE9FB] to-[#F4F7FB]">
       <PavilionScene className="absolute inset-x-0 bottom-0 mx-auto h-[170px] w-full opacity-90" />

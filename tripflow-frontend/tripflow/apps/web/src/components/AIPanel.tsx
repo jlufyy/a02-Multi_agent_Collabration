@@ -11,6 +11,7 @@ import { Icon } from './Icon';
 import { ContentCard } from './ContentViewer';
 import { uid } from '../lib/id';
 import { planTime, planDate } from '../lib/time';
+import { buildConversation } from '../lib/conversation';
 import { useNarration } from '../lib/useNarration';
 
 type Msg =
@@ -67,9 +68,7 @@ export function AIPanel({ open, onClose, tripId, plan, ctx, flow, seed, me, onPr
   }, [open, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const push = (m: Msg) => setMsgs((x) => [...x, m]);
-  const conversation = (): ConversationMessage[] => msgs.flatMap((m): ConversationMessage[] =>
-    m.role === 'user' ? [{ role: 'user', content: m.text }] : m.role === 'assistant' ? [{ role: 'assistant', content: m.text }]
-      : m.role === 'content' ? [{ role: 'assistant', content: m.content.body.slice(0, 1800) }] : []).slice(-10);
+  const conversation = (): ConversationMessage[] => buildConversation(msgs);
 
   async function showContent(c: PreparedContent, scope: number) {
     if (scope !== guideScope.current) return;

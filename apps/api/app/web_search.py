@@ -55,6 +55,10 @@ class WebSearchProvider:
         # Send only public POI search terms; no conversation, precise GPS or companion data.
         query = (f"{city} {place['name']} 历史沿革 建筑特点 文化故事 景区介绍" if purpose == "KNOWLEDGE" else
                  f"{city} {place['name']} {visit_date} 开放时间 门票 预约 官方").strip()[:300]
+        from .place_facts import TICKET_SOURCES
+        ticket_source = TICKET_SOURCES.get(place["name"])
+        if purpose == "TICKET" and ticket_source:
+            query = f"site:{urlsplit(ticket_source[0]).hostname} {place['name']} 门票 旺季 淡季 adult ticket admission peak off season"
         result = {"status": "NOT_CONFIGURED", "query": query, "checkedAt": now_iso(), "references": [],
                   "message": "联网搜索尚未配置，开放时间与票价请向景区确认。"}
         if not self.configured:
@@ -138,6 +142,8 @@ class WebSearchProvider:
                 # requires the city too; neither match promotes a search snippet to a POI fact.
                 text = compact(title + " " + snippet)
                 matched = name and name in text
+                if purpose == "TICKET" and ticket_source and url.rstrip('/') == ticket_source[0].rstrip('/'):
+                    matched = True
                 matched = matched or (len(short_name) >= 3 and city and compact(city) in text and short_name in text)
                 if not matched or url in seen:
                     continue

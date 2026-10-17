@@ -146,7 +146,8 @@ def validate_plan(plan: Any, original: Any = None, operations: list[Any] | None 
         if not place_verified(place):
             unsure(f"PLACE_UNVERIFIED:{a['id']}:{place['name']}的POI来源尚未核实。", True)
         opening = place.get("openingHours") or {}
-        windows = _opening_windows(opening.get("value", "")) if verified(opening.get("evidence")) else None
+        from .place_facts import opening_windows
+        windows = opening_windows(opening.get("value", ""), start.date()) if verified(opening.get("evidence")) else None
         if windows is None:
             unsure(f"OPENING_HOURS_UNKNOWN:{a['id']}:开放时段未核实或尚不能可靠解析。")
         else:

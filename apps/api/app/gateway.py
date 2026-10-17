@@ -39,6 +39,7 @@ class ProviderConfig:
     # json_object is broader-compatible; json_schema must be explicitly tested
     # against the configured vendor/model before enabling.
     structured_mode: str = "json_object"
+    a1_thinking_mode: str | None = None
 
 
 class ModelGateway:
@@ -178,6 +179,11 @@ class ModelGateway:
             path = "/chat/completions"
             headers = {"Authorization": "Bearer " + config.api_key}
             body["messages"] = [{"role": "system", "content": system}, {"role": "user", "content": serialized}]
+            # Direct DeepSeek defaults to thinking mode, which shares the token
+            # limit with the JSON result. Long travel requests can consume the
+            # entire limit before emitting their first usable JSON object.
+            if role == "A1" and urlparse(config.base_url).hostname == "api.deepseek.com" and config.a1_thinking_mode in {"enabled", "disabled"}:
+                body["thinking"] = {"type": config.a1_thinking_mode}
             if schema:
                 body["response_format"] = ({"type": "json_schema", "json_schema": {"name": "tripflow_output", "strict": True, "schema": schema}}
                                            if config.structured_mode == "json_schema" else {"type": "json_object"})

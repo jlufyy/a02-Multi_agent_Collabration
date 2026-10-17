@@ -255,7 +255,7 @@ def test_size_limit_cors_errors_and_openapi():
         assert client.get("/api/v1/health").status_code == 200
     app = create_app(Settings())
     spec = app.openapi()
-    assert sum(len([m for m in p if m in ("get", "post", "delete")]) for p in spec["paths"].values()) == 15
+    assert sum(len([m for m in p if m in ("get", "post", "delete")]) for p in spec["paths"].values()) == 16
 
 
 def test_prepare_knowledge_and_credible_risk_rules(env):

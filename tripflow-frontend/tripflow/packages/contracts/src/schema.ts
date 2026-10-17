@@ -56,6 +56,7 @@ export const Place = z.object({
   queueMinutes: fact(z.number()).optional(), rating: fact(z.number()).optional(), bookingNote: fact(z.string()).optional(),
   parentPoiId: fact(z.string()).optional(),
   webResearch: WebResearch.optional(),
+  photoUrls: z.array(z.string().url()).optional(),
 });
 export const CompanionPreference = z.object({
   id: z.string(), label: z.string(), interests: z.array(z.string()),

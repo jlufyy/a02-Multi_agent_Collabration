@@ -97,7 +97,7 @@ function Card({ a, idx, selectedId, onSelect, onOpen, intents, traveling, onProg
       <span className={`relative z-[1] ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ring-4 ring-white
         ${done ? 'bg-sand text-ink-soft' : here ? 'bg-ok text-white' : 'bg-brand text-white'}`}>{done ? <Icon name="check" size={13} stroke={2.6} /> : idx + 1}</span>
       <button className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pl-3 text-left" onClick={() => (sel ? onOpen(a.id) : onSelect(a.id))} aria-label={`${a.place.name}，${sel ? '查看详情' : '选中'}`}>
-        <PlaceThumb name={a.place.name} size={64} />
+        <PlaceThumb name={a.place.name} place={a.place} size={64} />
         <span className="min-w-0 flex-1">
           <span className={`block truncate text-[16px] font-semibold ${done ? 'text-ink-soft' : ''}`}>{a.place.name}</span>
           <span className="block text-[13px] text-ink-soft">{fmtTime(a.startAt)} - {fmtTime(a.endAt)}</span>

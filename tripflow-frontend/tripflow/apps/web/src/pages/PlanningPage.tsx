@@ -79,9 +79,10 @@ export function PlanningPage() {
                 <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{messages?.hard.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
             )}
             {v.unknownChecks.length > 0 && (
-              <div><p className="mb-1 text-[13px] font-medium text-warn">尚未核验</p>
-                <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{messages?.unknown.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
+              <details open={!v.committable}><summary className="min-h-10 cursor-pointer text-[13px] font-medium text-warn">{v.committable ? '其余参考信息' : '需处理的核验项'}（{messages?.unknown.length}项）</summary>
+                <ul className="list-disc space-y-1 pl-5 text-[13.5px] text-ink-soft">{messages?.unknown.map((x, i) => <li key={i}>{x}</li>)}</ul></details>
             )}
+            {result?.plan && <ul className="space-y-1 text-[12px] text-ink-soft">{result.plan.activities.map((a) => <li key={a.id}>{a.place.name}：{a.place.openingHours?.evidence.status === 'VERIFIED' ? `营业信息已获取 · ${a.place.openingHours.value}` : '营业信息暂缺'}{a.place.ticketPriceCny?.evidence.status === 'VERIFIED' ? ` · 普通门票 ¥${a.place.ticketPriceCny.value}/人` : ''}</li>)}</ul>}
             {v.warnings.length > 0 && <ul className="list-disc space-y-1 pl-5 text-[13px] text-ink-faint">{messages?.warnings.map((x, i) => <li key={i}>{x}</li>)}</ul>}
             {result?.plan && <details>
               <summary className="cursor-pointer text-[13px] text-brand">查看景点联网资料</summary>

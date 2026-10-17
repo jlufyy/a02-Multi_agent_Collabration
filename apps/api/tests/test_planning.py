@@ -57,8 +57,8 @@ def test_reschedule_uses_actual_duration_and_preserves_snapshot():
     p = routes(plan(), 45)
     before = p.model_dump_json()
     candidate = reschedule(p)
-    assert candidate.activities[1].startAt == "2026-10-20T11:15:00+08:00"
-    assert candidate.activities[2].startAt == "2026-10-20T13:30:00+08:00"
+    assert candidate.activities[1].startAt == "2026-10-20T11:20:00+08:00"
+    assert candidate.activities[2].startAt == "2026-10-20T13:40:00+08:00"
     assert validate_plan(candidate).committable
     assert p.model_dump_json() == before
 

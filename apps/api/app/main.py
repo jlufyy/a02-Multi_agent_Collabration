@@ -36,7 +36,7 @@ def create_app(settings=None, maps=None, gateway=None, search=None):
                                       daily_budget_cny=settings.daily_budget_cny)
     jobs = JobManager(settings, gateway=gateway)
     search = search or WebSearchProvider(settings.search_provider, settings.search_api_key, settings.search_base_url)
-    knowledge = KnowledgeProvider(search=search, wikipedia_enabled=settings.enable_knowledge) if settings.enable_knowledge or search.configured else None
+    knowledge = KnowledgeProvider(search=search, wikipedia_enabled=settings.enable_knowledge)
     workflows = Workflows(maps, gateway, knowledge)
 
     @asynccontextmanager
@@ -178,6 +178,10 @@ def create_app(settings=None, maps=None, gateway=None, search=None):
         place = await maps.poi_detail(body.poiId)
         research = await search.research(place, city=body.city, visit_date=body.visitDate)
         return envelope(request, research, "SUCCEEDED" if research["status"] == "AVAILABLE" else "PARTIAL")
+
+    @app.get("/api/v1/places/{poi_id}", response_model=s.ApiResponse[s.Place], response_model_exclude_none=True)
+    async def place_detail(request: Request, poi_id: str):
+        return envelope(request, await maps.poi_detail(poi_id))
 
     JobResult = s.ParseRequirementsResult | s.PlanResult | s.RevisionOutcome | s.ContentOutcome | s.ClarificationOutcome | s.ValidateRevisionResult | s.EvaluateProactiveResult | s.PrepareContentResult | s.RefineContentResult | s.NearbySearchResult
 

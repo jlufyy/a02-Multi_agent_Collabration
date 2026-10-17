@@ -484,6 +484,21 @@
             }
           ],
           "default": null
+        },
+        "photoUrls": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Photourls"
         }
       },
       "required": [

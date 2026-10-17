@@ -10,6 +10,7 @@ from collections import OrderedDict
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import quote, quote_plus
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -191,7 +192,7 @@ class AmapProvider:
         if not raw.get("id") or not isinstance(raw.get("name"), str) or not raw["name"] or not point:
             return None
         pid = str(raw["id"])
-        evidence = self._evidence(pid, fetched, "Fields: poiId/name/location/address only; " + cache_note)
+        evidence = self._evidence(pid, fetched, "Fields: poiId/name/location/address and provider photo URLs; " + cache_note)
         place = {"poiId": pid, "name": raw["name"], "location": point, "evidence": [evidence]}
         if isinstance(raw.get("address"), str) and raw["address"]:
             place["address"] = raw["address"]
@@ -200,6 +201,26 @@ class AmapProvider:
         unknown = "Provider endpoint does not establish this field; not zero/free/open"
         for field in ("openingHours", "ticketPriceCny", "queueMinutes", "bookingNote"):
             place[field] = {"evidence": self._evidence(pid, fetched, f"Field: {field}; {unknown}; {cache_note}", "UNKNOWN")}
+        business = _mapping(raw.get("biz_ext")) or _mapping(raw.get("business"))
+        # Preserve the full policy: weekly closures/seasonal qualifiers must not
+        # be lost by taking just the first time range.
+        hours = business.get("opentime2") or business.get("opentime_week") or business.get("open_time")
+        if isinstance(hours, str) and hours.strip():
+            place["openingHours"] = {"value": hours.strip(), "evidence": self._evidence(pid, fetched,
+                "Field: business opening policy; provider listing, not a live opening guarantee; " + cache_note)}
+        photos = []
+        for photo in _items(raw.get("photos")):
+            url = _mapping(photo).get("url")
+            if not isinstance(url, str):
+                continue
+            try:
+                parsed = urlsplit(url)
+                if (parsed.hostname or "").endswith((".autonavi.com", ".amap.com")) and parsed.scheme in {"https", "http"} and not parsed.username and not parsed.password and parsed.port in (None, 80, 443):
+                    photos.append(url.replace("http://", "https://", 1))
+            except ValueError:
+                continue
+        if photos:
+            place["photoUrls"] = list(dict.fromkeys(photos))[:3]
         rating = _number((raw.get("biz_ext") or {}).get("rating")) if isinstance(raw.get("biz_ext"), dict) else None
         place["rating"] = {"evidence": self._evidence(pid, fetched, "Field: rating; provider-supplied rating; " + cache_note,
                                                      "VERIFIED" if rating is not None else "UNKNOWN")}
@@ -229,7 +250,12 @@ class AmapProvider:
             params["types"] = types
         if city:
             params.update(city=city, citylimit="true")
-        return self._places(*(await self._get("/v3/place/text", params)))
+        data, fetched, note = await self._get("/v3/place/text", params)
+        if types == "110000":
+            data["pois"] = [p for p in _items(data.get("pois")) if isinstance(p, dict)
+                            and str(p.get("typecode", "")).startswith("11")
+                            and not any(word in p.get("name", "") for word in ("公交站", "售票处", "停车场", "游客中心", "公共厕所"))]
+        return self._places(data, fetched, note)
 
     async def poi_detail(self, poi_id: str) -> dict:
         if not poi_id or len(poi_id) > 128:

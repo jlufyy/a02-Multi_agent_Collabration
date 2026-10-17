@@ -200,7 +200,7 @@ class Workflows:
             days = (date.fromisoformat(req["endDate"])-date.fromisoformat(req["startDate"])).days + 1
             # Several preference queries provide a real candidate pool; deterministic A4 ranks it.
             for keyword in list(dict.fromkeys(preferences))[:5] or ["景点"]:
-                found = await ctx.tool("poi_search", self.maps.search_pois, keyword, city=city, limit=min(20, days*4), types="110000")
+                found = await ctx.tool("poi_search", self.maps.search_pois, keyword, city=city, limit=20, types="110000")
                 for place in found:
                     if place["poiId"] not in forbidden:
                         places.setdefault(place["poiId"], place)
@@ -216,18 +216,30 @@ class Workflows:
             cached = {(s.fromActivityId, s.toActivityId): dump(s) for s in reusable if s.evidence.status == "VERIFIED" and s.mode in req["transportModes"]}
             async def query(origin, destination, departure_at=None):
                 try:
-                    candidate_modes = [mode] + ([m for m in req["transportModes"] if m != mode] if ctx else [])
+                    candidate_modes = [mode] + [m for m in req["transportModes"] if m != mode]
                     best = None
+                    failed = False
                     for travel_mode in candidate_modes:
-                        if ctx:
-                            result = await ctx.tool("route_query", self.maps.routes, origin, destination, travel_mode, city=req.get("destinationCity"), departure_at=departure_at)
-                        else:
-                            result = await self.maps.routes(origin, destination, travel_mode, city=req.get("destinationCity"), departure_at=departure_at)
+                        # Do not spend requests on hours of walking when another
+                        # permitted mode exists. No mode is silently added.
+                        if travel_mode == "WALK" and len(candidate_modes) > 1 and distance(origin, destination) > 2500:
+                            continue
+                        try:
+                            if ctx:
+                                result = await ctx.tool("route_query", self.maps.routes, origin, destination, travel_mode, city=req.get("destinationCity"), departure_at=departure_at)
+                            else:
+                                result = await self.maps.routes(origin, destination, travel_mode, city=req.get("destinationCity"), departure_at=departure_at)
+                        except ProviderError:
+                            failed = True
+                            continue
                         best = best or result
                         if result["evidence"]["status"] == "VERIFIED" and result.get("durationMin") is not None:
-                            return result
+                            if best.get("durationMin") is None or best["evidence"]["status"] != "VERIFIED" or result["durationMin"] < best["durationMin"]:
+                                best = result
+                    if best and best["evidence"]["status"] == "VERIFIED" and best.get("durationMin") is not None:
+                        return best
                     warnings.append("TRANSIT_UNKNOWN: 允许的交通方式未取得完整时长/距离。")
-                    return best
+                    return best or {"mode": mode, "evidence": {"provider": "amap", "status": "FAILED" if failed else "UNKNOWN", "fetchedAt": now_iso()}}
                 except ProviderError as exc:
                     warnings.append(exc.code + ": 路线未取得，不可确认交通可达。")
                     return {"mode": mode, "evidence": {"provider": "amap", "status": "FAILED", "fetchedAt": now_iso(), "note": exc.code}}
@@ -285,8 +297,45 @@ class Workflows:
             report = s.ValidationReport(status="INFEASIBLE", committable=False, unknownChecks=[], warnings=[],
                 hardViolations=[s.Violation(code=exc.code, message=exc.message, activityIds=exc.activity_ids)])
             return s.PlanResult(validation=report, preparedContents=[]), True
+        plan = await self.enrich_web_references(plan, runner)
         plan = await self.attach_routes(plan, runner)
+        # Replace optional long detours with an unused nearby real POI before
+        # dropping stops. Required/fixed/booked/locked visits are never removed.
+        tried = set()
+        replaced = False
+        for _ in range(4):
+            long_route = next((r for r in plan.segments if r.durationMin is not None and r.durationMin > 90
+                               and (r.fromActivityId, r.toActivityId) not in tried), None)
+            if not long_route:
+                break
+            tried.add((long_route.fromActivityId, long_route.toActivityId))
+            by_id = {a.id: a for a in plan.activities}
+            def optional(a):
+                return not a.mandatory and not a.locked and not a.intentIds and a.bookingStatus != "BOOKED" and not any(
+                    f.activityId == a.id or (f.place and f.place.place and f.place.place.poiId == a.place.poiId) for f in plan.requirements.fixedConstraints)
+            pair = [by_id[long_route.toActivityId], by_id[long_route.fromActivityId]]
+            target = next((a for a in pair if optional(a)), None)
+            if not target:
+                continue
+            anchor = next(a for a in pair if a.id != target.id)
+            used = {a.place.poiId for a in plan.activities}
+            used.update(a.place.parentPoiId.value for a in plan.activities if a.place.parentPoiId and a.place.parentPoiId.value)
+            alternatives = [p for p in research.places if p.poiId not in used and not (p.parentPoiId and p.parentPoiId.value in used)
+                            and distance(dump(anchor.place.location), dump(p.location)) < 8000]
+            if not alternatives:
+                continue
+            replacement = min(alternatives, key=lambda p: distance(dump(anchor.place.location), dump(p.location)))
+            plan = apply_operations(plan, [{"type": "REPLACE", "activityId": target.id,
+                "candidatePlaceId": replacement.poiId, "candidatePlace": dump(replacement)}])
+            replaced = True
+            plan = await self.attach_routes(plan, runner)
+        if replaced:
+            plan = await self.enrich_web_references(plan, runner)
         validation = await self.audit(plan, runner)
+        for route in plan.segments:
+            if route.durationMin is not None and route.durationMin > 90:
+                validation.warnings.append("有路段超过90分钟；必去地点或允许的交通方式限制了优化，可在预览中调整日期或地点。")
+                break
         # Bounded repair can remove optional stops; required visits, appointments and intents remain protected.
         for _ in range(3):
             if not validation.hardViolations:
@@ -303,7 +352,6 @@ class Workflows:
             plan = await runner.run("A4", validation, s.TripState, repair)
             plan = await self.attach_routes(plan, runner)
             validation = await self.audit(plan, runner)
-        plan = await self.enrich_web_references(plan, runner)
         contents = []
         if validation.committable:
             for intent in plan.intents:
@@ -325,27 +373,42 @@ class Workflows:
 
     async def enrich_web_references(self, plan, runner):
         search = getattr(self.knowledge, "search", None)
-        if not search or not search.configured:
+        client = getattr(self.knowledge, "client", None)
+        if not search and not client:
             return plan
         async def investigate(ctx):
             data = dump(plan)
             places = {}
             for activity in data["activities"]:
-                places.setdefault(activity["place"]["poiId"], (activity["place"], activity["startAt"][:10]))
+                places.setdefault((activity["place"]["poiId"], activity["startAt"][:10]), (activity["place"], activity["startAt"][:10]))
             answers = {}
             async def lookup(place, visit_date):
-                answers[place["poiId"]] = await ctx.tool("knowledge_search", search.research, place,
-                    city=plan.destinationCity, visit_date=visit_date)
+                from .place_facts import verify_ticket
+                answer = await ctx.tool("knowledge_search", search.research, place,
+                    city=plan.destinationCity, visit_date=visit_date) if search and search.configured else None
+                enriched = await verify_ticket(place, visit_date, client, (answer or {}).get("references", [])) if client else copy.deepcopy(place)
+                from .place_facts import TICKET_SOURCES
+                if client and search and search.configured and place["name"] in TICKET_SOURCES and enriched.get("ticketPriceCny", {}).get("evidence", {}).get("status") != "VERIFIED":
+                    ticket_research = await ctx.tool("knowledge_search", search.research, place, city=plan.destinationCity, visit_date=visit_date, purpose="TICKET")
+                    enriched = await verify_ticket(enriched, visit_date, client, ticket_research.get("references", []))
+                    if ticket_research.get("references"):
+                        answer = ticket_research
+                if answer:
+                    enriched["webResearch"] = answer
+                answers[(place["poiId"], visit_date)] = enriched
             try:
                 async with asyncio.timeout(25):
                     await asyncio.gather(*(lookup(place, day) for place, day in list(places.values())[:12]))
             except TimeoutError:
                 pass
             for activity in data["activities"]:
-                answer = answers.get(activity["place"]["poiId"])
-                activity["place"]["webResearch"] = answer or {
-                    "status": "UNAVAILABLE", "query": "", "checkedAt": now_iso(), "references": [],
-                    "message": "本次联网资料未获取完成，可在景点详情中重新查询。"}
+                answer = answers.get((activity["place"]["poiId"], activity["startAt"][:10]))
+                if answer:
+                    activity["place"] = answer
+                ticket = activity["place"].get("ticketPriceCny", {})
+                if ticket.get("value") is not None and ticket.get("evidence", {}).get("status") == "VERIFIED":
+                    activity["estimatedCostCny"] = ticket["value"] * data["travelerCount"]
+                    activity["costStatus"] = "VERIFIED"
             return data
         return await runner.run("A2", {"places": [a.place.poiId for a in plan.activities]}, s.TripState, investigate)
 
@@ -507,6 +570,16 @@ class Workflows:
             proposal = build_proposal(req.tripState, req.tripState, operations, rejection=exc)
             return s.RevisionOutcome(kind="REVISION", proposal=proposal), True
         preserve = [op.activityId for op in operations if op.type == "UPDATE_TIME"]
+        # Refresh old saved plans as part of the same reviewable edit proposal.
+        async def refresh_places(ctx):
+            data = dump(candidate)
+            for activity in data["activities"]:
+                activity["place"] = await ctx.tool("poi_detail", self.maps.poi_detail, activity["place"]["poiId"])
+                activity.pop("estimatedCostCny", None)
+                activity["costStatus"] = "UNKNOWN"
+            return data
+        candidate = await runner.run("A2", candidate, s.TripState, refresh_places)
+        candidate = await self.enrich_web_references(candidate, runner)
         candidate = await self.attach_routes(candidate, runner, preserve)
         validation = await self.audit(candidate, runner, req.tripState, operations)
         async def proposal(ctx):
@@ -547,9 +620,10 @@ class Workflows:
                     fixed["place"]["place"] = await refresh(fixed["place"]["place"])
             return data
         refreshed = await runner.run("A2", candidate, s.TripState, reverify)
+        refreshed = await self.enrich_web_references(refreshed, runner)
         def stable(value):
             if isinstance(value, dict):
-                return {k: stable(v) for k, v in value.items() if k not in ("fetchedAt", "updatedAt", "note", "webResearch")}
+                return {k: stable(v) for k, v in value.items() if k not in ("fetchedAt", "updatedAt", "note", "webResearch", "photoUrls")}
             if isinstance(value, list):
                 return [stable(v) for v in value]
             return value
@@ -561,6 +635,17 @@ class Workflows:
         # Replaying declared operations prevents a client from smuggling unrelated plan changes.
         try:
             replayed = dump(apply_operations(req.tripState, req.proposal.operations))
+            # Server-refreshed facts are independently checked above. Replay
+            # still checks all declared scheduling/identity changes.
+            fresh_by_id = {a.id: dump(a) for a in candidate.activities}
+            for activity in replayed["activities"]:
+                fresh_activity = fresh_by_id.get(activity["id"])
+                if fresh_activity and activity["place"]["poiId"] == fresh_activity["place"]["poiId"]:
+                    activity["place"] = fresh_activity["place"]
+                    activity["costStatus"] = fresh_activity["costStatus"]
+                    activity.pop("estimatedCostCny", None)
+                    if "estimatedCostCny" in fresh_activity:
+                        activity["estimatedCostCny"] = fresh_activity["estimatedCostCny"]
             replayed.update(segments=[dump(x) for x in candidate.segments], boundarySegments=[dump(x) for x in candidate.boundarySegments])
             replayed = reschedule(s.TripState.model_validate(replayed), preserve_activity_ids=[o.activityId for o in req.proposal.operations if o.type == "UPDATE_TIME"])
             if stable(dump(replayed)) != stable(dump(candidate)):
@@ -581,7 +666,36 @@ class Workflows:
         new = [dump(x) for x in routes.segments] + [dump(x) for x in routes.boundarySegments]
         def route_signature(items):
             return [stable(item) for item in items]
-        if route_signature(old) != route_signature(new) or routes.warnings:
+        # Recheck the original activity slots against current routes. Small
+        # duration/geometry fluctuations do not alter those slots and must not
+        # create an endless replacement-proposal loop.
+        def minor_route_update(before, after):
+            if len(before) != len(after):
+                return False
+            total_delta = 0
+            for a, b in zip(before, after):
+                identity_keys = ("fromActivityId", "toActivityId", "dayIndex", "from", "to", "mode")
+                if any(stable(a.get(k)) != stable(b.get(k)) for k in identity_keys):
+                    return False
+                if a.get("durationMin") is None or b.get("durationMin") is None or b.get("evidence", {}).get("status") != "VERIFIED":
+                    return False
+                delta = abs(a["durationMin"] - b["durationMin"])
+                if delta > 2 or abs(a.get("distanceMeters", 0) - b.get("distanceMeters", 0)) > 200:
+                    return False
+                if a.get("routeGeometry") and not b.get("routeGeometry"):
+                    return False
+                total_delta += delta
+            return total_delta <= 5
+        changed = route_signature(old) != route_signature(new)
+        if changed and not routes.warnings and not any(x.startswith('REPROPOSE_REQUIRED') for x in validation.unknownChecks) and minor_route_update(old, new):
+            latest = dump(candidate)
+            latest.update(segments=[dump(x) for x in routes.segments], boundarySegments=[dump(x) for x in routes.boundarySegments])
+            # Validation is pure: never reschedule a user-approved slot here.
+            checked = await self.audit(s.TripState.model_validate(latest), runner, req.tripState, req.proposal.operations)
+            if checked.committable:
+                checked.warnings.append("已按最新路线复核，分钟级变化不影响本次预览的活动时段；出发时仍请使用实时导航。")
+                return s.ValidateRevisionResult(proposalId=req.proposal.proposalId, baseRevision=req.baseRevision, validation=checked), checked.status != "FEASIBLE"
+        if changed or routes.warnings:
             validation.committable = False
             validation.unknownChecks.append("REPROPOSE_REQUIRED: 路线发生变化或无法重新核验，请重新预览。")
             if validation.status == "FEASIBLE":

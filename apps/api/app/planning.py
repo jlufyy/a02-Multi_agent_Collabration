@@ -112,7 +112,7 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
     slot_minutes = 120 if low_walking else 90
     # Keep a small number per day to leave actual travel/meal/rest capacity.
     required_count = len(required_places)
-    capacity = max(required_count, days * (2 if low_walking else 3))
+    capacity = max(required_count, days * (2 if low_walking else 4))
     def family(place):
         seen = set()
         while place["poiId"] not in seen:
@@ -133,14 +133,48 @@ def build_plan(trip_id: str, requirements: Any, places: Iterable[Any], mode: str
             continue
         grouped.append(place)
         used_families.add(group)
-    selected = grouped[:capacity]
-    per_day = max(1, math.ceil(len(selected) / days))
+    # Geographic day clusters, followed by real A3 route verification.
+    from .proactive import distance
+    pool = list(grouped)
+    selected, assigned_days = [], {}
+    target = min(2 if low_walking else 4, max(1, math.ceil(len(pool)/days)))
+    preference_rank = {p["poiId"]: i for i, p in enumerate(grouped)}
+    for day in range(days):
+        fixed_ids = {c["place"]["place"]["poiId"] for c in r["fixedConstraints"]
+                     if c.get("place", {}).get("place") and (moment(c["startAt"]).date()-first).days == day}
+        reserved = {c["place"]["place"]["poiId"] for c in r["fixedConstraints"]
+                    if c.get("place", {}).get("place") and (moment(c["startAt"]).date()-first).days != day} - fixed_ids
+        eligible = [p for p in pool if p["poiId"] not in reserved]
+        if not eligible:
+            continue
+        required = [p for p in eligible if p["poiId"] in required_places]
+        seed = next((p for p in required if p["poiId"] in fixed_ids), None)
+        if seed is None:
+            seed = min(required or eligible, key=lambda p: (sum(sorted(distance(p["location"], q["location"]) for q in eligible)[:target]), preference_rank[p["poiId"]]))
+        daily = [seed]
+        pool.remove(seed)
+        while len(daily) < target and len(selected) + len(daily) < capacity:
+            eligible = [p for p in pool if p["poiId"] not in reserved]
+            if not eligible:
+                break
+            next_place = min(eligible, key=lambda p: (distance(daily[-1]["location"], p["location"]), preference_rank[p["poiId"]]))
+            if distance(seed["location"], next_place["location"]) > 14000:
+                break
+            daily.append(next_place)
+            pool.remove(next_place)
+        due = [p for p in pool if p["poiId"] in fixed_ids or (day == days-1 and p["poiId"] in required_places)]
+        for p in due:
+            daily.append(p)
+            pool.remove(p)
+        for p in daily:
+            selected.append(p)
+            assigned_days[p["poiId"]] = day
     activities = []
     day_counts: dict[int, int] = {}
     cursor_by_day = {}
     for index, place in enumerate(selected):
         fixed = next((c for c in r["fixedConstraints"] if c.get("place", {}).get("place", {}).get("poiId") == place["poiId"]), None)
-        day_index = (moment(fixed["startAt"]).date() - first).days if fixed else min(index // per_day, days - 1)
+        day_index = (moment(fixed["startAt"]).date() - first).days if fixed else assigned_days[place["poiId"]]
         if not 0 <= day_index < days:
             raise PlanningError("TIME_WINDOW_VIOLATION", "固定安排的日期超出本次行程，请调整日期或固定条件。")
         calendar = first + timedelta(days=day_index)
@@ -225,16 +259,16 @@ def reschedule(plan: Any, preserve_activity_ids: Iterable[str] = ()) -> TripStat
             earliest = max(earliest, moment(previous["endAt"]))
             route = routes.get((previous["id"], activity["id"]))
             if route and route.get("durationMin") is not None and verified(route.get("evidence")):
-                earliest = max(earliest, moment(previous["endAt"]) + timedelta(minutes=route["durationMin"]))
+                earliest = max(earliest, moment(previous["endAt"]) + timedelta(minutes=route["durationMin"] + 5))
         elif activity["dayIndex"] == 0:
             for segment in p["boundarySegments"]:
                 if segment["from"].get("kind") == "START_POINT" and segment["to"].get("activityId") == activity["id"] and req.get("arrivalAt") and segment.get("durationMin") is not None and verified(segment.get("evidence")):
                     earliest = max(earliest, moment(req["arrivalAt"]) + timedelta(minutes=segment["durationMin"]))
         if not _anchor(activity, req, pinned):
-            same_day_start = old_start.replace(year=calendar.year, month=calendar.month, day=calendar.day)
-            start = max(same_day_start, earliest)
+            start = earliest
             opening = activity["place"].get("openingHours") or {}
-            windows = _opening_windows(opening.get("value", "")) if verified(opening.get("evidence")) else None
+            from .place_facts import opening_windows
+            windows = opening_windows(opening.get("value", ""), calendar) if verified(opening.get("evidence")) else None
             if windows:
                 midnight = _clock(calendar, "00:00")
                 for lower, upper in windows:
@@ -242,7 +276,10 @@ def reschedule(plan: Any, preserve_activity_ids: Iterable[str] = ()) -> TripStat
                     if available + duration <= midnight + timedelta(minutes=upper):
                         start = available
                         break
-            upper = _clock(calendar, req.get("dailyEndTime") or "23:59")
+            noon, lunch_end = _clock(calendar, "12:00"), _clock(calendar, "13:00")
+            if previous and previous["dayIndex"] == activity["dayIndex"] and noon - timedelta(minutes=30) <= moment(previous["endAt"]) < lunch_end and start < lunch_end:
+                start = lunch_end
+            upper = _clock(calendar, req.get("dailyEndTime") or "18:30")
             if req.get("departureAt"):
                 upper = min(upper, moment(req["departureAt"]))
             if start + duration <= upper and start.date() == calendar:
