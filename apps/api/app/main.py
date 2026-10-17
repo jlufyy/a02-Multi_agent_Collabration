@@ -136,6 +136,10 @@ def create_app(settings=None, maps=None, gateway=None, search=None):
     async def generate(request: Request, body: s.GeneratePlanRequest):
         return submit(request, body, workflows.generate)
 
+    @app.post("/api/v1/requirements/resolve-places", status_code=202, response_model=s.ApiResponse[s.JobAccepted], response_model_exclude_none=True)
+    async def resolve_places(request: Request, body: s.ResolvePlacesRequest):
+        return submit(request, body, workflows.resolve_requirements)
+
     @app.post("/api/v1/revisions/propose", status_code=202, response_model=s.ApiResponse[s.JobAccepted], response_model_exclude_none=True)
     async def propose(request: Request, body: s.ProposeRevisionRequest):
         return submit(request, body, workflows.propose)

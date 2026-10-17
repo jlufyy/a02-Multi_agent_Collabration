@@ -7,7 +7,7 @@ import { useJob } from '../lib/useJob';
 import { AgentProgress } from '../components/AgentProgress';
 import { ErrorBox } from '../components/ui';
 import { Icon } from '../components/Icon';
-import { emptyRequirements, requirementProblems, normalizeDiningRequirements } from '../lib/requirements';
+import { emptyRequirements, requirementProblems, normalizeDiningRequirements, unresolvedPlaces, bindRequirementPlace } from '../lib/requirements';
 import { Logo } from '../components/Illustrations';
 import { RequirementSummary } from '../components/RequirementSummary';
 import { PlacePicker } from '../components/PlacePicker';
@@ -61,25 +61,32 @@ export function InputPage() {
     try { await saveDraft(tripId, { text, requirements: r ?? emptyRequirements() }); nav(`/trip/${tripId}/confirm`); } catch (e) { setSaveError(e); }
   }
   async function confirm() {
-    if (!r) return;
+    if (!r || job.running) return;
     try {
-      const confirmed: TripRequirements = { ...r, confirmed: true, version: r.version + 1, intents: r.intents.map((i) => ({ ...i, confirmed: i.status !== 'CANCELLED' })) };
+      let ready = r;
+      if (unresolvedPlaces(r).length) {
+        const out = await job.run((h) => jobs.resolvePlaces({ executionMode: 'REAL', tripId, baseRevision: 0, requirements: r }, h));
+        if (!out?.result) return;
+        if (JSON.stringify(useTrips.getState().trips[tripId]?.draft.requirements) !== JSON.stringify(rawRequirements)) return;
+        ready = out.result.requirements;
+        const paths = new Set(unresolvedPlaces(r).map((ref) => ref.path));
+        await saveDraft(tripId, { requirements: ready, parse: { missingFields: trip!.draft.parse?.missingFields ?? [], questions: trip!.draft.parse?.questions ?? [], fieldSources: trip!.draft.parse?.fieldSources ?? {},
+          uncertainFields: [...(trip!.draft.parse?.uncertainFields ?? []).filter((u) => !paths.has(u.fieldPath)), ...out.result.uncertainFields] } });
+      }
+      if (Object.keys(requirementProblems(ready)).length) return;
+      const confirmed: TripRequirements = { ...ready, confirmed: true, version: ready.version + 1, intents: ready.intents.map((i) => ({ ...i, confirmed: i.status !== 'CANCELLED' })) };
       await saveDraft(tripId, { requirements: confirmed });
       nav(`/trip/${tripId}/planning`);
     } catch (e) { setSaveError(e); }
   }
   async function pick(p: Place) {
     if (!r || !picker) return;
-    const [key, index] = picker.path.split('.');
-    const next = key === 'mustVisit' ? { ...r, mustVisit: r.mustVisit.map((v, i) => i === Number(index) ? { ...v, place: p } : v) }
-      : { ...r, intents: r.intents.map((v, i) => i === Number(index) ? { ...v, placeId: p.poiId, placeQuery: p.name } : v) };
+    const next = bindRequirementPlace(r, picker.path, p);
     await saveDraft(tripId, { requirements: next, parse: { ...trip!.draft.parse!, uncertainFields: (trip!.draft.parse?.uncertainFields ?? []).filter((u) => u.fieldPath !== picker.path) } });
   }
-  const unresolved = r ? [
-    ...r.mustVisit.flatMap((v, i) => v.place ? [] : [{ path: `mustVisit.${i}`, query: v.query }]),
-    ...r.intents.flatMap((v, i) => v.status === 'CANCELLED' || v.placeId ? [] : [{ path: `intents.${i}`, query: v.placeQuery ?? '请选择地点' }]),
-  ] : [];
-  const problems = r ? Object.values(requirementProblems(r)) : [];
+  const unresolved = r ? unresolvedPlaces(r) : [];
+  const unresolvedPaths = new Set(unresolved.map((ref) => ref.path));
+  const problems = r ? Object.entries(requirementProblems(r)).filter(([path]) => !unresolvedPaths.has(path)).map(([, message]) => message) : [];
   const questions = trip.draft.parse?.questions ?? [];
   const quickReplies = r && !r.travelerCount ? ['一个人', '两个人', '三个人']
     : r && !r.transportModes.length ? ['公共交通和步行', '只步行', '请推荐交通方式']
@@ -95,7 +102,7 @@ export function InputPage() {
       {!!quickReplies.length && <div className="flex flex-wrap gap-2" aria-label="快捷回答">{quickReplies.map((q) => <button key={q} disabled={job.running} className="chip bg-brand-mist text-brand" onClick={() => parse(q)}>{q}</button>)}</div>}
       {(trip.draft.parse?.uncertainFields ?? []).filter((u) => !u.candidates && !u.fieldPath.startsWith('mustVisit.') && !u.fieldPath.startsWith('intents.')).map((u, i) => <p key={i} className="text-[12px] text-warn">待核对：{u.reason}</p>)}
       {unresolved.map((v) => <button key={v.path} disabled={job.running} className="btn-soft w-full text-left" onClick={() => setPicker({ ...v, candidates: trip.draft.parse?.uncertainFields.find((u) => u.fieldPath === v.path)?.candidates })}>选择真实地点：{v.query}</button>)}
-      {!!r && !job.running && <div className="space-y-2"><button className="btn-primary w-full disabled:opacity-40" disabled={!!problems.length || !!unresolved.length} onClick={confirm}>确认摘要，开始规划</button>{!!problems.length && <p className="text-[12px] text-ink-faint">还需补充：{problems.slice(0, 2).join('；')}。可以直接回复。</p>}</div>}
+      {!!r && !job.running && <div className="space-y-2"><button className="btn-primary w-full disabled:opacity-40" disabled={!!problems.length} onClick={confirm}>{unresolved.length ? '自动匹配地点，再开始规划' : '确认摘要，开始规划'}</button>{!!problems.length && <p className="text-[12px] text-ink-faint">还需补充：{problems.slice(0, 2).join('；')}。可以直接回复。</p>}</div>}
       {job.running && <AgentProgress events={job.progress} running />}
       {job.error != null && <ErrorBox error={job.error} onRetry={() => parse()} />}
       {saveError != null && <ErrorBox error={saveError} />}

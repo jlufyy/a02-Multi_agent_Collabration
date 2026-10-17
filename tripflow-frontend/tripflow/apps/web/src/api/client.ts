@@ -160,6 +160,8 @@ export function startJob<T extends z.ZodTypeAny>(
 
 type H = Parameters<typeof startJob>[3];
 export const jobs = {
+  resolvePlaces: (b: RequestContext & { requirements: TripRequirements }, h?: H) =>
+    startJob('/requirements/resolve-places', b, S.ParseResult, h),
   parseRequirements: (b: RequestContext & { text: string; requirements?: TripRequirements; selectedContext?: SelectedContext; conversation?: ConversationMessage[] }, h?: H) =>
     startJob('/requirements/parse', b, S.ParseResult, h),
   generatePlan: (b: RequestContext & { requirements: TripRequirements; mode: 'PLANNING' }, h?: H) =>

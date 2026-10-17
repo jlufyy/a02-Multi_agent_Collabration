@@ -1,4 +1,4 @@
-import type { TripRequirements, TripState } from '@tripflow/contracts';
+import type { Place, TripRequirements, TripState } from '@tripflow/contracts';
 import { uid } from './id';
 
 export function emptyRequirements(): TripRequirements {
@@ -33,10 +33,26 @@ export function requirementProblems(r: TripRequirements): Record<string, string>
   if (r.budgetCny !== undefined && r.budgetCny < 0) p.budgetCny = '预算不能为负';
   if (r.budgetCny !== undefined && !r.budgetScope) p.budgetScope = '请选择预算按人均还是总额';
   if (!r.transportModes.length) p.transportModes = '至少选择一种交通方式';
-  r.intents.forEach((it, i) => {
-    if (it.status !== 'CANCELLED' && !it.placeId) p[`intents.${i}.placeId`] = '请为该任务选择对应的真实地点';
-  });
+  unresolvedPlaces(r).forEach((ref) => { p[ref.path] = `请确认“${ref.query}”的具体位置`; });
   return p;
+}
+
+/** Every user-specified location must pass the same confirmation gate. */
+export function unresolvedPlaces(r: TripRequirements): { path: string; query: string }[] {
+  return [
+    ...(['mustVisit', 'avoidPlaces'] as const).flatMap((key) => r[key].flatMap((ref, i) => ref.place ? [] : [{ path: `${key}.${i}`, query: ref.query }])),
+    ...(['startPoint', 'endPoint'] as const).flatMap((key) => r[key] && !r[key].place ? [{ path: key, query: r[key].query }] : []),
+    ...r.fixedConstraints.flatMap((f, i) => f.place && !f.place.place ? [{ path: `fixedConstraints.${i}.place`, query: f.place.query }] : []),
+    ...r.intents.flatMap((it, i) => it.status === 'CANCELLED' || it.placeId ? [] : [{ path: `intents.${i}`, query: it.placeQuery ?? '任务地点' }]),
+  ];
+}
+
+export function bindRequirementPlace(r: TripRequirements, path: string, p: Place): TripRequirements {
+  const [key, index] = path.split('.');
+  if (key === 'startPoint' || key === 'endPoint') return { ...r, [key]: { ...r[key]!, place: p } };
+  if (key === 'mustVisit' || key === 'avoidPlaces') return { ...r, [key]: r[key].map((ref, i) => i === Number(index) ? { ...ref, place: p } : ref) };
+  if (key === 'fixedConstraints') return { ...r, fixedConstraints: r.fixedConstraints.map((f, i) => i === Number(index) ? { ...f, place: { ...f.place!, place: p } } : f) };
+  return { ...r, intents: r.intents.map((it, i) => i === Number(index) ? { ...it, placeId: p.poiId, placeQuery: p.name } : it) };
 }
 
 /** requirements 的顶层投影（城市、日期、人数、预算、同行、偏好、意图必须与 requirements 一致）。 */

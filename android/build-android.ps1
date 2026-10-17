@@ -35,7 +35,7 @@ try {
     $tripflowApk = "android/app/build/outputs/apk/$($Variant.ToLower())/app-$($Variant.ToLower()).apk"
     $tripflowOutput = Join-Path $tripflowRoot 'output/android'
     New-Item -ItemType Directory -Force $tripflowOutput | Out-Null
-    Copy-Item -LiteralPath $tripflowApk -Destination (Join-Path $tripflowOutput "TripFlow-1.0.1-personal-$($Variant.ToLower())-arm64.apk")
+    Copy-Item -LiteralPath $tripflowApk -Destination (Join-Path $tripflowOutput "TripFlow-1.0.2-personal-$($Variant.ToLower())-arm64.apk")
     Get-FileHash -Algorithm SHA256 -LiteralPath $tripflowApk
 } finally {
     Pop-Location

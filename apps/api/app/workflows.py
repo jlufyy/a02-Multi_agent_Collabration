@@ -18,6 +18,7 @@ from .planning import build_plan, reschedule, apply_operations, build_proposal, 
 from .validation import validate_plan
 from .proactive import evaluate_notification, distance, instant
 from .providers import ProviderError, to_gcj02
+from .place_matching import unique_place, requirement_references
 
 logger = logging.getLogger("tripflow")
 
@@ -152,34 +153,48 @@ class Workflows:
             prompts = {"destinationCity": "想去哪个城市？", "startDate": "准备哪天出发？", "endDate": "一共安排几天（1–3天）？", "travelerCount": "你们一共几个人？", "transportModes": "想步行、公共交通还是打车？", "budgetScope": "预算是人均还是总额？"}
             data["questions"] = ([prompts[k] for k in missing] + data["questions"])[:2]
             # Resolve only user-requested POIs; recommendations never become hard stops.
-            refs = [(f"mustVisit.{i}", ref, "place") for i, ref in enumerate(extracted["mustVisit"])]
-            refs += [(f"intents.{i}", intent, "placeId") for i, intent in enumerate(extracted["intents"]) if intent["status"] != "CANCELLED"]
-            for path, ref, binding in refs:
-                query = ref.get("query") or ref.get("placeQuery")
-                if not query or ref.get(binding) or not extracted.get("destinationCity"):
-                    continue
-                try:
-                    found = await ctx.tool("poi_search", self.maps.search_pois, query, city=extracted["destinationCity"])
-                    exact = [p for p in found if p["name"].strip() == query.strip()]
-                    if len(exact) == 1:
-                        ref[binding] = exact[0] if binding == "place" else exact[0]["poiId"]
-                    else:
-                        data["uncertainFields"].append({"fieldPath": path, "reason": f"请选择“{query}”对应的地点。", "candidates": found})
-                except ProviderError:
-                    data["uncertainFields"].append({"fieldPath": path, "reason": f"“{query}”暂未匹配，请重试地点检索。"})
-            return data
+            return await self.match_requirement_places(ctx, data)
         result = await runner.run("A1", req, s.ParseRequirementsResult, interpret)
         return result, False
+
+    async def match_requirement_places(self, ctx, data):
+        extracted = data['requirements']
+        searched = {}
+        for path, ref, binding in requirement_references(extracted):
+            query = ref.get("query") or ref.get("placeQuery")
+            if not query or ref.get(binding) or not extracted.get("destinationCity"):
+                continue
+            try:
+                if query not in searched:
+                    searched[query] = await ctx.tool("poi_search", self.maps.search_pois, query, city=extracted["destinationCity"])
+                found = searched[query]
+                matched = unique_place(query, found, extracted['destinationCity'])
+                if matched:
+                    ref[binding] = matched if binding == "place" else matched["poiId"]
+                else:
+                    data["uncertainFields"].append({"fieldPath": path, "reason": f"请选择“{query}”对应的地点。", "candidates": found})
+            except ProviderError:
+                data["uncertainFields"].append({"fieldPath": path, "reason": f"“{query}”暂未匹配，请重试地点检索。"})
+        return data
+
+    async def resolve_requirements(self, req, job):
+        raw = dump(req.requirements)
+        raw['confirmed'] = False
+        async def resolve(ctx):
+            return await self.match_requirement_places(ctx, {'requirements': raw, 'intents': raw['intents'],
+                'missingFields': [], 'uncertainFields': [], 'questions': []})
+        result = await AgentRunner(job).run('A2', req, s.ParseRequirementsResult, resolve)
+        return result, bool(result.uncertainFields)
 
     async def resolve_reference(self, ctx, ref, city):
         if ref.get("place"):
             return await ctx.tool("poi_detail", self.maps.poi_detail, ref["place"]["poiId"])
         found = await ctx.tool("poi_search", self.maps.search_pois, ref["query"], city=city)
-        exact = [p for p in found if p["name"].strip() == ref["query"].strip()]
-        if len(exact) == 1:
-            return exact[0]
+        matched = unique_place(ref['query'], found, city)
+        if matched:
+            return matched
         raise AppError("PLACE_AMBIGUOUS" if found else "PLACE_UNVERIFIED",
-                       f"地点“{ref['query']}”需要使用 places/search 明确选择真实 POI。", 422)
+                       f"地点“{ref['query']}”{'有多个可能的地点，请在需求中确认具体位置' if found else '暂未找到，请补充更完整的名称或地址'}。", 422)
 
     async def research(self, requirements, runner):
         async def investigate(ctx):

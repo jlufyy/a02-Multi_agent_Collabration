@@ -118,6 +118,44 @@
         }
       }
     },
+    "/api/v1/requirements/resolve-places": {
+      "post": {
+        "summary": "Resolve Places",
+        "operationId": "resolve_places_api_v1_requirements_resolve_places_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolvePlacesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobAccepted_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/revisions/propose": {
       "post": {
         "summary": "Propose",
@@ -4338,6 +4376,52 @@
           "visitDate"
         ],
         "title": "ResearchPlaceRequest"
+      },
+      "ResolvePlacesRequest": {
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ],
+            "title": "Executionmode"
+          },
+          "demoRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demorunid"
+          },
+          "tripId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tripid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Baserevision"
+          },
+          "requirements": {
+            "$ref": "#/components/schemas/TripRequirements"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "executionMode",
+          "tripId",
+          "baseRevision",
+          "requirements"
+        ],
+        "title": "ResolvePlacesRequest"
       },
       "RevisionDiff": {
         "properties": {

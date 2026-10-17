@@ -44,7 +44,7 @@ rustup target add aarch64-linux-android
 
 ```powershell
 adb devices -l
-adb -s <serial> install -r output/android/TripFlow-1.0.1-personal-release-arm64.apk
+adb -s <serial> install -r output/android/TripFlow-1.0.2-personal-release-arm64.apk
 adb -s <serial> shell am start -W -n cn.tripflow.app/.MainActivity
 adb -s <serial> forward tcp:18761 tcp:18761
 .\.venv\Scripts\python.exe android/scripts/verify_phone.py

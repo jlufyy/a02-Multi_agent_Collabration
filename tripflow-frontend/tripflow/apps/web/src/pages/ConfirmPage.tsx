@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
-import type { TripRequirements, PlaceReference, CompanionPreference, TravelIntent, FixedConstraint, Place, TravelMode, IntentType } from '@tripflow/contracts';
+import type { ParseResult, TripRequirements, PlaceReference, CompanionPreference, TravelIntent, FixedConstraint, Place, TravelMode, IntentType } from '@tripflow/contracts';
 import { useTrips } from '../store/tripStore';
 import { Icon } from '../components/Icon';
 import { PlacePicker } from '../components/PlacePicker';
-import { Toggle } from '../components/ui';
-import { INTENT_LABEL, MODE_LABEL, dayCount, emptyRequirements, requirementProblems, normalizeDiningRequirements } from '../lib/requirements';
+import { Toggle, ErrorBox, Spinner } from '../components/ui';
+import { jobs } from '../api/client';
+import { useJob } from '../lib/useJob';
+import { INTENT_LABEL, MODE_LABEL, dayCount, emptyRequirements, requirementProblems, normalizeDiningRequirements, unresolvedPlaces, bindRequirementPlace } from '../lib/requirements';
 import { uid } from '../lib/id';
 import { planTime } from '../lib/time';
 
@@ -18,6 +20,9 @@ export function ConfirmPage() {
   const trip = useTrips((s) => s.trips[tripId]);
   const saveDraft = useTrips((s) => s.saveDraft);
   const [r, setR] = useState<TripRequirements>(() => normalizeDiningRequirements(trip?.draft.requirements ?? emptyRequirements()));
+  const latestRequirements = useRef(r);
+  latestRequirements.current = r;
+  const matching = useJob<ParseResult>(tripId);
   const [picker, setPicker] = useState<{ query?: string; candidates?: Place[]; onPick: (p: Place) => void }>();
   const [showErr, setShowErr] = useState(false);
   const [more, setMore] = useState(false);
@@ -40,9 +45,19 @@ export function ConfirmPage() {
   const n = dayCount(r);
 
   async function confirm() {
-    if (Object.keys(problems).length) { setShowErr(true); return; }
-    const confirmed: TripRequirements = { ...r, confirmed: true, version: r.version + 1,
-      intents: r.intents.map((i) => ({ ...i, confirmed: i.status !== 'CANCELLED' })) };
+    if (matching.running) return;
+    let ready = r;
+    const pending = new Set(unresolvedPlaces(r).map((ref) => ref.path));
+    if (Object.keys(problems).some((path) => !pending.has(path))) { setShowErr(true); return; }
+    if (pending.size) {
+      const out = await matching.run((h) => jobs.resolvePlaces({ executionMode: 'REAL', tripId, baseRevision: 0, requirements: r }, h));
+      if (!out?.result || latestRequirements.current !== r) return;
+      ready = out.result.requirements;
+      setR(ready);
+    }
+    if (Object.keys(requirementProblems(ready)).length) { setShowErr(true); return; }
+    const confirmed: TripRequirements = { ...ready, confirmed: true, version: ready.version + 1,
+      intents: ready.intents.map((i) => ({ ...i, confirmed: i.status !== 'CANCELLED' })) };
     await saveDraft(tripId, { requirements: confirmed });
     nav(`/trip/${tripId}/planning`);
   }
@@ -173,8 +188,11 @@ export function ConfirmPage() {
         )}
       </div>
       <footer className="px-5 pb-[calc(14px+var(--safe-b))] pt-3">
+        {showErr && unresolvedPlaces(r).map((ref) => <button key={ref.path} className="btn-soft mb-2 w-full text-left" disabled={matching.running}
+          onClick={() => setPicker({ query: ref.query, onPick: (p) => setR((current) => bindRequirementPlace(current, ref.path, p)) })}>确认具体位置：{ref.query}</button>)}
+        {matching.error != null && <ErrorBox error={matching.error} />}
         {showErr && Object.keys(problems).length > 0 && <p className="mb-2 text-center text-[13px] text-danger">还有 {Object.keys(problems).length} 项需要处理</p>}
-        <button className="btn-primary h-[52px] w-full text-[16px]" onClick={confirm}>开始规划行程</button>
+        <button className="btn-primary h-[52px] w-full text-[16px]" disabled={matching.running} onClick={confirm}>{matching.running ? <><Spinner />正在匹配地点…</> : '开始规划行程'}</button>
       </footer>
       {picker && <PlacePicker open onClose={() => setPicker(undefined)} city={r.destinationCity} initialQuery={picker.query} candidates={picker.candidates} onPick={picker.onPick} ctx={ctx} />}
     </div>

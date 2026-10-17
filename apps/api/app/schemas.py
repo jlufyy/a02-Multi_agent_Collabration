@@ -854,6 +854,10 @@ class ParseRequirementsRequest(RequestContext):
         return self
 
 
+class ResolvePlacesRequest(RequestContext):
+    requirements: TripRequirements
+
+
 class UncertainField(ContractModel):
     fieldPath: Id
     reason: Id

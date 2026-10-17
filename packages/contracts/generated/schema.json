@@ -4932,6 +4932,53 @@
       "title": "ParseRequirementsRequest",
       "type": "object"
     },
+    "ResolvePlacesRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "executionMode": {
+          "enum": [
+            "REAL",
+            "DEMO"
+          ],
+          "title": "Executionmode",
+          "type": "string"
+        },
+        "demoRunId": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Demorunid"
+        },
+        "tripId": {
+          "minLength": 1,
+          "title": "Tripid",
+          "type": "string"
+        },
+        "baseRevision": {
+          "minimum": 0,
+          "title": "Baserevision",
+          "type": "integer"
+        },
+        "requirements": {
+          "$ref": "#/$defs/TripRequirements"
+        }
+      },
+      "required": [
+        "executionMode",
+        "tripId",
+        "baseRevision",
+        "requirements"
+      ],
+      "title": "ResolvePlacesRequest",
+      "type": "object"
+    },
     "UncertainField": {
       "additionalProperties": false,
       "properties": {

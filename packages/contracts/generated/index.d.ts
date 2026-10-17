@@ -206,6 +206,8 @@ export type RequestContext = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (
 
 export type ResearchPlaceRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "poiId": string; "city": string; "visitDate": string; };
 
+export type ResolvePlacesRequest = { "executionMode": "REAL" | "DEMO"; "demoRunId"?: (string | null); "tripId": string; "baseRevision": number; "requirements": TripRequirements; };
+
 export type RevisionDiff = { "added": Array<string>; "removed": Array<string>; "moved": Array<string>; };
 
 export type RevisionOutcome = { "kind": "REVISION"; "proposal": RevisionProposal; };
